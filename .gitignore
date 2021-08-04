@@ -49,7 +49,7 @@ Android.mk
 *.log
 cover.gif
 qpm.shared.json
-extern/
+extern/*
 Android.mk.backup
 src/QuestNotes.cpp.txt
 src/QuestWalls.cpp.txt

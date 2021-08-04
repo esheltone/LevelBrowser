@@ -1,0 +1,27 @@
+{
+  "configurations": [
+    {
+      "defines": [
+        "MOD_ID=\"SongBrowser\"",
+        "VERSION=\"1.3.0\"",
+        "__GNUC__",
+        "__aarch64__",
+        "ID=\"SongBrowser\""
+      ],
+      "includePath": [
+        "${workspaceFolder}/",
+        "${workspaceFolder}/extern/libil2cpp/il2cpp/libil2cpp",
+        "D:/NDK/android-ndk-r22b-windows-x86_64/android-ndk-r22b/",
+        "${workspaceFolder}/shared/",
+        "${workspaceFolder}/include/",
+        "${workspaceFolder}/extern/",
+        "${workspaceFolder}/extern/codegen/include/"
+      ],
+      "name": "Quest",
+      "cStandard": "c11",
+      "cppStandard": "c++20",
+      "intelliSenseMode": "gcc-x64"
+    }
+  ],
+  "version": 4
+}

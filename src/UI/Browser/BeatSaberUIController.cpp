@@ -1,8 +1,8 @@
 #include "UI/Browser/BeatSaberUIController.hpp"
 
-DEFINE_TYPE(SongBrowser::UI, BeatSaberUIController);
+DEFINE_TYPE(SongBrowser::DataAccess, BeatSaberUIController);
 
-namespace SongBrowser::UI
+namespace SongBrowser::DataAccess
 {
     void BeatSaberUIController::ctor(GlobalNamespace::LevelSelectionFlowCoordinator* flowCoordinator)
     {

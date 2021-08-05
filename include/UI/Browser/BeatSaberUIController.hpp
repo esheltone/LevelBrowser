@@ -23,7 +23,7 @@
 #include "GlobalNamespace/IPlaylist.hpp"
 #include "GlobalNamespace/IPreviewBeatmapLevel.hpp"
 
-DECLARE_CLASS_CODEGEN(SongBrowser::UI, BeatSaberUIController, Il2CppObject,
+DECLARE_CLASS_CODEGEN(SongBrowser::DataAccess, BeatSaberUIController, Il2CppObject,
     DECLARE_INSTANCE_FIELD(GlobalNamespace::LevelSelectionFlowCoordinator*, LevelSelectionFlowCoordinator);
     DECLARE_INSTANCE_FIELD(GlobalNamespace::LevelSelectionNavigationController*, LevelSelectionNavigationController);
 

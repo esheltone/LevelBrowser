@@ -53,6 +53,7 @@ DECLARE_CLASS_CODEGEN(SongBrowser, SongBrowserApplication, UnityEngine::MonoBeha
     DECLARE_STATIC_FIELD(SongBrowser::UI::ProgressBar*, mainProgressBar);
 
     DECLARE_INSTANCE_FIELD(bool, hasShownProgressBar);
+    
     public:
         void OnLoad();
 

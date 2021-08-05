@@ -29,15 +29,15 @@ namespace UIUtils
     }
 
     template<typename T>
-    requires (std::is_convertible_v<T*, HMUI::ViewController*>)
-    T* CreateViewController(std::string_view name)
+    requires (std::is_convertible_v<T, HMUI::ViewController*>)
+    T CreateViewController(std::string_view name)
     {
         auto typearr = Array<System::Type*>::NewLength(3);
         typearr->values[0] = il2cpp_utils::GetSystemType(classof(VRUIControls::PhysicsRaycasterWithCache*));
         typearr->values[1] = il2cpp_utils::GetSystemType(classof(UnityEngine::CanvasGroup*));
-        typearr->values[2] = il2cpp_utils::GetSystemType(classof(T*));
+        typearr->values[2] = il2cpp_utils::GetSystemType(classof(T));
 
-        T* vc = UnityEngine::GameObject::New_ctor(il2cpp_utils::newcsstr(classof(T*)->klass->name), typearr)->template GetComponent<T*>();
+        T vc = UnityEngine::GameObject::New_ctor(il2cpp_utils::newcsstr(classof(T)->klass->name), typearr)->template GetComponent<T>();
         vc->template GetComponent<VRUIControls::VRGraphicRaycaster*>()->physicsRaycaster = get_PhysicsRaycasterWithCache();
         auto rec = vc->get_rectTransform();
         rec->set_anchorMin(UnityEngine::Vector2(0.0f, 0.0f));
@@ -50,16 +50,16 @@ namespace UIUtils
     }
 
     template<typename T>
-    requires (std::is_convertible_v<T*, HMUI::ViewController*>)
-    T* CreateCurvedViewController(std::string_view name, float curveRadius)
+    requires (std::is_convertible_v<T, HMUI::ViewController*>)
+    T CreateCurvedViewController(std::string_view name, float curveRadius)
     {
         auto typearr = Array<System::Type*>::NewLength(4);
         typearr->values[0] = il2cpp_utils::GetSystemType(classof(VRUIControls::PhysicsRaycasterWithCache*));
         typearr->values[1] = il2cpp_utils::GetSystemType(classof(HMUI::CurvedCanvasSettings*));
         typearr->values[2] = il2cpp_utils::GetSystemType(classof(UnityEngine::CanvasGroup*));
-        typearr->values[3] = il2cpp_utils::GetSystemType(classof(T*));
+        typearr->values[3] = il2cpp_utils::GetSystemType(classof(T));
 
-        T* vc = UnityEngine::GameObject::New_ctor(il2cpp_utils::newcsstr(classof(T*)->klass->name), typearr)->template GetComponent<T*>();
+        T vc = UnityEngine::GameObject::New_ctor(il2cpp_utils::newcsstr(classof(T)->klass->name), typearr)->template GetComponent<T>();
         vc->template GetComponent<VRUIControls::VRGraphicRaycaster*>()->physicsRaycaster = get_PhysicsRaycasterWithCache();
 
         vc->template GetComponent<HMUI::CurvedCanvasSettings*>()->SetRadius(curveRadius);

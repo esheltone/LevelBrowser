@@ -11,6 +11,7 @@
 #include "GlobalNamespace/MultiplayerLevelSelectionFlowCoordinator.hpp"
 
 #include "Utils/ArrayUtil.hpp"
+#include "Utils/UIUtils.hpp"
 
 #include "questui/shared/BeatSaberUI.hpp"
 
@@ -87,7 +88,7 @@ namespace SongBrowser::UI
             Object::Destroy(viewController);
         }
 
-        viewController = QuestUI::BeatSaberUI::CreateViewController<SongBrowser::UI::SongBrowserViewController*>();
+        viewController = UIUtils::CreateCurvedViewController<SongBrowser::UI::SongBrowserViewController*>("SongBrowserViewController", curvedCanvasSettings->get_radius());
         auto rectTransform = viewController->get_rectTransform();
         rectTransform->set_anchorMin(Vector2(0.0f, 0.0f));
         rectTransform->set_anchorMax(Vector2(1.0f, 1.0f));
@@ -123,93 +124,87 @@ namespace SongBrowser::UI
         static constexpr const float displayButtonFontSize = 2.5f;
         static constexpr const float outerButtonWidth = 24.0f;
         static constexpr const float randomButtonWidth = 10.0f;
-        /*
+        
                     // clear button
-            _clearSortFilterButton = _viewController->CreateIconButton(
-                "ClearSortAndFilterButton",
-                "PracticeButton",
-                new Vector2(clearButtonX, clearButtonY),
-                new Vector2(randomButtonWidth, randomButtonWidth),
-                () =>
+        clearSortFilterButton = UIUtils::CreateIconButton( "ClearSortAndFilterButton", viewController->get_transform(), "PracticeButton", Vector2(clearButtonX, clearButtonY), Vector2(randomButtonWidth, randomButtonWidth),
+            [&]() {
+                if (currentUiState == UIState::FilterBy || currentUiState == UIState::SortBy)
                 {
-                    if (_currentUiState == UIState.FilterBy || _currentUiState == UIState.SortBy)
-                    {
-                        RefreshOuterUIState(UIState.Main);
-                    }
-                    else
-                    {
-                        OnClearButtonClickEvent();
-                    }
-                },
-                Base64Sprites.XIcon,
-                "Clear");
-            _clearSortFilterButton.SetButtonBackgroundActive(false);
+                    RefreshOuterUIState(UIState::Main);
+                }
+                else
+                {
+                    OnClearButtonClickEvent();
+                }
+            },
+            Sprites::get_XIcon(),
+            "Clear");
+        _clearSortFilterButton.SetButtonBackgroundActive(false);
 
-            // create SortBy button and its display
-            float curX = sortByButtonX;
+        // create SortBy button and its display
+        float curX = sortByButtonX;
 
-            INFO("Creating Sort By...");
-            _sortByButton = _viewController.CreateUIButton("sortBy", "PracticeButton", new Vector2(curX, buttonY), new Vector2(outerButtonWidth, buttonHeight), () =>
-            {
-                RefreshOuterUIState(UIState.SortBy);
-            }, "Sort By");
-            _sortByButton.SetButtonTextSize(outerButtonFontSize);
-            _sortByButton.ToggleWordWrapping(false);
+        INFO("Creating Sort By...");
+        _sortByButton = _viewController.CreateUIButton("sortBy", "PracticeButton", new Vector2(curX, buttonY), new Vector2(outerButtonWidth, buttonHeight), () =>
+        {
+            RefreshOuterUIState(UIState.SortBy);
+        }, "Sort By");
+        _sortByButton.SetButtonTextSize(outerButtonFontSize);
+        _sortByButton.ToggleWordWrapping(false);
 
-            curX += outerButtonWidth;
+        curX += outerButtonWidth;
 
-            INFO("Creating Sort By Display...");
-            _sortByDisplay = _viewController.CreateUIButton("sortByValue", "PracticeButton", new Vector2(curX, buttonY), new Vector2(outerButtonWidth, buttonHeight), () =>
-            {
-                OnSortButtonClickEvent(_model.Settings.sortMode);
-            }, "");
-            _sortByDisplay.SetButtonTextSize(displayButtonFontSize);
-            _sortByDisplay.ToggleWordWrapping(false);
+        INFO("Creating Sort By Display...");
+        _sortByDisplay = _viewController.CreateUIButton("sortByValue", "PracticeButton", new Vector2(curX, buttonY), new Vector2(outerButtonWidth, buttonHeight), () =>
+        {
+            OnSortButtonClickEvent(_model.Settings.sortMode);
+        }, "");
+        _sortByDisplay.SetButtonTextSize(displayButtonFontSize);
+        _sortByDisplay.ToggleWordWrapping(false);
 
-            curX += outerButtonWidth;
+        curX += outerButtonWidth;
 
-            // create FilterBy button and its display
-            INFO("Creating Filter By...");
-            _filterByButton = _viewController.CreateUIButton("filterBy", "PracticeButton", new Vector2(curX, buttonY), new Vector2(outerButtonWidth, buttonHeight), () =>
-            {
-                RefreshOuterUIState(UIState.FilterBy);
-            }, "Filter By");
-            _filterByButton.SetButtonTextSize(outerButtonFontSize);
-            _filterByButton.ToggleWordWrapping(false);
+        // create FilterBy button and its display
+        INFO("Creating Filter By...");
+        _filterByButton = _viewController.CreateUIButton("filterBy", "PracticeButton", new Vector2(curX, buttonY), new Vector2(outerButtonWidth, buttonHeight), () =>
+        {
+            RefreshOuterUIState(UIState.FilterBy);
+        }, "Filter By");
+        _filterByButton.SetButtonTextSize(outerButtonFontSize);
+        _filterByButton.ToggleWordWrapping(false);
 
-            curX += outerButtonWidth;
+        curX += outerButtonWidth;
 
-            INFO("Creating Filter By Display...");
-            _filterByDisplay = _viewController.CreateUIButton("filterValue", "PracticeButton", new Vector2(curX, buttonY), new Vector2(outerButtonWidth, buttonHeight), () =>
-            {
-                _model.Settings.filterMode = SongFilterMode.None;
-                CancelFilter();
-                ProcessSongList();
-                RefreshSongUI();
-            }, "");
-            _filterByDisplay.SetButtonTextSize(displayButtonFontSize);
-            _filterByDisplay.ToggleWordWrapping(false);
+        INFO("Creating Filter By Display...");
+        _filterByDisplay = _viewController.CreateUIButton("filterValue", "PracticeButton", new Vector2(curX, buttonY), new Vector2(outerButtonWidth, buttonHeight), () =>
+        {
+            _model.Settings.filterMode = SongFilterMode.None;
+            CancelFilter();
+            ProcessSongList();
+            RefreshSongUI();
+        }, "");
+        _filterByDisplay.SetButtonTextSize(displayButtonFontSize);
+        _filterByDisplay.ToggleWordWrapping(false);
 
-            curX += (outerButtonWidth / 2.0f);
+        curX += (outerButtonWidth / 2.0f);
 
-            // random button
-            INFO("Creating Random Button...");
-            _randomButton = _viewController.CreateIconButton("randomButton", "PracticeButton", new Vector2(curX + (randomButtonWidth / 4.0f), clearButtonY), new Vector2(randomButtonWidth, randomButtonWidth), () =>
-            {
-                OnSortButtonClickEvent(SongSortMode.Random);
-            }, Base64Sprites.RandomIcon, "Random");
-            _randomButton.SetButtonBackgroundActive(false);
+        // random button
+        INFO("Creating Random Button...");
+        _randomButton = _viewController.CreateIconButton("randomButton", "PracticeButton", new Vector2(curX + (randomButtonWidth / 4.0f), clearButtonY), new Vector2(randomButtonWidth, randomButtonWidth), () =>
+        {
+            OnSortButtonClickEvent(SongSortMode.Random);
+        }, Base64Sprites.RandomIcon, "Random");
+        _randomButton.SetButtonBackgroundActive(false);
 
-            curX += (randomButtonWidth / 4.0f) * 2.0f;
+        curX += (randomButtonWidth / 4.0f) * 2.0f;
 
-            // playlist export
-            INFO("Creating playlist export button...");
-            _playlistExportButton = _viewController.CreateIconButton("playlistExportButton", "PracticeButton", new Vector2(curX + (randomButtonWidth / 4.0f), clearButtonY), new Vector2(randomButtonWidth, randomButtonWidth), () =>
-            {
-                ShowInputKeyboard(CreatePlaylistButtonPressed);
-            }, Base64Sprites.PlaylistIcon, "Export Playlist");
-            _playlistExportButton.SetButtonBackgroundActive(false);
-        */
+        // playlist export
+        INFO("Creating playlist export button...");
+        _playlistExportButton = _viewController.CreateIconButton("playlistExportButton", "PracticeButton", new Vector2(curX + (randomButtonWidth / 4.0f), clearButtonY), new Vector2(randomButtonWidth, randomButtonWidth), () =>
+        {
+            ShowInputKeyboard(CreatePlaylistButtonPressed);
+        }, Base64Sprites.PlaylistIcon, "Export Playlist");
+        _playlistExportButton.SetButtonBackgroundActive(false);
     }
 
     void SongBrowserUI::CreateSortButtons()

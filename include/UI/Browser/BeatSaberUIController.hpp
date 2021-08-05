@@ -23,7 +23,7 @@
 #include "GlobalNamespace/IPlaylist.hpp"
 #include "GlobalNamespace/IPreviewBeatmapLevel.hpp"
 
-DECLARE_CLASS_CODEGEN(SongBrowser, BeatSaberUIController, Il2CppObject,
+DECLARE_CLASS_CODEGEN(SongBrowser::UI, BeatSaberUIController, Il2CppObject,
     DECLARE_INSTANCE_FIELD(GlobalNamespace::LevelSelectionFlowCoordinator*, LevelSelectionFlowCoordinator);
     DECLARE_INSTANCE_FIELD(GlobalNamespace::LevelSelectionNavigationController*, LevelSelectionNavigationController);
 
@@ -57,7 +57,7 @@ DECLARE_CLASS_CODEGEN(SongBrowser, BeatSaberUIController, Il2CppObject,
         GlobalNamespace::IBeatmapLevelPack* GetCurrentSelectedLevelPack();
         GlobalNamespace::IPlaylist* GetCurrentSelectedPlaylist();
     public:
-        GlobalNamespace::IAnnotatedBeatmapLevelCollectio*n GetCurrentSelectedAnnotatedBeatmapLevelCollection();
+        GlobalNamespace::IAnnotatedBeatmapLevelCollection* GetCurrentSelectedAnnotatedBeatmapLevelCollection();
         GlobalNamespace::IAnnotatedBeatmapLevelCollection* GetLevelCollectionByName(const std::string& levelCollectionName);
         Array<GlobalNamespace::IPreviewBeatmapLevel*>* GetCurrentLevelCollectionLevels();
         bool SelectLevelCategory(const std::string& levelCategoryName);

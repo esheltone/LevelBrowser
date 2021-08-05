@@ -53,13 +53,13 @@ namespace SongBrowser::UI
         switch(mode)
         {
             case GlobalNamespace::MainMenuViewController::MenuButton::SoloFreePlay:
-                flowCoordinator = Resources::FindObjectsOfTypeAll<GlobalNamespace::SoloFreePlayFlowCoordinator*>()->Last();
+                flowCoordinator = ArrayUtil::Last(Resources::FindObjectsOfTypeAll<GlobalNamespace::SoloFreePlayFlowCoordinator*>());
                 break;
             case GlobalNamespace::MainMenuViewController::MenuButton::Party:
-                flowCoordinator = Resources::FindObjectsOfTypeAll<GlobalNamespace::PartyFreePlayFlowCoordinator*>()->Last();
+                flowCoordinator = ArrayUtil::Last(Resources::FindObjectsOfTypeAll<GlobalNamespace::PartyFreePlayFlowCoordinator*>());
                 break;
             case GlobalNamespace::MainMenuViewController::MenuButton::Multiplayer:
-                flowCoordinator = Resources::FindObjectsOfTypeAll<GlobalNamespace::MultiplayerLevelSelectionFlowCoordinator*>()->Last();
+                flowCoordinator = ArrayUtil::Last(Resources::FindObjectsOfTypeAll<GlobalNamespace::MultiplayerLevelSelectionFlowCoordinator*>());
                 break;
             default:
                 return;
@@ -114,6 +114,102 @@ namespace SongBrowser::UI
     void SongBrowserUI::CreateOuterUI()
     {
         #warning not implemented
+        static constexpr const float clearButtonX = -72.5f;
+        static constexpr const float clearButtonY = CLEAR_BUTTON_Y;
+        static constexpr const float buttonY = BUTTON_ROW_Y;
+        static constexpr const float buttonHeight = 5.0f;
+        static constexpr const float sortByButtonX = -62.5f + buttonHeight;
+        static constexpr const float outerButtonFontSize = 3.0f;
+        static constexpr const float displayButtonFontSize = 2.5f;
+        static constexpr const float outerButtonWidth = 24.0f;
+        static constexpr const float randomButtonWidth = 10.0f;
+        /*
+                    // clear button
+            _clearSortFilterButton = _viewController->CreateIconButton(
+                "ClearSortAndFilterButton",
+                "PracticeButton",
+                new Vector2(clearButtonX, clearButtonY),
+                new Vector2(randomButtonWidth, randomButtonWidth),
+                () =>
+                {
+                    if (_currentUiState == UIState.FilterBy || _currentUiState == UIState.SortBy)
+                    {
+                        RefreshOuterUIState(UIState.Main);
+                    }
+                    else
+                    {
+                        OnClearButtonClickEvent();
+                    }
+                },
+                Base64Sprites.XIcon,
+                "Clear");
+            _clearSortFilterButton.SetButtonBackgroundActive(false);
+
+            // create SortBy button and its display
+            float curX = sortByButtonX;
+
+            INFO("Creating Sort By...");
+            _sortByButton = _viewController.CreateUIButton("sortBy", "PracticeButton", new Vector2(curX, buttonY), new Vector2(outerButtonWidth, buttonHeight), () =>
+            {
+                RefreshOuterUIState(UIState.SortBy);
+            }, "Sort By");
+            _sortByButton.SetButtonTextSize(outerButtonFontSize);
+            _sortByButton.ToggleWordWrapping(false);
+
+            curX += outerButtonWidth;
+
+            INFO("Creating Sort By Display...");
+            _sortByDisplay = _viewController.CreateUIButton("sortByValue", "PracticeButton", new Vector2(curX, buttonY), new Vector2(outerButtonWidth, buttonHeight), () =>
+            {
+                OnSortButtonClickEvent(_model.Settings.sortMode);
+            }, "");
+            _sortByDisplay.SetButtonTextSize(displayButtonFontSize);
+            _sortByDisplay.ToggleWordWrapping(false);
+
+            curX += outerButtonWidth;
+
+            // create FilterBy button and its display
+            INFO("Creating Filter By...");
+            _filterByButton = _viewController.CreateUIButton("filterBy", "PracticeButton", new Vector2(curX, buttonY), new Vector2(outerButtonWidth, buttonHeight), () =>
+            {
+                RefreshOuterUIState(UIState.FilterBy);
+            }, "Filter By");
+            _filterByButton.SetButtonTextSize(outerButtonFontSize);
+            _filterByButton.ToggleWordWrapping(false);
+
+            curX += outerButtonWidth;
+
+            INFO("Creating Filter By Display...");
+            _filterByDisplay = _viewController.CreateUIButton("filterValue", "PracticeButton", new Vector2(curX, buttonY), new Vector2(outerButtonWidth, buttonHeight), () =>
+            {
+                _model.Settings.filterMode = SongFilterMode.None;
+                CancelFilter();
+                ProcessSongList();
+                RefreshSongUI();
+            }, "");
+            _filterByDisplay.SetButtonTextSize(displayButtonFontSize);
+            _filterByDisplay.ToggleWordWrapping(false);
+
+            curX += (outerButtonWidth / 2.0f);
+
+            // random button
+            INFO("Creating Random Button...");
+            _randomButton = _viewController.CreateIconButton("randomButton", "PracticeButton", new Vector2(curX + (randomButtonWidth / 4.0f), clearButtonY), new Vector2(randomButtonWidth, randomButtonWidth), () =>
+            {
+                OnSortButtonClickEvent(SongSortMode.Random);
+            }, Base64Sprites.RandomIcon, "Random");
+            _randomButton.SetButtonBackgroundActive(false);
+
+            curX += (randomButtonWidth / 4.0f) * 2.0f;
+
+            // playlist export
+            INFO("Creating playlist export button...");
+            _playlistExportButton = _viewController.CreateIconButton("playlistExportButton", "PracticeButton", new Vector2(curX + (randomButtonWidth / 4.0f), clearButtonY), new Vector2(randomButtonWidth, randomButtonWidth), () =>
+            {
+                ShowInputKeyboard(CreatePlaylistButtonPressed);
+            }, Base64Sprites.PlaylistIcon, "Export Playlist");
+            _playlistExportButton.SetButtonBackgroundActive(false);
+        */
     }
 
     void SongBrowserUI::CreateSortButtons()
@@ -151,7 +247,7 @@ namespace SongBrowser::UI
         #warning not implemented
     }
 
-    void SongBrowserUI::OnDidFavoriteToggleChangeEvent(GlobalNamespace::StandardLevelDetailView* arg1, UI::Toggle* arg2)
+    void SongBrowserUI::OnDidFavoriteToggleChangeEvent(GlobalNamespace::StandardLevelDetailView* arg1, UnityEngine::UI::Toggle* arg2)
     {
         #warning not implemented
     }

@@ -72,7 +72,7 @@ DECLARE_CLASS_CODEGEN(SongBrowser::UI, SongBrowserUI, UnityEngine::MonoBehaviour
     UIState currentUiState = UIState::Disabled;
     bool asyncUpdating = false;
     
-    DECLARE_CTOR(ctor);
+    //DECLARE_CTOR(ctor);
     public:
         void Show();
         void Hide();

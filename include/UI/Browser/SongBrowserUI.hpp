@@ -22,7 +22,7 @@ enum UIState {
     Disabled,
     Main,
     SortBy,
-    FilteredBy
+    FilterBy
 };
 
 DECLARE_CLASS_CODEGEN(SongBrowser::UI, SongBrowserViewController, HMUI::ViewController,
@@ -116,7 +116,7 @@ DECLARE_CLASS_CODEGEN(SongBrowser::UI, SongBrowserUI, UnityEngine::MonoBehaviour
         void HandleDidSelectLevelRow(GlobalNamespace::IPreviewBeatmapLevel* level);
         void HandleDeleteSelectedLevel();
         void ShowSearchKeyboard();
-        void ShowInputKeyboard(System::Action_1<Il2CppString*>* enterPressedHandler);
+        void ShowInputKeyboard(std::function<void(Il2CppString*)> enterPressedHandler);
         void SearchViewControllerSearchButtonPressed(Il2CppString* searchFor);
         void CreatePlaylistButtonPressed(Il2CppString* playlistName);
         void JumpSongList(int numJumps, float segmentPercent);

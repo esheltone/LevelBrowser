@@ -78,11 +78,18 @@ namespace UIUtils
     UnityEngine::UI::Button* CreateIconButton(std::string_view name, UnityEngine::Transform* parent, std::string_view buttonTemplate, UnityEngine::Vector2 anchoredPosition, UnityEngine::Vector2 sizeDelta, std::function<void(void)> onClick, UnityEngine::Sprite* icon, std::string_view hint);
     UnityEngine::UI::Button* CreatePageButton(std::string_view name, UnityEngine::Transform* parent, std::string_view buttonTemplate, UnityEngine::Vector2 anchoredPosition, UnityEngine::Vector2 sizeDelta, std::function<void(void)> onClick, UnityEngine::Sprite* icon);
     UnityEngine::UI::Button* CreateUIButton(std::string_view name, UnityEngine::Transform* parent, std::string_view buttonTemplate, UnityEngine::Vector2 anchoredPosition, UnityEngine::Vector2 sizeDelta, std::function<void(void)> onClick = nullptr, std::string_view buttonText = "BUTTON");
-    UnityEngine::RectTransform* CreateStatIcon(std::string_view name, UnityEngine::Transform* templ, UnityEngine::Transform* parent, UnityEngine::Sprite* icon, std::string_view hoverHintText = "");
+    UnityEngine::Transform* CreateStatIcon(std::string_view name, UnityEngine::Transform* templ, UnityEngine::Transform* parent, UnityEngine::Sprite* icon, std::string_view hoverHintText = "");
     TMPro::TextMeshProUGUI* CreateText(UnityEngine::Transform* parent, std::string_view text, float fontSize, UnityEngine::Vector2 anchoredPosition, UnityEngine::Vector2 sizeDelta);
-    void SetHoverHint(UnityEngine::RectTransform* button, std::string_view name, std::string_view text);
-    void DestroyHoverHint(UnityEngine::RectTransform* button);
+    void SetHoverHint(UnityEngine::Transform* button, std::string_view name, std::string_view text);
+    void DestroyHoverHint(UnityEngine::Transform* button);
     void SetButtonTextColor(UnityEngine::UI::Button* button, UnityEngine::Color color);
-    void SetStatButtonText(UnityEngine::RectTransform* rect, std::string_view text);
-    void SetStatButtonIcon(UnityEngine::RectTransform* rect, UnityEngine::Sprite* icon);
+    void SetStatButtonText(UnityEngine::Transform* rect, std::string_view text);
+    void SetStatButtonIcon(UnityEngine::Transform* rect, UnityEngine::Sprite* icon);
+
+    void SetButtonText(UnityEngine::UI::Button* button, std::string_view _text);
+    void SetButtonTextSize(UnityEngine::UI::Button* button, float _fontSize);
+    void ToggleWordWrapping(UnityEngine::UI::Button* button, bool enableWordWrapping);
+    void SetButtonBackgroundActive(UnityEngine::UI::Button* button, bool active);
+    void SetButtonUnderlineColor(UnityEngine::UI::Button* button, UnityEngine::Color color);
+    void SetButtonBorder(UnityEngine::UI::Button* button, UnityEngine::Color color);
 }

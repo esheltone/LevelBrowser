@@ -12,10 +12,13 @@
 
 #include "Utils/ArrayUtil.hpp"
 #include "Utils/UIUtils.hpp"
+#include "Utils/SpriteUtils.hpp"
 
 #include "questui/shared/BeatSaberUI.hpp"
+#include "logging.hpp"
 
 using namespace UnityEngine;
+using namespace UnityEngine::UI;
 
 DEFINE_TYPE(SongBrowser::UI, SongBrowserUI);
 DEFINE_TYPE(SongBrowser::UI, SongBrowserViewController);
@@ -137,74 +140,74 @@ namespace SongBrowser::UI
                     OnClearButtonClickEvent();
                 }
             },
-            Sprites::get_XIcon(),
+            SpriteUtils::get_XIcon(),
             "Clear");
-        _clearSortFilterButton.SetButtonBackgroundActive(false);
+        UIUtils::SetButtonBackgroundActive(clearSortFilterButton, false);
 
         // create SortBy button and its display
         float curX = sortByButtonX;
 
         INFO("Creating Sort By...");
-        _sortByButton = _viewController.CreateUIButton("sortBy", "PracticeButton", new Vector2(curX, buttonY), new Vector2(outerButtonWidth, buttonHeight), () =>
-        {
-            RefreshOuterUIState(UIState.SortBy);
+        sortByButton = UIUtils::CreateUIButton("sortBy", viewController->get_transform(), "PracticeButton", Vector2(curX, buttonY), Vector2(outerButtonWidth, buttonHeight), 
+            [&]() {
+                    RefreshOuterUIState(UIState::SortBy);
         }, "Sort By");
-        _sortByButton.SetButtonTextSize(outerButtonFontSize);
-        _sortByButton.ToggleWordWrapping(false);
+        UIUtils::SetButtonTextSize(sortByButton, outerButtonFontSize);
+        UIUtils::ToggleWordWrapping(sortByButton, false);
 
         curX += outerButtonWidth;
 
         INFO("Creating Sort By Display...");
-        _sortByDisplay = _viewController.CreateUIButton("sortByValue", "PracticeButton", new Vector2(curX, buttonY), new Vector2(outerButtonWidth, buttonHeight), () =>
-        {
-            OnSortButtonClickEvent(_model.Settings.sortMode);
+        sortByDisplay = UIUtils::CreateUIButton("sortByValue", viewController->get_transform(), "PracticeButton", Vector2(curX, buttonY), Vector2(outerButtonWidth, buttonHeight), 
+        [&]() {
+            OnSortButtonClickEvent(config.sortMode);
         }, "");
-        _sortByDisplay.SetButtonTextSize(displayButtonFontSize);
-        _sortByDisplay.ToggleWordWrapping(false);
+        UIUtils::SetButtonTextSize(sortByDisplay, displayButtonFontSize);
+        UIUtils::ToggleWordWrapping(sortByDisplay, false);
 
         curX += outerButtonWidth;
 
         // create FilterBy button and its display
         INFO("Creating Filter By...");
-        _filterByButton = _viewController.CreateUIButton("filterBy", "PracticeButton", new Vector2(curX, buttonY), new Vector2(outerButtonWidth, buttonHeight), () =>
-        {
-            RefreshOuterUIState(UIState.FilterBy);
+        filterByButton = UIUtils::CreateUIButton("filterBy", viewController->get_transform(), "PracticeButton", Vector2(curX, buttonY), Vector2(outerButtonWidth, buttonHeight), 
+        [&]() {
+            RefreshOuterUIState(UIState::FilterBy);
         }, "Filter By");
-        _filterByButton.SetButtonTextSize(outerButtonFontSize);
-        _filterByButton.ToggleWordWrapping(false);
+        UIUtils::SetButtonTextSize(filterByButton, outerButtonFontSize);
+        UIUtils::ToggleWordWrapping(filterByButton, false);
 
         curX += outerButtonWidth;
 
         INFO("Creating Filter By Display...");
-        _filterByDisplay = _viewController.CreateUIButton("filterValue", "PracticeButton", new Vector2(curX, buttonY), new Vector2(outerButtonWidth, buttonHeight), () =>
-        {
-            _model.Settings.filterMode = SongFilterMode.None;
+        filterByDisplay = UIUtils::CreateUIButton("filterValue", viewController->get_transform(), "PracticeButton", Vector2(curX, buttonY), Vector2(outerButtonWidth, buttonHeight), 
+        [&]() {
+            config.filterMode = SongFilterMode::None;
             CancelFilter();
             ProcessSongList();
             RefreshSongUI();
         }, "");
-        _filterByDisplay.SetButtonTextSize(displayButtonFontSize);
-        _filterByDisplay.ToggleWordWrapping(false);
+        UIUtils::SetButtonTextSize(filterByDisplay, displayButtonFontSize);
+        UIUtils::ToggleWordWrapping(filterByDisplay, false);
 
         curX += (outerButtonWidth / 2.0f);
 
         // random button
         INFO("Creating Random Button...");
-        _randomButton = _viewController.CreateIconButton("randomButton", "PracticeButton", new Vector2(curX + (randomButtonWidth / 4.0f), clearButtonY), new Vector2(randomButtonWidth, randomButtonWidth), () =>
-        {
-            OnSortButtonClickEvent(SongSortMode.Random);
-        }, Base64Sprites.RandomIcon, "Random");
-        _randomButton.SetButtonBackgroundActive(false);
+        randomButton = UIUtils::CreateIconButton("randomButton", viewController->get_transform(), "PracticeButton", Vector2(curX + (randomButtonWidth / 4.0f), clearButtonY), Vector2(randomButtonWidth, randomButtonWidth), 
+        [&]() {
+            OnSortButtonClickEvent(SongSortMode::Random);
+        }, SpriteUtils::get_RandomIcon(), "Random");
+        UIUtils::SetButtonBackgroundActive(randomButton, false);
 
         curX += (randomButtonWidth / 4.0f) * 2.0f;
 
         // playlist export
         INFO("Creating playlist export button...");
-        _playlistExportButton = _viewController.CreateIconButton("playlistExportButton", "PracticeButton", new Vector2(curX + (randomButtonWidth / 4.0f), clearButtonY), new Vector2(randomButtonWidth, randomButtonWidth), () =>
-        {
-            ShowInputKeyboard(CreatePlaylistButtonPressed);
-        }, Base64Sprites.PlaylistIcon, "Export Playlist");
-        _playlistExportButton.SetButtonBackgroundActive(false);
+        playlistExportButton =  UIUtils::CreateIconButton("playlistExportButton", viewController->get_transform(), "PracticeButton", Vector2(curX + (randomButtonWidth / 4.0f), clearButtonY), Vector2(randomButtonWidth, randomButtonWidth), 
+        [&]() {
+            ShowInputKeyboard(std::bind(&SongBrowserUI::CreatePlaylistButtonPressed, this, std::placeholders::_1));
+        }, SpriteUtils::get_PlaylistIcon(), "Export Playlist");
+        UIUtils::SetButtonBackgroundActive(playlistExportButton, false);
     }
 
     void SongBrowserUI::CreateSortButtons()
@@ -356,7 +359,7 @@ namespace SongBrowser::UI
         #warning not implemented
     }
 
-    void SongBrowserUI::ShowInputKeyboard(System::Action_1<Il2CppString*>* enterPressedHandler)
+    void SongBrowserUI::ShowInputKeyboard(std::function<void(Il2CppString*)> enterPressedHandler)
     {
         #warning not implemented
     }

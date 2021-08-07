@@ -19,28 +19,28 @@ MAKE_AUTO_HOOK_MATCH(FlowCoordinator_PresentFlowCoordinator, &HMUI::FlowCoordina
 {
     FlowCoordinator_PresentFlowCoordinator(self, flowCoordinator, finishedCallback, animationDirection, immediately, replaceTopViewController);
     // postfix
-    auto flowClass = flowCoordinator->klass;
-    if (flowClass == classof(GlobalNamespace::SoloFreePlayFlowCoordinator*))
+    if (il2cpp_utils::try_cast<GlobalNamespace::SoloFreePlayFlowCoordinator>(flowCoordinator))
     {
         INFO("Initializing SongBrowser for Single Player Mode");
         SongBrowser::SongBrowserApplication::instance()->HandleSoloModeSelection();
     }
-    else if (flowClass == classof(GlobalNamespace::MultiplayerLevelSelectionFlowCoordinator*))
+    else if (il2cpp_utils::try_cast<GlobalNamespace::MultiplayerLevelSelectionFlowCoordinator>(flowCoordinator))
     {
         INFO("Initializing SongBrowser for Multiplayer Mode");
         SongBrowser::SongBrowserApplication::instance()->HandleMultiplayerModeSelection();
     }
-    else if (flowClass == classof(GlobalNamespace::PartyFreePlayFlowCoordinator*))
+    else if (il2cpp_utils::try_cast<GlobalNamespace::PartyFreePlayFlowCoordinator>(flowCoordinator))
     {
         INFO("Initializing SongBrowser for Party Mode");
         SongBrowser::SongBrowserApplication::instance()->HandlePartyModeSelection();
     }
-    else if (flowClass == classof(GlobalNamespace::CampaignFlowCoordinator*))
+    else if (il2cpp_utils::try_cast<GlobalNamespace::CampaignFlowCoordinator>(flowCoordinator))
     {
         INFO("Initializing SongBrowser for Multiplayer Mode");
         SongBrowser::SongBrowserApplication::instance()->HandleCampaignModeSelection();
     }
 }
+
 extern "C" void setup(ModInfo& info)
 {
     info.id = modInfo.id;

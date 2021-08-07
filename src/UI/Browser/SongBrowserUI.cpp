@@ -10,6 +10,7 @@
 #include "HMUI/CurvedCanvasSettings.hpp"
 #include "HMUI/ScrollView.hpp"
 
+#include "GlobalNamespace/IBeatmapLevelPackCollection.hpp"
 #include "GlobalNamespace/IBeatmapLevel.hpp"
 #include "GlobalNamespace/PreviewBeatmapLevelPackSO.hpp"
 #include "GlobalNamespace/IDifficultyBeatmap.hpp"
@@ -80,7 +81,7 @@ namespace SongBrowser::UI
                 if (!currentSelected && config.currentLevelCategoryName == "")
                 {
                     INFO("No level collection selected, acquiring the first available, likely OST1...");
-                    currentSelected = beatUi->BeatmapLevelsModel->get_allLoadedBeatmapLevelPackCollection()->get_beatmapLevelPacks()->values[0];
+                    currentSelected = reinterpret_cast<GlobalNamespace::IAnnotatedBeatmapLevelCollection*>(beatUi->BeatmapLevelsModel->get_allLoadedBeatmapLevelPackCollection()->get_beatmapLevelPacks()->values[0]);
                 }
             }
             else if (!currentSelected || (to_utf8(csstrtostr(currentSelected->get_collectionName())) != config.currentLevelCollectionName))

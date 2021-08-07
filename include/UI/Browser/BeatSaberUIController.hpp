@@ -13,6 +13,7 @@
 #include "GlobalNamespace/BeatmapCharacteristicSegmentedControlController.hpp"
 #include "GlobalNamespace/AnnotatedBeatmapLevelCollectionsViewController.hpp"
 #include "GlobalNamespace/SimpleDialogPromptViewController.hpp"
+#include "GlobalNamespace/BeatmapLevelsModel.hpp"
 #include "HMUI/ScreenSystem.hpp"
 
 #include "UnityEngine/UI/Button.hpp"
@@ -50,6 +51,8 @@ DECLARE_CLASS_CODEGEN(SongBrowser::DataAccess, BeatSaberUIController, Il2CppObje
     DECLARE_INSTANCE_FIELD(HMUI::ScreenSystem*, ScreenSystem);
 
     DECLARE_INSTANCE_FIELD(GlobalNamespace::SimpleDialogPromptViewController*, SimpleDialogPromptViewControllerPrefab);
+
+    DECLARE_INSTANCE_FIELD(GlobalNamespace::BeatmapLevelsModel*, BeatmapLevelsModel);
 
     DECLARE_CTOR(ctor, GlobalNamespace::LevelSelectionFlowCoordinator* flowCoordinator);
     

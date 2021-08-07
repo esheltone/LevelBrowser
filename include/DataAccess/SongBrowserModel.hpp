@@ -18,8 +18,11 @@
 DECLARE_CLASS_CODEGEN(SongBrowser, SongBrowserModel, Il2CppObject,
     DECLARE_CTOR(ctor);
     DECLARE_INSTANCE_FIELD(GlobalNamespace::BeatmapCharacteristicSO*, currentBeatmapCharacteristicSO);
-
+    
     public:
+        static constexpr const char* filteredSongsCollectionName = "custom_levelpack_SongBrowser_FilteredSongPack";
+        static constexpr const char* playlistSongsCollectionName = "SongBrowser_PlaylistPack";
+        
         static std::function<GlobalNamespace::IAnnotatedBeatmapLevelCollection*(List<GlobalNamespace::IPreviewBeatmapLevel*>*)> customFilterHandler;
         static std::function<List<GlobalNamespace::IPreviewBeatmapLevel*>*(List<GlobalNamespace::IPreviewBeatmapLevel*>*)> customSortHandler;
         static UnorderedEventCallback<std::map<std::string, GlobalNamespace::CustomPreviewBeatmapLevel*>> didFinishProcessingSongs;
@@ -34,6 +37,7 @@ DECLARE_CLASS_CODEGEN(SongBrowser, SongBrowserModel, Il2CppObject,
         static std::string GetSongHash(std::string_view levelId);
         static Array<GlobalNamespace::IPreviewBeatmapLevel*>* GetLevelsForLevelCollection(GlobalNamespace::IAnnotatedBeatmapLevelCollection* levelCollection);
         float lastScrollIndex = 0.0f;
+        std::string lastSelectedLevelId = "";
     private:
         /* -- Filtering --*/
         List<GlobalNamespace::IPreviewBeatmapLevel*>* FilterFavorites(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels);

@@ -13,4 +13,4 @@ namespace SongBrowser
 }
 
 #define INFO(...) SongBrowser::Logging::getContextLogger(__FILE__).info(__VA_ARGS__)
-#define ERROR(...) SongBrowser::Logging::getContextLogger(__FILE__).errror(__VA_ARGS__)
+#define ERROR(...) SongBrowser::Logging::getContextLogger(__FILE__).error(__VA_ARGS__)

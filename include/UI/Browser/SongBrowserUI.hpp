@@ -77,7 +77,7 @@ DECLARE_CLASS_CODEGEN(SongBrowser::UI, SongBrowserUI, UnityEngine::MonoBehaviour
         void Show();
         void Hide();
         void UpdateLevelDataModel();
-        void UpdateLevelCollectionSelection();
+        bool UpdateLevelCollectionSelection();
         void RefreshSongList();
         void CreateUI(GlobalNamespace::MainMenuViewController::MenuButton mode);
         /* --Creation-- */

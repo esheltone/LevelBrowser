@@ -15,21 +15,7 @@ Configuration& getConfig()
 #define ADD_STR(str) doc.AddMember(#str, rapidjson::Value(config.str.c_str(), config.str.size(), allocator), allocator)
 #define ADD_VAL(val) doc.AddMember(#val, config.val, allocator)
 
-bool NeedsScoreSaberData(const SongSortMode& mode)
-{
-    switch (mode)
-    {
-        case SongSortMode::UpVotes: [[fallthrough]];
-        case SongSortMode::Rating: [[fallthrough]];
-        case SongSortMode::PlayCount: [[fallthrough]];
-        case SongSortMode::Heat: [[fallthrough]];
-        case SongSortMode::PP: [[fallthrough]];
-        case SongSortMode::Stars:
-            return true;
-        default:
-            return false;
-    }
-}
+
 void SaveConfig()
 {
     INFO("Saving Configuration...");
@@ -110,4 +96,58 @@ bool LoadConfig()
     FIND_JSON_VAL(invertSortResults, GetBool());
 
     return foundEverything;
+}
+
+bool NeedsScoreSaberData(const SongSortMode& mode)
+{
+    switch (mode)
+    {
+        case SongSortMode::UpVotes: [[fallthrough]];
+        case SongSortMode::Rating: [[fallthrough]];
+        case SongSortMode::PlayCount: [[fallthrough]];
+        case SongSortMode::Heat: [[fallthrough]];
+        case SongSortMode::PP: [[fallthrough]];
+        case SongSortMode::Stars:
+            return true;
+        default:
+            return false;
+    }
+}
+
+std::string SongFilterModeToString(const SongFilterMode& mode)
+{
+    switch (mode)
+    {
+        case SongFilterMode::None: return "None";
+        case SongFilterMode::Favorites: return "Favorites";
+        case SongFilterMode::Playlist: return "Playlist";
+        case SongFilterMode::Search: return "Search";
+        case SongFilterMode::Ranked: return "Ranked";
+        case SongFilterMode::Unranked: return "Unranked";
+        case SongFilterMode::Requirements: return "Requirements";
+        case SongFilterMode::CustomFilter: return "Custom";
+    }
+}
+
+std::string SongSortModeToString(const SongSortMode& mode)
+{
+    switch (mode)
+    {
+        case SongSortMode::Default: return "Default";
+        case SongSortMode::Author: return "Author";
+        case SongSortMode::Original: return "Original";
+        case SongSortMode::Newest: return "Newest";
+        case SongSortMode::YourPlayCount: return "YourPlayCount";
+        case SongSortMode::Difficulty: return "Difficulty";
+        case SongSortMode::Random: return "Random";
+        case SongSortMode::PP: return "PP";
+        case SongSortMode::UpVotes: return "UpVotes";
+        case SongSortMode::Rating: return "Rating";
+        case SongSortMode::Heat: return "Heat";
+        case SongSortMode::PlayCount: return "PlayCount";
+        case SongSortMode::Stars: return "Stars";
+        case SongSortMode::Bpm: return "Bpm";
+        case SongSortMode::Length: return "Length";
+        case SongSortMode::CustomSort: return "Custom";
+    }
 }

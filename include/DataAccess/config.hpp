@@ -21,7 +21,7 @@ enum SongSortMode {
     Length,
 
     // Allow mods to extend functionality.
-    CustomSort,
+    CustomSort
 };
 
 enum SongFilterMode {
@@ -53,6 +53,9 @@ struct config_t {
 
 extern config_t config;
 
-bool NeedsScoreSaberData(const SongSortMode& mode);
 bool LoadConfig();
 void SaveConfig();
+
+bool NeedsScoreSaberData(const SongSortMode& mode);
+std::string SongFilterModeToString(const SongFilterMode& mode);
+std::string SongSortModeToString(const SongSortMode& mode);

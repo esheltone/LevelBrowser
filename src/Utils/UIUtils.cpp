@@ -8,6 +8,10 @@
 #include "UnityEngine/Events/UnityAction.hpp"
 
 #include "HMUI/ImageView.hpp"
+#include "HMUI/CurvedTextMeshPro.hpp"
+#include "HMUI/HoverHintController.hpp"
+
+#include "Polyglot/LocalizedTextMeshProUGUI.hpp"
 
 #include "Components/ButtonIconImage.hpp"
 
@@ -16,6 +20,8 @@
 using namespace UnityEngine;
 using namespace UnityEngine::UI;
 using namespace UnityEngine::Events;
+using namespace TMPro;
+using namespace HMUI;
 
 #include <array>
 #include <algorithm>
@@ -139,20 +145,87 @@ namespace UIUtils
 
     Button* CreateUIButton(std::string_view name, Transform* parent, std::string_view buttonTemplate, Vector2 anchoredPosition, Vector2 sizeDelta, std::function<void(void)> onClick, std::string_view buttonText)
     {
-        #warning not implemented
-        return nullptr;
+        auto btn = CreateBaseButton(name, parent, buttonTemplate);
+        btn->get_gameObject()->SetActive(true);
+
+        auto localizer = btn->get_gameObject()->GetComponentInChildren<Polyglot::LocalizedTextMeshProUGUI*>();
+        if (localizer)
+            Object::Destroy(localizer);
+        
+        auto externalComponents = btn->get_gameObject()->AddComponent<QuestUI::ExternalComponents*>();
+        auto textMesh = btn->get_gameObject()->GetComponentInChildren<TextMeshProUGUI*>();
+        textMesh->set_richText(true);
+        externalComponents->Add(textMesh);
+
+        GET_STRING(Content);
+
+        auto contentTransform = btn->get_transform()->Find(Content_cs)->GetComponent<LayoutElement*>();
+        if (contentTransform)
+            Object::Destroy(contentTransform);
+
+        auto buttonSizeFitter = btn->get_gameObject()->AddComponent<ContentSizeFitter*>();
+        buttonSizeFitter->set_verticalFit(ContentSizeFitter::FitMode::PreferredSize);
+        buttonSizeFitter->set_horizontalFit(ContentSizeFitter::FitMode::Unconstrained);
+
+        auto stackLayoutGroup = btn->get_gameObject()->GetComponentInChildren<LayoutGroup*>();
+        if (stackLayoutGroup)
+            externalComponents->Add(stackLayoutGroup);
+
+        if (onClick)
+            btn->get_onClick()->AddListener(MakeDelegate(UnityAction*, onClick));
+
+        auto rect = reinterpret_cast<RectTransform*>(btn->get_transform());
+        rect->set_anchorMin(Vector2(0.5f, 0.5f));
+        rect->set_anchorMax(Vector2(0.5f, 0.5f));
+        rect->set_anchoredPosition(anchoredPosition);
+        rect->set_sizeDelta(sizeDelta);
+
+        SetButtonText(btn, buttonText);
+
+        return btn;
     }
 
     Transform* CreateStatIcon(std::string_view name, Transform* templ, Transform* parent, Sprite* icon, std::string_view hoverHintText)
     {
-        #warning not implemented
-        return nullptr;
+        auto statIcon = Object::Instantiate(templ, parent, false);
+        statIcon->set_name(il2cpp_utils::newcsstr(name));
+        reinterpret_cast<RectTransform*>(statIcon->get_transform())->Translate(0.0f, -0.1f, 0.0f);
+        SetStatButtonIcon(statIcon, icon);
+        DestroyHoverHint(statIcon);
+
+        if (hoverHintText.size() > 1)
+        {
+            SetHoverHint(statIcon, string_format("%s_hoverHintText", hoverHintText.data()), hoverHintText);
+        }
+
+        return statIcon;
     }
 
     TMPro::TextMeshProUGUI* CreateText(Transform* parent, std::string_view text, float fontSize, Vector2 anchoredPosition, Vector2 sizeDelta)
     {
-        #warning not implemented
-        return nullptr;
+        GET_STRING(CustomUIText);
+        auto gameObj = GameObject::New_ctor(CustomUIText_cs);
+        gameObj->SetActive(false);
+
+        auto textMesh = gameObj->AddComponent<CurvedTextMeshPro*>();
+        textMesh->set_font(Object::Instantiate(ArrayUtil::First(Resources::FindObjectsOfTypeAll<TMP_FontAsset*>(), [](auto t) { 
+            static auto font = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("Teko-Medium SDF No Glow");
+            return t->get_name()->Equals(font);
+        })));
+
+        auto rect = textMesh->get_rectTransform();
+        rect->SetParent(parent, false);
+        textMesh->set_text(il2cpp_utils::newcsstr(text));
+        textMesh->set_fontSize(fontSize);
+        textMesh->set_color({1.0f, 1.0f, 1.0f, 1.0f});
+
+        rect->set_anchorMin(Vector2(0.5f, 0.5f));
+        rect->set_anchorMax(Vector2(0.5f, 0.5f));
+        rect->set_sizeDelta(sizeDelta);
+        rect->set_anchoredPosition(anchoredPosition);
+
+        gameObj->SetActive(true);
+        return textMesh;
     }
 
     void SetHoverHint(Transform* button, std::string_view name, std::string_view text)
@@ -171,47 +244,85 @@ namespace UIUtils
 
     void SetButtonTextColor(Button* button, Color color)
     {
-        #warning not implemented
+        auto txt = ArrayUtil::First(button->get_gameObject()->GetComponentsInChildren<TextMeshProUGUI*>(), [](auto x) { 
+            GET_STRING(Text); 
+            return x->get_gameObject()->get_name()->Equals(Text_cs); 
+        });
+        if (txt) txt->set_color(color);
     }
 
-    void SetStatButtonText(Transform* rect, std::string_view text)
+    void SetStatButtonText(Transform* transform, std::string_view text)
     {
-        #warning not implemented
+        auto txt = ArrayUtil::First(transform->get_gameObject()->GetComponentsInChildren<TextMeshProUGUI*>(), [](auto x) { 
+            GET_STRING(ValueText); 
+            return x->get_gameObject()->get_name()->Equals(ValueText_cs); 
+        });
+        if (txt) txt->set_text(il2cpp_utils::newcsstr(text));
     }
 
-    void SetStatButtonIcon(Transform* rect, Sprite* icon)
+    void SetStatButtonIcon(Transform* transform, Sprite* icon)
     {
-        #warning not implemented
+        auto img = ArrayUtil::First(transform->get_gameObject()->GetComponentsInChildren<Image*>(), [](auto x) { 
+            GET_STRING(Icon); 
+            return x->get_gameObject()->get_name()->Equals(Icon_cs); 
+        });
+        if (img)
+        {
+            img->set_sprite(icon);
+            img->set_color({1.0f, 1.0f, 1.0f, 1.0f});
+        }
     }
 
-    void SetButtonText(UnityEngine::UI::Button* button, std::string_view _text)
+    void SetButtonText(UnityEngine::UI::Button* button, std::string_view text)
     {
-        #warning not implemented
+        auto textMesh = button->GetComponentInChildren<CurvedTextMeshPro*>();
+        if (textMesh) textMesh->SetText(il2cpp_utils::newcsstr(text));
     }
 
-    void SetButtonTextSize(UnityEngine::UI::Button* button, float _fontSize)
+    void SetButtonTextSize(UnityEngine::UI::Button* button, float fontSize)
     {
-        #warning not implemented
+        auto textMesh = button->GetComponentInChildren<CurvedTextMeshPro*>();
+        if (textMesh) textMesh->set_fontSize(fontSize);
     }
 
     void ToggleWordWrapping(UnityEngine::UI::Button* button, bool enableWordWrapping)
     {
-        #warning not implemented
+        auto textMesh = button->GetComponentInChildren<CurvedTextMeshPro*>();
+        if (textMesh) textMesh->set_enableWordWrapping(enableWordWrapping);
     }
 
     void SetButtonBackgroundActive(UnityEngine::UI::Button* button, bool active)
     {
-        #warning not implemented
+        auto img = ArrayUtil::Last(button->get_gameObject()->GetComponentsInChildren<ImageView*>(true), [](auto x) { 
+            GET_STRING(BG);
+            return x->get_gameObject()->get_name()->Equals(BG_cs);
+        });
+        if (img) img->get_gameObject()->SetActive(active);
     }
 
     void SetButtonUnderlineColor(UnityEngine::UI::Button* button, UnityEngine::Color color)
     {
-        #warning not implemented
+        auto img = ArrayUtil::First(button->get_gameObject()->GetComponentsInChildren<ImageView*>(), [](auto x) { 
+            GET_STRING(Underline);
+            return x->get_gameObject()->get_name()->Equals(Underline_cs);
+        });
+        if (img) img->set_color(color);
     }
 
     void SetButtonBorder(UnityEngine::UI::Button* button, UnityEngine::Color color)
     {
-        #warning not implemented
+        auto img = ArrayUtil::First(button->get_gameObject()->GetComponentsInChildren<ImageView*>(), [](auto x) { 
+            GET_STRING(Border);
+            return x->get_gameObject()->get_name()->Equals(Border_cs);
+        });
+        if (img)
+        {
+            img->set_color0(color);
+            img->set_color1(color);
+            img->set_color(color);
+            img->set_fillMethod(Image::FillMethod::Horizontal);
+            img->SetAllDirty();
+        }
     }
 
 }

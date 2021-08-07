@@ -4,11 +4,15 @@
 #include "UnityEngine/Resources.hpp"
 #include "UnityEngine/Transform.hpp"
 #include "UnityEngine/GameObject.hpp"
+#include "UnityEngine/WaitForEndOfFrame.hpp"
 
 #include "HMUI/CurvedCanvasSettings.hpp"
+#include "HMUI/ScrollView.hpp"
+
 #include "GlobalNamespace/SoloFreePlayFlowCoordinator.hpp"
 #include "GlobalNamespace/PartyFreePlayFlowCoordinator.hpp"
 #include "GlobalNamespace/MultiplayerLevelSelectionFlowCoordinator.hpp"
+#include "GlobalNamespace/LevelParamsPanel.hpp"
 
 #include "Utils/ArrayUtil.hpp"
 #include "Utils/UIUtils.hpp"
@@ -16,6 +20,8 @@
 
 #include "questui/shared/BeatSaberUI.hpp"
 #include "logging.hpp"
+
+#include <map>
 
 using namespace UnityEngine;
 using namespace UnityEngine::UI;
@@ -114,7 +120,7 @@ namespace SongBrowser::UI
 
         RefreshSortButtonUI();
     }
-
+#pragma region creation
     void SongBrowserUI::CreateOuterUI()
     {
         #warning not implemented
@@ -212,32 +218,177 @@ namespace SongBrowser::UI
 
     void SongBrowserUI::CreateSortButtons()
     {
-        #warning not implemented
+        INFO("Create sort buttons...");
+        static constexpr const float sortButtonFontSize = 2.0f;
+        static constexpr const float sortButtonX = -63.0f;
+        static constexpr const float sortButtonWidth = 11.75f;
+        static constexpr const float buttonSpacing = 0.25f;
+        static constexpr const float buttonY = BUTTON_ROW_Y;
+        static constexpr const float buttonHeight = 5.0f;
+
+        std::map<std::string, SongSortMode> sortModes = {
+            {"Title", SongSortMode::Default},
+            {"Author", SongSortMode::Author},
+            {"Newest", SongSortMode::Newest},
+            {"#Plays", SongSortMode::YourPlayCount},
+            {"BPM", SongSortMode::Bpm},
+            {"Time", SongSortMode::Length},
+            {"PP", SongSortMode::PP},
+            {"Stars", SongSortMode::Stars},
+            {"UpVotes", SongSortMode::UpVotes},
+            {"Rating", SongSortMode::Rating},
+            {"Heat", SongSortMode::Heat}
+        };
+
+        sortButtonGroup = List<SongSortButton*>::New_ctor();
+        int i = 0;
+        for (auto& p : sortModes)
+        {
+            float curButtonX = sortButtonX + (sortButtonWidth * i) + (buttonSpacing * i);
+            auto sortButton = *il2cpp_utils::New<SongSortButton*>();
+            sortButton->sortMode = p.second;
+            sortButton->button = UIUtils::CreateUIButton(string_format("Sort%sButton", p.first.c_str()), viewController->get_transform(), "PracticeButton",
+                Vector2(curButtonX, buttonY), Vector2(sortButtonWidth, buttonHeight),
+                [&, sortButton]() -> void {
+                    OnSortButtonClickEvent(sortButton->sortMode);
+                    RefreshOuterUIState(UIState::Main);
+                }, p.first);
+            UIUtils::SetButtonTextSize(sortButton->button, sortButtonFontSize);
+            UIUtils::ToggleWordWrapping(sortButton->button, false);
+
+            sortButtonGroup->Add(sortButton);
+            i++;
+        }
     }
 
     void SongBrowserUI::CreateFilterButtons()
     {
-        #warning not implemented
+        INFO("Creating filter buttons...");
+        static constexpr const float filterButtonFontSize = 2.25f;
+        static constexpr const float filterButtonX = -63.0f;
+        static constexpr const float filterButtonWidth = 14.25f;
+        static constexpr const float buttonSpacing = 0.5f;
+        static constexpr const float buttonY = BUTTON_ROW_Y;
+        static constexpr const float buttonHeight = 5.0f;
+
+        std::map<std::string, SongFilterMode> filterModes = {
+            {"Search", SongFilterMode::Search},
+            {"Ranked", SongFilterMode::Ranked},
+            {"Unranked", SongFilterMode::Unranked},
+            {"Requirements", SongFilterMode::Requirements}
+        };
+
+        filterButtonGroup = List<SongFilterButton*>::New_ctor();
+        int i = 0;
+        for (auto& p : filterModes)
+        {
+            float curButtonX = filterButtonX + (filterButtonWidth * i) + (buttonSpacing * i);
+            auto filterButton = *il2cpp_utils::New<SongFilterButton*>();
+            filterButton->filterMode = p.second;
+            filterButton->button = UIUtils::CreateUIButton(string_format("Filter%sButton", p.first.c_str()), viewController->get_transform(), "PracticeButton",
+                Vector2(curButtonX, buttonY), Vector2(filterButtonWidth, buttonHeight),
+                [&, filterButton]() -> void {
+                    OnFilterButtonClickEvent(filterButton->filterMode);
+                    RefreshOuterUIState(UIState::Main);
+                }, p.first);
+            UIUtils::SetButtonTextSize(filterButton->button, filterButtonFontSize);
+            UIUtils::ToggleWordWrapping(filterButton->button, false);
+
+            if (i == 3)
+            {
+                #warning keeping the req filtering off for now
+                filterButton->button->set_interactable(false);
+            }
+
+            filterButtonGroup->Add(filterButton);
+            i++;
+        }
     }
 
     void SongBrowserUI::CreateFastPageButtons()
     {
-        #warning not implemented
+        INFO("Creating fast scroll button...");
+        pageUpFastButton = UIUtils::CreatePageButton("PageUpFast",
+            beatUi->LevelCollectionNavigationController->get_transform(), "UpButton",
+            Vector2(2.0f, 24.0f), Vector2(8.0f, 8.0f),
+            [&]() -> void {
+                JumpSongList(-1, SEGMENT_PERCENT);
+            }, SpriteUtils::get_DoubleArrow());
+
+        pageDownFastButton = UIUtils::CreatePageButton("PageDownFast",
+            beatUi->LevelCollectionNavigationController->get_transform(), "DownButton",
+            Vector2(2.0f, -24.0f), Vector2(8.0f, 8.0f),
+            [&]() -> void {
+                JumpSongList(1, SEGMENT_PERCENT);
+            }, SpriteUtils::get_DoubleArrow());
     }
 
     void SongBrowserUI::CreateDeleteUI()
     {
-        #warning not implemented
-    }
+        INFO("Creating delete dialog...");
+        deleteDialog = Object::Instantiate<GlobalNamespace::SimpleDialogPromptViewController*>(beatUi->SimpleDialogPromptViewControllerPrefab);
+        deleteDialog->GetComponent<VRUIControls::VRGraphicRaycaster*>()->physicsRaycaster = UIUtils::get_PhysicsRaycasterWithCache();
+        deleteDialog->set_name(il2cpp_utils::newcsstr("DeleteDialogPromptViewController"));
+        deleteDialog->get_gameObject()->SetActive(false);
 
+        INFO("Creating delete button...");
+        deleteButton = UIUtils::CreateIconButton("DeleteLevelButton", reinterpret_cast<UnityEngine::Transform*>(beatUi->ActionButtons), "PracticeButton", SpriteUtils::get_DeleteIcon(), "Delete Level");
+        deleteButton->get_transform()->SetAsFirstSibling();
+
+        std::function<void(void)> fun = std::bind(&SongBrowserUI::HandleDeleteSelectedLevel, this);
+        deleteButton->get_onClick()->AddListener(il2cpp_utils::MakeDelegate<Events::UnityAction*>(classof(Events::UnityAction*), fun));
+    }
+#pragma endregion
     void SongBrowserUI::ModifySongStatsPanel()
     {
-        #warning not implemented
+        // modify stat panel, inject extra row of stats
+        INFO("Resizing Stats Panel...");
+
+        auto statsPanel = beatUi->StandardLevelDetailView->levelParamsPanel;
+        reinterpret_cast<RectTransform*>(statsPanel->get_transform())->Translate(0.0f, 0.05f, 0.0f);
+
+        auto NPS_cs = il2cpp_utils::newcsstr("NPS");
+        auto NotesCount_cs = il2cpp_utils::newcsstr("NotesCount");
+        auto ObstaclesCount_cs = il2cpp_utils::newcsstr("ObstaclesCount");
+        auto BombsCount_cs = il2cpp_utils::newcsstr("BombsCount");
+
+        ppStatButton = reinterpret_cast<UnityEngine::RectTransform*>(UIUtils::CreateStatIcon("PPStatLabel",
+            reinterpret_cast<UnityEngine::Transform*>(ArrayUtil::First(statsPanel->get_gameObject()->GetComponentsInChildren<RectTransform*>(), [NPS_cs](auto x) {
+                return x->get_name()->Equals(NPS_cs); 
+            })),
+            statsPanel->get_transform(),
+            SpriteUtils::get_GraphIcon(),
+            "PP Value"));
+
+        starStatButton = reinterpret_cast<UnityEngine::RectTransform*>(UIUtils::CreateStatIcon("StarStatLabel",
+            reinterpret_cast<UnityEngine::Transform*>(ArrayUtil::First(statsPanel->get_gameObject()->GetComponentsInChildren<RectTransform*>(), [NotesCount_cs](auto x) {
+                return x->get_name()->Equals(NotesCount_cs); 
+            })),
+            statsPanel->get_transform(),
+            SpriteUtils::get_StarFullIcon(),
+            "Star Difficulty Rating"));
+
+        njsStatButton = reinterpret_cast<UnityEngine::RectTransform*>(UIUtils::CreateStatIcon("NoteJumpSpeedLabel",
+            reinterpret_cast<UnityEngine::Transform*>(ArrayUtil::First(statsPanel->get_gameObject()->GetComponentsInChildren<RectTransform*>(), [ObstaclesCount_cs](auto x) {
+                return x->get_name()->Equals(ObstaclesCount_cs); 
+            })),
+            statsPanel->get_transform(),
+            SpriteUtils::get_SpeedIcon(),
+            "Note Jump Speed"));
+
+        noteJumpStartBeatOffsetLabel = reinterpret_cast<UnityEngine::RectTransform*>(UIUtils::CreateStatIcon("NoteJumpStartBeatOffsetLabel",
+            reinterpret_cast<UnityEngine::Transform*>(ArrayUtil::First(statsPanel->get_gameObject()->GetComponentsInChildren<RectTransform*>(), [BombsCount_cs](auto x) {
+                return x->get_name()->Equals(BombsCount_cs); 
+            })),
+            statsPanel->get_transform(),
+            SpriteUtils::get_NoteStartOffsetIcon(),
+                "Note Jump Start Beat Offset"));
     }
 
     void SongBrowserUI::ResizeSongUI()
     {
-        #warning not implemented
+        // shrink play button container
+        beatUi->ActionButtons->set_localScale(Vector3(0.875f, 0.875f, 0.875f));
     }
 
     void SongBrowserUI::InstallHandlers()
@@ -248,27 +399,76 @@ namespace SongBrowser::UI
     void SongBrowserUI::OnDidFavoriteToggleChangeEvent(GlobalNamespace::StandardLevelDetailView* arg1, UnityEngine::UI::Toggle* arg2)
     {
         #warning not implemented
+        if (config.currentLevelCategoryName == "Favorites")
+        {
+            // TODO - still scrolls to top in this view
+        }
+        else
+        {
+            StartCoroutine(reinterpret_cast<System::Collections::IEnumerator*>(custom_types::Helpers::CoroutineHelper::New(AsyncForceScrollToPosition(model->lastScrollIndex))));
+        }
     }
     custom_types::Helpers::Coroutine SongBrowserUI::AsyncForceScrollToPosition(float position)
     {
-        #warning not implemented
+        INFO("Will attempt force scrolling to position [%.2f] at end of frame.", position);
+
+        co_yield reinterpret_cast<System::Collections::IEnumerator*>(UnityEngine::WaitForEndOfFrame::New_ctor());
+
+        auto tv = beatUi->LevelCollectionTableView->tableView;
+        auto sv = tv->scrollView;
+        INFO("Force scrolling to %.2f", position);
+        sv->ScrollTo(position, false);
         co_return;
     }
 
     custom_types::Helpers::Coroutine SongBrowserUI::AsyncWaitForSongUIUpdate()
     {
-        #warning not implemented
+        if (asyncUpdating || !uiCreated || !model->get_sortWasMissingData())
+            co_return;
+
+        asyncUpdating = true;
+
+        while (beatUi && (
+               beatUi->LevelSelectionNavigationController->get_isInTransition() ||
+               beatUi->LevelDetailViewController->get_isInTransition() ||
+               !beatUi->LevelSelectionNavigationController->get_isInViewControllerHierarchy() ||
+               !beatUi->LevelDetailViewController->get_isInViewControllerHierarchy() ||
+               !beatUi->LevelSelectionNavigationController->get_isActiveAndEnabled() ||
+               !beatUi->LevelDetailViewController->get_isActiveAndEnabled()))
+        {
+            co_yield nullptr;
+        }
+        #warning no check for if data available
+        if (NeedsScoreSaberData(config.sortMode))// && SongDataCore.Plugin.Songs.IsDataAvailable())
+        {
+            ProcessSongList();
+            RefreshSongUI();
+        }
+
+        asyncUpdating = false;
         co_return;
     }
 
     void SongBrowserUI::RefreshSongUI(bool scrollToLevel)
     {
-        #warning not implemented
+        if (!uiCreated)
+            return;
+
+        RefreshSongList();
+        RefreshSortButtonUI();
+        
+        if (!scrollToLevel)
+            beatUi->ScrollToLevelByRow(0);
+
+        RefreshQuickScrollButtons();
+        RefreshCurrentSelectionDisplay();
     }
 
     void SongBrowserUI::ProcessSongList()
     {
-        #warning not implemented
+        if (!uiCreated)
+            return;
+        model->ProcessSongList(lastLevelCollection, beatUi->LevelSelectionNavigationController);
     }
 
     void SongBrowserUI::CancelFilter()

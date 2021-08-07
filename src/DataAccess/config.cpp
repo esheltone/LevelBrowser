@@ -15,7 +15,21 @@ Configuration& getConfig()
 #define ADD_STR(str) doc.AddMember(#str, rapidjson::Value(config.str.c_str(), config.str.size(), allocator), allocator)
 #define ADD_VAL(val) doc.AddMember(#val, config.val, allocator)
 
-
+bool NeedsScoreSaberData(const SongSortMode& mode)
+{
+    switch (mode)
+    {
+        case SongSortMode::UpVotes: [[fallthrough]];
+        case SongSortMode::Rating: [[fallthrough]];
+        case SongSortMode::PlayCount: [[fallthrough]];
+        case SongSortMode::Heat: [[fallthrough]];
+        case SongSortMode::PP: [[fallthrough]];
+        case SongSortMode::Stars:
+            return true;
+        default:
+            return false;
+    }
+}
 void SaveConfig()
 {
     INFO("Saving Configuration...");

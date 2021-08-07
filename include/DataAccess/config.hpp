@@ -53,5 +53,6 @@ struct config_t {
 
 extern config_t config;
 
+bool NeedsScoreSaberData(const SongSortMode& mode);
 bool LoadConfig();
 void SaveConfig();

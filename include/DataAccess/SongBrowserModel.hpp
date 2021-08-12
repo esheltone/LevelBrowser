@@ -11,6 +11,8 @@
 #include "GlobalNamespace/CustomPreviewBeatmapLevel.hpp"
 #include "GlobalNamespace/LevelSelectionNavigationController.hpp"
 
+#include "System/DateTime.hpp"
+
 #include <string_view>
 #include <string>
 #include <map>
@@ -18,14 +20,19 @@
 DECLARE_CLASS_CODEGEN(SongBrowser, SongBrowserModel, Il2CppObject,
     DECLARE_CTOR(ctor);
     DECLARE_INSTANCE_FIELD(GlobalNamespace::BeatmapCharacteristicSO*, currentBeatmapCharacteristicSO);
-    
+    DECLARE_INSTANCE_FIELD(System::DateTime, EPOCH);
+    DECLARE_INSTANCE_FIELD(double, customSongDirLastWriteTime);
+
     public:
         static constexpr const char* filteredSongsCollectionName = "custom_levelpack_SongBrowser_FilteredSongPack";
         static constexpr const char* playlistSongsCollectionName = "SongBrowser_PlaylistPack";
         
-        static std::function<GlobalNamespace::IAnnotatedBeatmapLevelCollection*(List<GlobalNamespace::IPreviewBeatmapLevel*>*)> customFilterHandler;
+        static std::function<List<GlobalNamespace::IPreviewBeatmapLevel*>*(List<GlobalNamespace::IPreviewBeatmapLevel*>*)> customFilterHandler;
         static std::function<List<GlobalNamespace::IPreviewBeatmapLevel*>*(List<GlobalNamespace::IPreviewBeatmapLevel*>*)> customSortHandler;
-        static UnorderedEventCallback<std::map<std::string, GlobalNamespace::CustomPreviewBeatmapLevel*>> didFinishProcessingSongs;
+        static UnorderedEventCallback<const std::vector<GlobalNamespace::CustomPreviewBeatmapLevel*>&> didFinishProcessingSongs;
+
+        std::map<std::string, double> cachedLastWriteTimes = {};
+        std::map<std::string, int> levelIdToPlayCount = {};
 
         bool get_sortWasMissingData();
         void Init();
@@ -39,6 +46,7 @@ DECLARE_CLASS_CODEGEN(SongBrowser, SongBrowserModel, Il2CppObject,
         float lastScrollIndex = 0.0f;
         std::string lastSelectedLevelId = "";
     private:
+        
         /* -- Filtering --*/
         List<GlobalNamespace::IPreviewBeatmapLevel*>* FilterFavorites(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels);
         List<GlobalNamespace::IPreviewBeatmapLevel*>* FilterSearch(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels);

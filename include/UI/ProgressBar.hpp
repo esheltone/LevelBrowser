@@ -37,7 +37,7 @@ DECLARE_CLASS_CODEGEN(SongBrowser::UI, ProgressBar, UnityEngine::MonoBehaviour,
 
         static inline Sombrero::FastVector2 CanvasSize = Sombrero::FastVector2(200, 50);
 
-        static constexpr const char* AuthorNameText = "Halsafar";
+        static constexpr const char* AuthorNameText = "RedBrumbler";
         static constexpr const float AuthorNameFontSize = 7.0f;
         static inline Sombrero::FastVector2 AuthorNamePosition = Sombrero::FastVector2(10, 31);
 
@@ -54,7 +54,7 @@ DECLARE_CLASS_CODEGEN(SongBrowser::UI, ProgressBar, UnityEngine::MonoBehaviour,
         static inline Sombrero::FastColor BackgroundColor = Sombrero::FastColor(0, 0, 0, 0.2f);
 
         bool showingMessage = false;
-
+        bool inited = false;
     private:
         void SongLoaderOnLoadingStartedEvent();
         void SongBrowserFinishedProcessingSongs(const std::vector<GlobalNamespace::CustomPreviewBeatmapLevel*>& levels);

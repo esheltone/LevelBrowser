@@ -324,5 +324,69 @@ namespace UIUtils
             img->SetAllDirty();
         }
     }
+    /*
+    UnityEngine::GameObject* CreateModalKeyboard(UnityEngine::Transform* parent)
+    {
+        auto gameObject = CreateModal(parent); 
+        // yoinked from https://github.com/monkeymanboy/BeatSaberMarkupLanguage/blob/master/BeatSaberMarkupLanguage/Tags/ModalKeyboardTag.cs
+        GameObject gameObject = base.CreateObject(parent);
+        RectTransform windowTransform = gameObject.transform as RectTransform;
+        windowTransform.name = "BSMLModalKeyboard";
+        windowTransform.sizeDelta = new Vector2(135, 75);
 
+        RectTransform parentTransform = new GameObject("KeyboardParent").AddComponent<RectTransform>();
+        parentTransform.SetParent(gameObject.transform, false);
+
+        KEYBOARD keyboard = new KEYBOARD(parentTransform, KEYBOARD.QWERTY, true, 4, -12);
+        parentTransform.localScale *= 1.4f;
+
+        ModalKeyboard modalKeyboard = gameObject.AddComponent<ModalKeyboard>();
+        modalKeyboard.keyboard = keyboard;
+        modalKeyboard.modalView = gameObject.GetComponent<ModalView>();
+        keyboard.EnterPressed += delegate (string value) { modalKeyboard.OnEnter(value); };
+
+        return gameObject;
+    }
+    
+    HMUI::ModalView* modalViewTemplate = nullptr;
+    UnityEngine::GameObject* CreateModal(UnityEngine::Transform* parent)
+    {
+         //yoinked from https://github.com/monkeymanboy/BeatSaberMarkupLanguage/blob/master/BeatSaberMarkupLanguage/Tags/ModalTag.cs
+         if (modalViewTemplate == null)
+            modalViewTemplate = Resources.FindObjectsOfTypeAll<HMUI::ModalView*>().First(x => x.name == "DropdownTableView");
+         ModalView modalView = Object.Instantiate(modalViewTemplate, parent);
+         modalView.SetField("_presentPanelAnimations", modalViewTemplate.GetField<PanelAnimationSO, ModalView>("_presentPanelAnimations"));
+         modalView.SetField("_dismissPanelAnimation", modalViewTemplate.GetField<PanelAnimationSO, ModalView>("_dismissPanelAnimation"));
+         modalView.SetField("_container", BeatSaberUI.DiContainer);
+         modalView.GetComponent<VRGraphicRaycaster>().SetField("_physicsRaycaster", BeatSaberUI.PhysicsRaycasterWithCache);
+
+         Object.DestroyImmediate(modalView.GetComponent<TableView>());
+         Object.DestroyImmediate(modalView.GetComponent<ScrollRect>());
+         Object.DestroyImmediate(modalView.GetComponent<ScrollView>());
+         Object.DestroyImmediate(modalView.GetComponent<EventSystemListener>());
+         //GameObject.DestroyImmediate(modalView.GetComponent<Touchable>());
+         //modalView.gameObject.AddComponent<CurvedCanvasSettings>();
+         //modalView.gameObject.AddComponent<EventSystemListener>();
+
+         foreach (RectTransform child in modalView.transform)
+         {
+             if (child.name == "BG")
+             {
+                 child.anchoredPosition = Vector2.zero;
+                 child.sizeDelta = Vector2.zero;
+             }
+             else
+             {
+                 Object.Destroy(child.gameObject);
+             }
+         }
+
+         RectTransform rectTransform = modalView.transform as RectTransform;
+         rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+         rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+         rectTransform.sizeDelta = new Vector2(0, 0);
+
+         return modalView.gameObject;
+    }
+    */
 }

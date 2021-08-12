@@ -57,5 +57,3 @@ bool LoadConfig();
 void SaveConfig();
 
 bool NeedsScoreSaberData(const SongSortMode& mode);
-std::string SongFilterModeToString(const SongFilterMode& mode);
-std::string SongSortModeToString(const SongSortMode& mode);

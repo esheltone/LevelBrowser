@@ -68,6 +68,8 @@ DECLARE_CLASS_CODEGEN(SongBrowser::UI, SongBrowserUI, UnityEngine::MonoBehaviour
     
     DECLARE_INSTANCE_FIELD(SongBrowser::SongBrowserModel*, model);
     
+    DECLARE_CTOR(ctor);
+    
     bool uiCreated = false;
     UIState currentUiState = UIState::Disabled;
     bool asyncUpdating = false;
@@ -117,7 +119,7 @@ DECLARE_CLASS_CODEGEN(SongBrowser::UI, SongBrowserUI, UnityEngine::MonoBehaviour
         void HandleDeleteSelectedLevel();
         void ShowSearchKeyboard();
         void ShowInputKeyboard(std::function<void(Il2CppString*)> enterPressedHandler);
-        void SearchViewControllerSearchButtonPressed(Il2CppString* searchFor);
+        void SearchViewControllerSearchButtonPressed(std::string searchFor);
         void CreatePlaylistButtonPressed(Il2CppString* playlistName);
         void JumpSongList(int numJumps, float segmentPercent);
         void RefreshScoreSaberData(GlobalNamespace::IPreviewBeatmapLevel* level);

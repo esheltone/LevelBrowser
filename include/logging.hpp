@@ -8,9 +8,8 @@ namespace SongBrowser
     {
         public:
             static Logger& getLogger();
-            static LoggerContextObject& getContextLogger(const std::string_view& context);
+            static LoggerContextObject& getContextLogger(const char* fun, const char* file, int line);
     };
 }
-
-#define INFO(...) SongBrowser::Logging::getContextLogger(__FILE__).info(__VA_ARGS__)
-#define ERROR(...) SongBrowser::Logging::getContextLogger(__FILE__).error(__VA_ARGS__)
+#define INFO(...) ::SongBrowser::Logging::getContextLogger(__PRETTY_FUNCTION__, __FILE__, __LINE__).info(__VA_ARGS__)
+#define ERROR(...) ::SongBrowser::Logging::getContextLogger(__PRETTY_FUNCTION__, __FILE__, __LINE__).error(__VA_ARGS__)

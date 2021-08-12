@@ -10,22 +10,32 @@ DEFINE_TYPE(SongBrowser, SongBrowserApplication);
 
 namespace SongBrowser
 {
+    SongBrowser::UI::ProgressBar* SongBrowserApplication::mainProgressBar = nullptr;
+    SongBrowser::SongBrowserApplication* SongBrowserApplication::instance = nullptr;
+
     void SongBrowserApplication::OnLoad()
     {
         UnityEngine::GameObject::New_ctor(il2cpp_utils::createcsstr("Beat Saber SongBrowser Plugin"))->AddComponent<SongBrowserApplication*>();
-        mainProgressBar() = SongBrowser::UI::ProgressBar::Create();
+        //mainProgressBar = SongBrowser::UI::ProgressBar::Create();
         INFO("Application load complete!");
     }
 
     void SongBrowserApplication::Awake()
     {
-        instance() = this;
+        INFO("Awake");
+        instance = this;
+        INFO("instance: %p", instance);
 
         songBrowserModel = il2cpp_utils::New<SongBrowserModel*>().value();
+        INFO("songBrowserModel: %p", songBrowserModel);
+
         songBrowserModel->Init();
+        INFO("get_gameObject: %p", get_gameObject());
 
         songBrowserUI = get_gameObject()->AddComponent<UI::SongBrowserUI*>();
+        INFO("songBrowserUI: %p", songBrowserUI);
         songBrowserUI->model = songBrowserModel;
+        INFO("songBrowserUI->model: %p", songBrowserUI->model);
     }
 
     void SongBrowserApplication::Start()
@@ -45,7 +55,9 @@ namespace SongBrowser
 
     void SongBrowserApplication::HandleSoloModeSelection()
     {
+        INFO("Solo Mode");
         HandleModeSelection(GlobalNamespace::MainMenuViewController::MenuButton::SoloFreePlay);
+        INFO("Show %p", songBrowserUI);
         songBrowserUI->Show();    
     }
 
@@ -69,16 +81,16 @@ namespace SongBrowser
 
     void SongBrowserApplication::HandleModeSelection(GlobalNamespace::MainMenuViewController::MenuButton mode)
     {
+        INFO("Creating UI");
         songBrowserUI->CreateUI(mode);
 
         if (!hasShownProgressBar)
         {
-            mainProgressBar()->ShowMessage("");
+            INFO("Showing progress bar");
+            //mainProgressBar->ShowMessage("");
             hasShownProgressBar = true;
         }
     }
-
-
 
     custom_types::Helpers::Coroutine SongBrowserApplication::UpdateBrowserUI()
     {

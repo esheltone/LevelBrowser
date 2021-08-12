@@ -10,10 +10,10 @@ namespace SongBrowser
         static Logger* logger = new Logger({ID, VERSION}, LoggerOptions(false, true));
         return *logger;
     }
-
-    LoggerContextObject& Logging::getContextLogger(const std::string_view& context)
+    
+    LoggerContextObject& Logging::getContextLogger(const char* func, const char* file, int line)
     {
-        std::string contextString(context);
+        std::string contextString(string_format("%s:%i", file, line));
         std::map<std::string, LoggerContextObject>::iterator it = contextLoggers.find(contextString);
         if (it != contextLoggers.end())
         {

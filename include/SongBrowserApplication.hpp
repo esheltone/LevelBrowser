@@ -45,17 +45,17 @@ static type_& name_() { \
 }
 
 DECLARE_CLASS_CODEGEN(SongBrowser, SongBrowserApplication, UnityEngine::MonoBehaviour,
-    SELF_DECLARE_STATIC_FIELD(SongBrowser::SongBrowserApplication*, instance);
+    //SELF_DECLARE_STATIC_FIELD(SongBrowser::SongBrowserApplication*, instance);
 
     DECLARE_INSTANCE_FIELD(SongBrowser::UI::SongBrowserUI*, songBrowserUI);
     DECLARE_INSTANCE_FIELD(SongBrowser::SongBrowserModel*, songBrowserModel);
 
-    DECLARE_STATIC_FIELD(SongBrowser::UI::ProgressBar*, mainProgressBar);
+    //DECLARE_STATIC_FIELD(SongBrowser::UI::ProgressBar*, mainProgressBar);
 
     DECLARE_INSTANCE_FIELD(bool, hasShownProgressBar);
     
     public:
-        void OnLoad();
+        static void OnLoad();
 
     DECLARE_INSTANCE_METHOD(void, Awake);
     DECLARE_INSTANCE_METHOD(void, Start);
@@ -63,7 +63,8 @@ DECLARE_CLASS_CODEGEN(SongBrowser, SongBrowserApplication, UnityEngine::MonoBeha
         /* private void OnScoreSaberDataDownloaded() */
         void OnSongLoaderLoadedSongs(const std::vector<GlobalNamespace::CustomPreviewBeatmapLevel*>& levels);
     public:
-
+        static SongBrowser::UI::ProgressBar* mainProgressBar;
+        static SongBrowser::SongBrowserApplication* instance;
         void HandleSoloModeSelection();
         void HandlePartyModeSelection();
         void HandleCampaignModeSelection();

@@ -57,6 +57,9 @@ DECLARE_CLASS_CODEGEN(SongBrowser::DataAccess, BeatSaberUIController, Il2CppObje
     DECLARE_CTOR(ctor, GlobalNamespace::LevelSelectionFlowCoordinator* flowCoordinator);
     
     private:
+        bool detectedTwitchPluginQueue = false;
+        bool checkedForTwitchPlugin = false;
+
         GlobalNamespace::IBeatmapLevelPack* GetCurrentSelectedLevelPack();
         GlobalNamespace::IPlaylist* GetCurrentSelectedPlaylist();
     public:

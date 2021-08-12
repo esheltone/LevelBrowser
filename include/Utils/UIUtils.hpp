@@ -20,6 +20,11 @@
 #include <string_view>
 #include <functional>
 
+static Logger& getUIUtilLogger()
+{
+    static Logger* logger = new Logger({ID, VERSION}, LoggerOptions(false, true));
+    return *logger;
+} 
 
 namespace UIUtils
 {   
@@ -33,7 +38,7 @@ namespace UIUtils
     T CreateViewController(std::string_view name)
     {
         auto typearr = Array<System::Type*>::NewLength(3);
-        typearr->values[0] = il2cpp_utils::GetSystemType(classof(VRUIControls::PhysicsRaycasterWithCache*));
+        typearr->values[0] = il2cpp_utils::GetSystemType(classof(VRUIControls::VRGraphicRaycaster*));
         typearr->values[1] = il2cpp_utils::GetSystemType(classof(UnityEngine::CanvasGroup*));
         typearr->values[2] = il2cpp_utils::GetSystemType(classof(T));
 
@@ -54,11 +59,11 @@ namespace UIUtils
     T CreateCurvedViewController(std::string_view name, float curveRadius)
     {
         auto typearr = Array<System::Type*>::NewLength(4);
-        typearr->values[0] = il2cpp_utils::GetSystemType(classof(VRUIControls::PhysicsRaycasterWithCache*));
+        typearr->values[0] = il2cpp_utils::GetSystemType(classof(VRUIControls::VRGraphicRaycaster*));
         typearr->values[1] = il2cpp_utils::GetSystemType(classof(HMUI::CurvedCanvasSettings*));
         typearr->values[2] = il2cpp_utils::GetSystemType(classof(UnityEngine::CanvasGroup*));
         typearr->values[3] = il2cpp_utils::GetSystemType(classof(T));
-
+        
         T vc = UnityEngine::GameObject::New_ctor(il2cpp_utils::newcsstr(classof(T)->klass->name), typearr)->template GetComponent<T>();
         vc->template GetComponent<VRUIControls::VRGraphicRaycaster*>()->physicsRaycaster = get_PhysicsRaycasterWithCache();
 
@@ -92,4 +97,7 @@ namespace UIUtils
     void SetButtonBackgroundActive(UnityEngine::UI::Button* button, bool active);
     void SetButtonUnderlineColor(UnityEngine::UI::Button* button, UnityEngine::Color color);
     void SetButtonBorder(UnityEngine::UI::Button* button, UnityEngine::Color color);
+
+    UnityEngine::GameObject* CreateModalKeyboard(UnityEngine::Transform* parent);
+    UnityEngine::GameObject* CreateModal(UnityEngine::Transform* parent);
 }

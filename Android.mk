@@ -43,24 +43,24 @@ LOCAL_MODULE := custom-types
 LOCAL_EXPORT_C_INCLUDES := extern/custom-types
 LOCAL_SRC_FILES := extern/libcustom-types.so
 include $(PREBUILT_SHARED_LIBRARY)
-# Creating prebuilt for dependency: questui - version: 0.10.1
+# Creating prebuilt for dependency: questui - version: 0.10.2
 include $(CLEAR_VARS)
 LOCAL_MODULE := questui
 LOCAL_EXPORT_C_INCLUDES := extern/questui
 LOCAL_SRC_FILES := extern/libquestui.so
 include $(PREBUILT_SHARED_LIBRARY)
-# Creating prebuilt for dependency: songloader - version: 0.6.1
+# Creating prebuilt for dependency: songloader - version: 0.6.2
 include $(CLEAR_VARS)
 LOCAL_MODULE := songloader
 LOCAL_EXPORT_C_INCLUDES := extern/songloader
 LOCAL_SRC_FILES := extern/libsongloader.so
 include $(PREBUILT_SHARED_LIBRARY)
-# Creating prebuilt for dependency: libcryptopp - version: 8.5.0
+# Creating prebuilt for dependency: songdatacore - version: 0.2.5
 include $(CLEAR_VARS)
-LOCAL_MODULE := cryptopp
-LOCAL_EXPORT_C_INCLUDES := extern/libcryptopp
-LOCAL_SRC_FILES := extern/libcryptopp.a
-include $(PREBUILT_STATIC_LIBRARY)
+LOCAL_MODULE := song_data_core_rust
+LOCAL_EXPORT_C_INCLUDES := extern/songdatacore
+LOCAL_SRC_FILES := extern/libsong_data_core_rust.so
+include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := songbrowser
@@ -73,7 +73,7 @@ LOCAL_SHARED_LIBRARIES += codegen_0_12_5
 LOCAL_SHARED_LIBRARIES += custom-types
 LOCAL_SHARED_LIBRARIES += questui
 LOCAL_SHARED_LIBRARIES += songloader
-LOCAL_STATIC_LIBRARIES += cryptopp
+LOCAL_SHARED_LIBRARIES += song_data_core_rust
 LOCAL_LDLIBS += -llog -lz
 LOCAL_CFLAGS += -DID='"SongBrowser"' -DVERSION='"0.1.0"' -I'./shared' -I'./extern' -Wno-inaccessible-base -O2
 LOCAL_C_INCLUDES += ./include ./src ./extern ./extern/codegen/include ./extern/libil2cpp/il2cpp/libil2cpp ./shared

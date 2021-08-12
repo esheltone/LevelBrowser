@@ -44,6 +44,7 @@ out/
 ndkpath.txt
 *.zip
 *.qmod
+*.txt
 # Other files
 Android.mk
 *.log

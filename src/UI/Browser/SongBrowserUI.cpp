@@ -30,6 +30,7 @@
 #include "Utils/UIUtils.hpp"
 #include "Utils/SpriteUtils.hpp"
 #include "Utils/EnumToStringUtils.hpp"
+#include "Utils/SongDataCoreUtils.hpp"
 
 #include "questui/shared/BeatSaberUI.hpp"
 #include "logging.hpp"
@@ -574,7 +575,7 @@ namespace SongBrowser::UI
         }
 
         #warning no check for if data available
-        if (NeedsScoreSaberData(config.sortMode) && false)// && SongDataCore.Plugin.Songs.IsDataAvailable())
+        if (NeedsScoreSaberData(config.sortMode) && false)// && SongDataCoreUtils::.Songs.IsDataAvailable())
         {
             ProcessSongList();
             RefreshSongUI();
@@ -739,7 +740,7 @@ namespace SongBrowser::UI
         INFO("Sort button - {%d} - pressed.", sortMode);
 
         #warning no songdatacore so no check for data available
-        if (NeedsScoreSaberData(sortMode) && true)// && !SongDataCore.Plugin.Songs.IsDataAvailable()))
+        if (NeedsScoreSaberData(sortMode) && true)// && !SongDataCoreUtils::.Songs.IsDataAvailable()))
         {
             INFO("Data for sort type is not available.");
             return;
@@ -1081,7 +1082,53 @@ namespace SongBrowser::UI
 
     void SongBrowserUI::RefreshScoreSaberData(GlobalNamespace::IPreviewBeatmapLevel* level)
     {
-        #warning not implemented
+        if (!SongDataCoreUtils::get_loaded()) return;
+
+        auto difficulty = beatUi->LevelDifficultyViewController->get_selectedDifficulty();
+        auto diffVal = difficulty.value;
+        std::string difficultyString = BeatmapDifficultyToString(diffVal);
+        if (difficultyString == "ExpertPlus")
+        {
+            difficultyString = "Expert+";
+        }
+
+        INFO("%s", difficultyString.c_str());
+
+        // Check if we have data for this song
+        INFO("Checking if have info for song %s", to_utf8(csstrtostr(level->get_songName())).c_str());
+        
+        auto levelIDcs = level->get_levelID();
+        std::string levelID = levelIDcs ? to_utf8(csstrtostr(levelIDcs)) : "";
+        auto hash = SongBrowserModel::GetSongHash(levelID);
+        // BeatStarSong*, if null not found 
+        auto song = SongDataCoreUtils::GetSong(hash);
+        if (song)
+        {
+            // BeatStarSongDifficultyStats*, null if nonexistent
+            auto songDifficulty = SongDataCoreUtils::GetDiff(song, diffVal);
+            if (songDifficulty)
+            {
+                INFO("Display pp for song.");
+                // no pp cause songdatacore no pp
+                double pp = 0.0;//songDifficulty->pp;
+                double star = songDifficulty->stars;
+
+                UIUtils::SetStatButtonText(ppStatButton, string_format("%.1f", pp));
+                UIUtils::SetStatButtonText(starStatButton, string_format("%.1f", star));
+            }
+            else
+            {
+                UIUtils::SetStatButtonText(ppStatButton, "NA");
+                UIUtils::SetStatButtonText(starStatButton, "NA");
+            }
+        }
+        else
+        {
+            UIUtils::SetStatButtonText(ppStatButton, "NA");
+            UIUtils::SetStatButtonText(starStatButton, "NA");
+        }
+
+        INFO("Done refreshing score saber stats.");
     }
 
     void SongBrowserUI::RefreshNoteJumpSpeed(float noteJumpMovementSpeed, float noteJumpStartBeatOffset)
@@ -1219,7 +1266,7 @@ namespace SongBrowser::UI
         {
             auto sortButton = sortButtonGroup->items->values[i];
             #warning still no song data core
-            if (NeedsScoreSaberData(sortButton->sortMode) && true)// && !SongDataCore.Plugin.Songs.IsDataAvailable())
+            if (NeedsScoreSaberData(sortButton->sortMode) && true)// && !SongDataCoreUtils::.Songs.IsDataAvailable())
                 UIUtils::SetButtonUnderlineColor(sortButton->button, {0.5f, 0.5f, 0.5f, 1.0f});
             else
                 UIUtils::SetButtonUnderlineColor(sortButton->button, {1.0f, 1.0f, 1.0f, 1.0f});

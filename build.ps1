@@ -42,7 +42,7 @@ if (-not $coreCount)
 
 $msg = "Building with " + $coreCount + " Cores!"
 echo $msg
-if ($p1 -eq "clean")
+if (($p1 -eq "clean") -and (Test-Path ./obj))
 {
     echo "Removing obj dir for clean build"
     remove-item ./obj -Recurse

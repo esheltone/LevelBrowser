@@ -17,6 +17,8 @@
 
 #include "SongBrowserApplication.hpp"
 #include "Utils/EventUtils.hpp"
+#include "Utils/SongDataCoreUtils.hpp"
+
 
 ModInfo modInfo = {ID, VERSION};
 
@@ -80,6 +82,7 @@ extern "C" void load()
     Hooks::InstallHooks(SongBrowser::Logging::getLogger());
 
     custom_types::Register::AutoRegister();    
-    
+
+    SongDataCoreUtils::Init();
     INFO("Loaded songbrowser!");
 }

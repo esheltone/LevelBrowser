@@ -7,3 +7,5 @@ std::string SongSortModeToString(const SongSortMode& mode);
 
 std::string LevelCategoryToString(int cat);
 int StringToLevelCategory(std::string_view str);
+
+std::string BeatmapDifficultyToString(int value);

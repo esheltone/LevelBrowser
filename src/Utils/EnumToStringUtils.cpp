@@ -66,3 +66,16 @@ int StringToLevelCategory(std::string_view str)
         default: return 0;
     }
 }
+
+std::string BeatmapDifficultyToString(int value)
+{
+    switch (value)
+    {
+        case 0: return "Easy";
+	    case 1: return "Normal";
+	    case 2: return "Hard";
+	    case 3: return "Expert";
+	    case 4: return "ExpertPlus";
+        default: return "Normal";
+    }
+}

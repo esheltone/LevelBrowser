@@ -4,6 +4,7 @@
 #include "logging.hpp"
 
 #include "songloader/shared/API.hpp"
+#include "Utils/SpriteUtils.hpp"
 
 DEFINE_TYPE(SongBrowser, SongBrowserApplication);
 
@@ -17,6 +18,7 @@ namespace SongBrowser
     {
         UnityEngine::GameObject::New_ctor(il2cpp_utils::createcsstr("Beat Saber SongBrowser Plugin"))->AddComponent<SongBrowserApplication*>();
         //mainProgressBar = SongBrowser::UI::ProgressBar::Create();
+        SpriteUtils::Init();
         INFO("Application load complete!");
     }
 

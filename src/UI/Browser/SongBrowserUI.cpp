@@ -34,7 +34,7 @@
 #include "questui/shared/BeatSaberUI.hpp"
 #include "logging.hpp"
 
-#include <map>
+#include <unordered_map>
 #include "System/Enum.hpp"
 
 #include "sombrero/shared/RandomUtils.hpp"
@@ -313,7 +313,7 @@ namespace SongBrowser::UI
         static constexpr const float buttonY = BUTTON_ROW_Y;
         static constexpr const float buttonHeight = 5.0f;
 
-        std::map<std::string, SongSortMode> sortModes = {
+        std::unordered_map<std::string, SongSortMode> sortModes = {
             {"Title", SongSortMode::Default},
             {"Author", SongSortMode::Author},
             {"Newest", SongSortMode::Newest},
@@ -358,7 +358,7 @@ namespace SongBrowser::UI
         static constexpr const float buttonY = BUTTON_ROW_Y;
         static constexpr const float buttonHeight = 5.0f;
 
-        std::map<std::string, SongFilterMode> filterModes = {
+        std::unordered_map<std::string, SongFilterMode> filterModes = {
             {"Search", SongFilterMode::Search},
             {"Ranked", SongFilterMode::Ranked},
             {"Unranked", SongFilterMode::Unranked},
@@ -369,10 +369,14 @@ namespace SongBrowser::UI
         int i = 0;
         for (auto& p : filterModes)
         {
+            INFO("Creating button %s", p.first.c_str());
+
             float curButtonX = filterButtonX + (filterButtonWidth * i) + (buttonSpacing * i);
 
             if (i == 0)
             {
+                // skip search for now
+                continue;
                 QuestUI::BeatSaberUI::CreateStringSetting(viewController->get_transform(), "Search", "", Vector2(curButtonX, buttonY), [&](std::string value){
                     if (value.back() == '\n')
                     {
@@ -570,7 +574,7 @@ namespace SongBrowser::UI
         }
 
         #warning no check for if data available
-        if (NeedsScoreSaberData(config.sortMode))// && SongDataCore.Plugin.Songs.IsDataAvailable())
+        if (NeedsScoreSaberData(config.sortMode) && false)// && SongDataCore.Plugin.Songs.IsDataAvailable())
         {
             ProcessSongList();
             RefreshSongUI();
@@ -735,7 +739,7 @@ namespace SongBrowser::UI
         INFO("Sort button - {%d} - pressed.", sortMode);
 
         #warning no songdatacore so no check for data available
-        if (NeedsScoreSaberData(sortMode))// && !SongDataCore.Plugin.Songs.IsDataAvailable()))
+        if (NeedsScoreSaberData(sortMode) && true)// && !SongDataCore.Plugin.Songs.IsDataAvailable()))
         {
             INFO("Data for sort type is not available.");
             return;
@@ -829,7 +833,13 @@ namespace SongBrowser::UI
             return;
         }
 
-        model->lastSelectedLevelId = to_utf8(csstrtostr(level->get_levelID()));
+        if (!model)
+        {
+            ERROR("No model?");
+            return;
+        }
+
+        model->lastSelectedLevelId = level->get_levelID() ? to_utf8(csstrtostr(level->get_levelID())) : "";
         HandleDidSelectLevelRow(level);
     }
 
@@ -1040,7 +1050,7 @@ namespace SongBrowser::UI
     void SongBrowserUI::JumpSongList(int numJumps, float segmentPercent)
     {
         auto levels = beatUi->GetCurrentLevelCollectionLevels();
-        if (levels)
+        if (!levels)
             return;
 
         int totalSize = levels->Length();
@@ -1104,7 +1114,7 @@ namespace SongBrowser::UI
     {
         if (!deleteButton)
             return;
-        deleteButton->get_gameObject()->SetActive(levelId->get_Length() >= 32);
+        deleteButton->get_gameObject()->SetActive(levelId ? levelId->get_Length() >= 32 : 0);
     }
 
     void SongBrowserUI::SetVisibility(bool visible)
@@ -1145,6 +1155,20 @@ namespace SongBrowser::UI
                 break;
         }
 
+        
+        INFO("sortButtons: %d", sortButtons);
+        INFO("filterButtons: %d", filterButtons);
+        INFO("outerButtons: %d", outerButtons);
+        INFO("clearButton: %d", clearButton);
+
+        INFO("sortByButton: %p", sortByButton);
+        INFO("sortByDisplay: %p", sortByDisplay);
+        INFO("filterByButton: %p", filterByButton);
+        INFO("filterByDisplay: %p", filterByDisplay);
+        INFO("clearSortFilterButton: %p", clearSortFilterButton);
+        INFO("randomButton: %p", randomButton);
+        INFO("playlistExportButton: %p", playlistExportButton);
+        
         int sortLength = sortButtonGroup->get_Count();
         for (int i = 0; i < sortLength; i++)
             sortButtonGroup->items->values[i]->button->get_gameObject()->SetActive(sortButtons);
@@ -1189,13 +1213,13 @@ namespace SongBrowser::UI
     {
         if (!uiCreated)
             return;
-
+        INFO("Refreshing song sort UI");
         int length = sortButtonGroup->get_Count();
         for (int i = 0; i < length; i++)
         {
             auto sortButton = sortButtonGroup->items->values[i];
             #warning still no song data core
-            if (NeedsScoreSaberData(sortButton->sortMode))// && !SongDataCore.Plugin.Songs.IsDataAvailable())
+            if (NeedsScoreSaberData(sortButton->sortMode) && true)// && !SongDataCore.Plugin.Songs.IsDataAvailable())
                 UIUtils::SetButtonUnderlineColor(sortButton->button, {0.5f, 0.5f, 0.5f, 1.0f});
             else
                 UIUtils::SetButtonUnderlineColor(sortButton->button, {1.0f, 1.0f, 1.0f, 1.0f});

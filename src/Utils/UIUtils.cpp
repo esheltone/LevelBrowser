@@ -76,7 +76,13 @@ namespace UIUtils
         Object::Destroy(contentTransform->Find(Text_cs)->get_gameObject());
         Image* iconImage = GameObject::New_ctor(Icon_cs)->AddComponent<HMUI::ImageView*>();
         // idk what mat that is
-        //iconImage->set_material(BeatSaberMarkupLanguage.Utilities.ImageResources.NoGlowMat);
+
+        Il2CppString* templCS = il2cpp_utils::newcsstr(buttonTemplate.data());
+        auto orig = ArrayUtil::Last(Resources::FindObjectsOfTypeAll<Button*>(),  [&](Button* x) {
+            return x->get_name()->Equals(templCS);
+        });
+
+        iconImage->set_material(orig->get_gameObject()->GetComponentInChildren<HMUI::ImageView*>()->get_material());
         iconImage->get_rectTransform()->SetParent(contentTransform, false);
         iconImage->get_rectTransform()->set_sizeDelta(Vector2(10.0f, 10.0f));
         iconImage->set_sprite(icon);

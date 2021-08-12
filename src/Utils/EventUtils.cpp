@@ -82,7 +82,7 @@ namespace EventUtils
         
         INFO("LevelDetailViewController->add_didChangeContentEvent");
         std::function<void(GlobalNamespace::StandardLevelDetailViewController*, GlobalNamespace::StandardLevelDetailViewController::ContentType)> didChangeContentFun = std::bind(&DidChangeContentEvent::invoke, &didChangeContentEvent, std::placeholders::_1, std::placeholders::_2);
-        auto didChangeContentDelegate = MakeDelegate<System::Action_2<GlobalNamespace::StandardLevelDetailViewController*, GlobalNamespace::StandardLevelDetailViewController::ContentType>*>(didSelectLevelFun);
+        auto didChangeContentDelegate = MakeDelegate<System::Action_2<GlobalNamespace::StandardLevelDetailViewController*, GlobalNamespace::StandardLevelDetailViewController::ContentType>*>(didChangeContentFun);
         beatUi->LevelDetailViewController->add_didChangeContentEvent(didChangeContentDelegate);
         
         INFO("LevelDetailViewController->add_didChangeDifficultyBeatmapEvent");
@@ -92,12 +92,12 @@ namespace EventUtils
         
         INFO("AnnotatedBeatmapLevelCollectionsViewController->add_didSelectAnnotatedBeatmapLevelCollectionEvent");
         std::function<void(GlobalNamespace::IAnnotatedBeatmapLevelCollection*)> didSelectAnnotatedBeatmapLevelCollectionEvent_1ArgFun = std::bind(&DidSelectAnnotatedBeatmapLevelCollectionEvent_1Arg::invoke, &didSelectAnnotatedBeatmapLevelCollectionEvent_1Arg, std::placeholders::_1);
-        auto didSelectAnnotatedBeatmapLevelCollectionEvent_1ArgDelegate = MakeDelegate<System::Action_1<GlobalNamespace::IAnnotatedBeatmapLevelCollection*>*>(didChangeDifficultyBeatmapFun);
+        auto didSelectAnnotatedBeatmapLevelCollectionEvent_1ArgDelegate = MakeDelegate<System::Action_1<GlobalNamespace::IAnnotatedBeatmapLevelCollection*>*>(didSelectAnnotatedBeatmapLevelCollectionEvent_1ArgFun);
         beatUi->AnnotatedBeatmapLevelCollectionsViewController->add_didSelectAnnotatedBeatmapLevelCollectionEvent(didSelectAnnotatedBeatmapLevelCollectionEvent_1ArgDelegate);
         
         INFO("BeatmapCharacteristicSelectionViewController->add_didSelectBeatmapCharacteristicEvent");
         std::function<void(GlobalNamespace::BeatmapCharacteristicSegmentedControlController*, GlobalNamespace::BeatmapCharacteristicSO*)> didSelectBeatmapCharacteristicEventFun = std::bind(&DidSelectBeatmapCharacteristicEvent::invoke, &didSelectBeatmapCharacteristicEvent, std::placeholders::_1, std::placeholders::_2);
-        auto didSelectBeatmapCharacteristicEventDelegate = MakeDelegate<System::Action_2<GlobalNamespace::BeatmapCharacteristicSegmentedControlController*, GlobalNamespace::BeatmapCharacteristicSO*>*>(didChangeDifficultyBeatmapFun);
+        auto didSelectBeatmapCharacteristicEventDelegate = MakeDelegate<System::Action_2<GlobalNamespace::BeatmapCharacteristicSegmentedControlController*, GlobalNamespace::BeatmapCharacteristicSO*>*>(didSelectBeatmapCharacteristicEventFun);
         beatUi->BeatmapCharacteristicSelectionViewController->add_didSelectBeatmapCharacteristicEvent(didSelectBeatmapCharacteristicEventDelegate);
         
         INFO("StandardLevelDetailView->add_didFavoriteToggleChangeEvent");

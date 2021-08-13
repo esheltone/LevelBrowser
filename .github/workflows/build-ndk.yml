@@ -4,8 +4,8 @@ name: NDK build
 # set env variables
 env:
     ndkname: android-ndk-r22
-    module_id: paintball
-    qmodName: PaintBall
+    module_id: songbrowser
+    qmodName: SongBrowser
 
 # run this workflow when
 on:

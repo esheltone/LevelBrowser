@@ -1,5 +1,6 @@
 #include "Utils/SongDataCoreUtils.hpp"
 #include <thread>
+#include "logging.hpp"
 
 namespace SongDataCoreUtils
 {
@@ -7,6 +8,7 @@ namespace SongDataCoreUtils
     void Init()
     {
         std::thread databaseThread([&](){
+            INFO("Starting song data core database retrieval");
             song_data_core::Beatstar_RetrieveDatabase();
             loaded = true;
         });

@@ -27,7 +27,7 @@ DECLARE_CLASS_CODEGEN(SongBrowser, SongBrowserModel, Il2CppObject,
         static constexpr const char* filteredSongsCollectionName = "custom_levelpack_SongBrowser_FilteredSongPack";
         static constexpr const char* playlistSongsCollectionName = "SongBrowser_PlaylistPack";
         
-        static std::function<List<GlobalNamespace::IPreviewBeatmapLevel*>*(List<GlobalNamespace::IPreviewBeatmapLevel*>*)> customFilterHandler;
+        static std::function<List<GlobalNamespace::IPreviewBeatmapLevel*>*(Array<GlobalNamespace::IPreviewBeatmapLevel*>*)> customFilterHandler;
         static std::function<List<GlobalNamespace::IPreviewBeatmapLevel*>*(List<GlobalNamespace::IPreviewBeatmapLevel*>*)> customSortHandler;
         static UnorderedEventCallback<const std::vector<GlobalNamespace::CustomPreviewBeatmapLevel*>&> didFinishProcessingSongs;
 
@@ -48,10 +48,11 @@ DECLARE_CLASS_CODEGEN(SongBrowser, SongBrowserModel, Il2CppObject,
     private:
         
         /* -- Filtering --*/
-        List<GlobalNamespace::IPreviewBeatmapLevel*>* FilterFavorites(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels);
-        List<GlobalNamespace::IPreviewBeatmapLevel*>* FilterSearch(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels);
-        List<GlobalNamespace::IPreviewBeatmapLevel*>* FilterRanked(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels, bool includeRanked, bool includeUnranked);
-        List<GlobalNamespace::IPreviewBeatmapLevel*>* FilterRequirements(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels);
+        List<GlobalNamespace::IPreviewBeatmapLevel*>* FilterOriginal(Array<GlobalNamespace::IPreviewBeatmapLevel*>* levels);
+        List<GlobalNamespace::IPreviewBeatmapLevel*>* FilterFavorites(Array<GlobalNamespace::IPreviewBeatmapLevel*>* levels);
+        List<GlobalNamespace::IPreviewBeatmapLevel*>* FilterSearch(Array<GlobalNamespace::IPreviewBeatmapLevel*>* levels);
+        List<GlobalNamespace::IPreviewBeatmapLevel*>* FilterRanked(Array<GlobalNamespace::IPreviewBeatmapLevel*>* levels, bool includeRanked, bool includeUnranked);
+        List<GlobalNamespace::IPreviewBeatmapLevel*>* FilterRequirements(Array<GlobalNamespace::IPreviewBeatmapLevel*>* levels);
 
         /* -- Sorting --*/
         List<GlobalNamespace::IPreviewBeatmapLevel*>* SortOriginal(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels);

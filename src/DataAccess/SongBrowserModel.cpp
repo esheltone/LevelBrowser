@@ -21,6 +21,7 @@
 #include "songloader/shared/API.hpp"
 
 #include "Utils/ArrayUtil.hpp"
+#include "Utils/SongDataCoreUtils.hpp"
 #include "Utils/EnumToStringUtils.hpp"
 #include "UnityEngine/Resources.hpp"
 #include "UnityEngine/Sprite.hpp"
@@ -49,7 +50,7 @@ std::vector<std::string> split(std::string string, const std::string& delimiter)
 
 namespace SongBrowser
 {
-    std::function<List<GlobalNamespace::IPreviewBeatmapLevel*>*(List<GlobalNamespace::IPreviewBeatmapLevel*>*)> SongBrowserModel::customFilterHandler;
+    std::function<List<GlobalNamespace::IPreviewBeatmapLevel*>*(Array<GlobalNamespace::IPreviewBeatmapLevel*>*)> SongBrowserModel::customFilterHandler;
     std::function<List<GlobalNamespace::IPreviewBeatmapLevel*>*(List<GlobalNamespace::IPreviewBeatmapLevel*>*)> SongBrowserModel::customSortHandler;
     UnorderedEventCallback<const std::vector<GlobalNamespace::CustomPreviewBeatmapLevel*>&> SongBrowserModel::didFinishProcessingSongs;
 
@@ -179,7 +180,7 @@ namespace SongBrowser
 
     void SongBrowserModel::ProcessSongList(GlobalNamespace::IAnnotatedBeatmapLevelCollection* selectedBeatmapCollection, GlobalNamespace::LevelSelectionNavigationController* navController)
     {
-        List<GlobalNamespace::IPreviewBeatmapLevel*>* unsortedSongs = nullptr;
+        Array<GlobalNamespace::IPreviewBeatmapLevel*>* unsortedSongs = nullptr;
         List<GlobalNamespace::IPreviewBeatmapLevel*>* filteredSongs = nullptr;
         List<GlobalNamespace::IPreviewBeatmapLevel*>* sortedSongs = nullptr;
 
@@ -192,18 +193,22 @@ namespace SongBrowser
         std::string selectedCollectionName = selectedBeatmapCollection->get_collectionName() ? to_utf8(csstrtostr(selectedBeatmapCollection->get_collectionName())) : "";
 
         INFO("Using songs from level collection: %s [num=%lu]", selectedCollectionName.c_str(), selectedBeatmapCollection->get_beatmapLevelCollection()->get_beatmapLevels()->Length());
-        unsortedSongs = System::Linq::Enumerable::ToList(reinterpret_cast<System::Collections::Generic::IEnumerable_1<GlobalNamespace::IPreviewBeatmapLevel*>*>(selectedBeatmapCollection));
+        unsortedSongs = GetLevelsForLevelCollection(selectedBeatmapCollection);
 
         // filter
         INFO("Starting filtering songs by %s", SongFilterModeToString(config.filterMode).c_str());
         auto stopwatch = System::Diagnostics::Stopwatch::New_ctor();
         stopwatch->Start();
-        // idk if cjd will be enabled, going without for now
-        // a check for "is this loaded at all" could be used I assume, maybe pinkcore as a dep ?
-        #warning ignoring requirement filtering
-        if (config.filterMode == SongFilterMode::Requirements)// && !Plugin.IsCustomJsonDataEnabled)
+
+        if (config.filterMode == SongFilterMode::Requirements)
         {
-            config.filterMode = SongFilterMode::None;
+            auto modList = Modloader::getMods();
+            auto itr = modList.find("CustomJSONData");
+            if (itr == modList.end() || !itr->second.get_loaded())
+            {
+                // if cjd not loaded
+                config.filterMode = SongFilterMode::None;
+            }
         }
 
         switch (config.filterMode)
@@ -225,12 +230,12 @@ namespace SongBrowser
                 break;
             case SongFilterMode::CustomFilter:
                 INFO("Song filter mode set to custom. Deferring filter behaviour to another mod.");
-                filteredSongs = customFilterHandler ? customFilterHandler(unsortedSongs) : unsortedSongs;
+                filteredSongs = customFilterHandler ? customFilterHandler(unsortedSongs) : FilterOriginal(unsortedSongs);
                 break;
             case SongFilterMode::None:
             default:
                 INFO("No song filter selected...");
-                filteredSongs = unsortedSongs;
+                filteredSongs = FilterOriginal(unsortedSongs);
                 break;
         }
 
@@ -320,15 +325,8 @@ namespace SongBrowser
         INFO("Creating filtered level pack...");
         static auto collectionName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>(filteredSongsCollectionName);
                                                                         
-        auto levelCollection = reinterpret_cast<GlobalNamespace::IBeatmapLevelCollection*>(
-                                                    GlobalNamespace::BeatmapLevelCollection::New_ctor(
-                                                        System::Linq::Enumerable::ToArray(
-                                                            reinterpret_cast<System::Collections::Generic::IEnumerable_1<GlobalNamespace::IPreviewBeatmapLevel*>*>(
-                                                                sortedSongs
-                                                            )
-                                                        )
-                                                    )
-                                                );
+        auto levelCollection = reinterpret_cast<GlobalNamespace::IBeatmapLevelCollection*>(GlobalNamespace::BeatmapLevelCollection::New_ctor(sortedSongs->items));
+
         auto levelPack = GlobalNamespace::BeatmapLevelPack::New_ctor(   collectionName, 
                                                                         il2cpp_utils::newcsstr(selectedCollectionName),
                                                                         selectedBeatmapCollection->get_collectionName(), 
@@ -363,7 +361,7 @@ namespace SongBrowser
     std::string SongBrowserModel::GetSongHash(std::string_view levelId)
     {
         std::string id(levelId);
-        if (id.find("custom_level_")) return id.substr(13);
+        if (id.starts_with("custom_level_")) return id.substr(13);
         else return id;
     }
 
@@ -374,7 +372,16 @@ namespace SongBrowser
 
 #pragma region Filtering
     /* -- Filtering --*/
-    List<GlobalNamespace::IPreviewBeatmapLevel*>* SongBrowserModel::FilterFavorites(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels)
+    List<GlobalNamespace::IPreviewBeatmapLevel*>* SongBrowserModel::FilterOriginal(Array<GlobalNamespace::IPreviewBeatmapLevel*>* levels)
+    {
+        List<GlobalNamespace::IPreviewBeatmapLevel*>* filtered = List<GlobalNamespace::IPreviewBeatmapLevel*>::New_ctor();
+        ArrayUtil::ForEach(levels, [&](auto x){
+            filtered->Add(x);
+        });
+        return filtered;
+    }
+
+    List<GlobalNamespace::IPreviewBeatmapLevel*>* SongBrowserModel::FilterFavorites(Array<GlobalNamespace::IPreviewBeatmapLevel*>* levels)
     {
         // new list
         List<GlobalNamespace::IPreviewBeatmapLevel*>* filtered = List<GlobalNamespace::IPreviewBeatmapLevel*>::New_ctor();
@@ -391,22 +398,21 @@ namespace SongBrowser
         return filtered;
     }
 
-    List<GlobalNamespace::IPreviewBeatmapLevel*>* SongBrowserModel::FilterSearch(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels)
+    List<GlobalNamespace::IPreviewBeatmapLevel*>* SongBrowserModel::FilterSearch(Array<GlobalNamespace::IPreviewBeatmapLevel*>* levels)
     {
+        
         // Make sure we can actually search.
         if (config.searchTerms.size() <= 0)
         {
             ERROR("Tried to search for a song with no valid search terms...");
-            SortSongName(levels);
-            return levels;
+            return SortSongName(FilterOriginal(levels));
         }
 
         std::string searchTerm = config.searchTerms[0];
         if (searchTerm == "")
         {
             ERROR("Empty search term entered.");
-            SortSongName(levels);
-            return levels;
+            return SortSongName(FilterOriginal(levels));
         }
 
         INFO("Filtering song list by search term: %s", searchTerm.c_str());
@@ -414,12 +420,12 @@ namespace SongBrowser
 
         List<GlobalNamespace::IPreviewBeatmapLevel*>* filtered = List<GlobalNamespace::IPreviewBeatmapLevel*>::New_ctor();
         auto terms =  split(searchTerm, " ");
-        int length = levels->get_Count();
+        int length = levels->Length();
 
         // for every level passed in
         for (int i = 0; i < length; i++)
         {
-            auto level = levels->items->values[i];
+            auto level = levels->values[i];
             std::string searchString = "";
             searchString += to_utf8(csstrtostr(level->get_songName()));
             searchString += ' ';
@@ -440,37 +446,50 @@ namespace SongBrowser
         return filtered;
     }
 
-    List<GlobalNamespace::IPreviewBeatmapLevel*>* SongBrowserModel::FilterRanked(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels, bool includeRanked, bool includeUnranked)
+    List<GlobalNamespace::IPreviewBeatmapLevel*>* SongBrowserModel::FilterRanked(Array<GlobalNamespace::IPreviewBeatmapLevel*>* levels, bool includeRanked, bool includeUnranked)
     {
         List<GlobalNamespace::IPreviewBeatmapLevel*>* filtered = List<GlobalNamespace::IPreviewBeatmapLevel*>::New_ctor();
-        return levels;
-        #warning no songdata core so no ranked knowledge
-        /*
-        return levels.Where(x =>
-        {
-            var hash = SongBrowserModel.GetSongHash(x.levelID);
-            double maxPP = 0.0;
-            if (SongDataCore.Plugin.Songs.Data.Songs.ContainsKey(hash))
+
+        ArrayUtil::ForEach(levels, [&](auto x){
+            std::string levelId = to_utf8(csstrtostr(x->get_levelID()));
+            auto hash = GetSongHash(levelId);
+            auto song = SongDataCoreUtils::GetSong(hash);
+            if (!song) return;
+            auto diffVec = SongDataCoreUtils::GetDiffVec(song);
+
+            bool isRanked = false;
+            for (auto diff : diffVec)
             {
-                maxPP = SongDataCore.Plugin.Songs.Data.Songs[hash].diffs.Max(y => y.pp);
+                // if only 1 is ranked
+                if (diff->ranked)
+                {
+                    isRanked = true;
+                    break;
+                }
             }
 
-            if (maxPP > 0f)
+            // if ranked and we want ranked, add
+            if (isRanked && includeRanked)
             {
-                return includeRanked;
+                filtered->Add(x);
             }
-            else
+            // else if not ranked and we want not ranked, add
+            else if (!isRanked && includeUnranked)
             {
-                return includeUnranked;
+                filtered->Add(x);
             }
-        }).ToList();
-        */
+        });
+        return filtered;
     }
 
-    List<GlobalNamespace::IPreviewBeatmapLevel*>* SongBrowserModel::FilterRequirements(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels)
+    List<GlobalNamespace::IPreviewBeatmapLevel*>* SongBrowserModel::FilterRequirements(Array<GlobalNamespace::IPreviewBeatmapLevel*>* levels)
     {
         #warning no pinkcore yet so no requirements to be neatly done
-        return levels;
+        List<GlobalNamespace::IPreviewBeatmapLevel*>* filtered = List<GlobalNamespace::IPreviewBeatmapLevel*>::New_ctor();
+        ArrayUtil::ForEach(levels, [&](auto x){
+            filtered->Add(x);
+        });
+        return filtered;
         /*
         return levels.Where(x =>
         {

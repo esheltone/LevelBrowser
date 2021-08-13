@@ -31,17 +31,12 @@ DECLARE_CLASS_CODEGEN(SongBrowser::UI, SongBrowserViewController, HMUI::ViewCont
     
 )
 
-#define SEGMENT_PERCENT 0.1f
-#define LIST_ITEMS_VISIBLE_AT_ONCE 6
-#define CLEAR_BUTTON_Y 0.0f
-#define BUTTON_ROW_Y 0.0f
-
 DECLARE_CLASS_CODEGEN(SongBrowser::UI, SongBrowserUI, UnityEngine::MonoBehaviour,
     static constexpr const char* Name = "SongBrowserUI";
-    //static constexpr const float SEGMENT_PERCENT = 0.1f;
-    //static constexpr const int LIST_ITEMS_VISIBLE_AT_ONCE = 6;
-    //static constexpr const float CLEAR_BUTTON_Y = -31.5f;
-    //static constexpr const float BUTTON_ROW_Y = -31.5f;
+    static constexpr const float SEGMENT_PERCENT = 0.1f;
+    static constexpr const int LIST_ITEMS_VISIBLE_AT_ONCE = 6;
+    static constexpr const float CLEAR_BUTTON_Y = -31.5f;
+    static constexpr const float BUTTON_ROW_Y = -31.5f;
     
     DECLARE_INSTANCE_FIELD(SongBrowser::DataAccess::BeatSaberUIController*, beatUi);
     DECLARE_INSTANCE_FIELD(SongBrowser::UI::SongBrowserViewController*, viewController);

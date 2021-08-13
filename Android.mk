@@ -55,11 +55,11 @@ LOCAL_MODULE := songloader
 LOCAL_EXPORT_C_INCLUDES := extern/songloader
 LOCAL_SRC_FILES := extern/libsongloader.so
 include $(PREBUILT_SHARED_LIBRARY)
-# Creating prebuilt for dependency: songdatacore - version: 0.2.5
+# Creating prebuilt for dependency: songdatacore - version: 0.2.6
 include $(CLEAR_VARS)
-LOCAL_MODULE := song_data_core_rust
+LOCAL_MODULE := android-libsong_data_core_rust
 LOCAL_EXPORT_C_INCLUDES := extern/songdatacore
-LOCAL_SRC_FILES := extern/libsong_data_core_rust.so
+LOCAL_SRC_FILES := extern/libandroid-libsong_data_core_rust.so
 include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
@@ -73,7 +73,7 @@ LOCAL_SHARED_LIBRARIES += codegen_0_12_5
 LOCAL_SHARED_LIBRARIES += custom-types
 LOCAL_SHARED_LIBRARIES += questui
 LOCAL_SHARED_LIBRARIES += songloader
-LOCAL_SHARED_LIBRARIES += song_data_core_rust
+LOCAL_SHARED_LIBRARIES += android-libsong_data_core_rust
 LOCAL_LDLIBS += -llog -lz
 LOCAL_CFLAGS += -DID='"SongBrowser"' -DVERSION='"0.1.0"' -I'./shared' -I'./extern' -Wno-inaccessible-base -O2
 LOCAL_C_INCLUDES += ./include ./src ./extern ./extern/codegen/include ./extern/libil2cpp/il2cpp/libil2cpp ./shared

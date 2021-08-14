@@ -37,8 +37,6 @@ namespace SongDataCoreUtils
         std::vector<std::string> GetReqVec() const;
     };
 
-    BeatStarCharacteristics CharacteristicFromDiff(const BeatStarSongDifficultyStats* diff);
-
     void Init();
     bool get_loaded();
 }

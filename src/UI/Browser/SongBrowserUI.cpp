@@ -1068,7 +1068,7 @@ namespace SongBrowser::UI
         #warning playlists not properly made to work
         //BeatSaberPlaylistsLib.Types.IPlaylist playlist = Playlist.CreateNew(playlistName, beatUi.GetCurrentLevelCollectionLevels());
         //BeatSaberPlaylistsLib.PlaylistManager.DefaultManager.RequestRefresh(Assembly.GetExecutingAssembly().FullName);
-        //SongBrowserApplication::mainProgressBar->ShowMessage("Successfully Exported Playlist");
+        //SongBrowserApplication::mainProgressBar->ShowMessage("Successfully Exported Playlist", 5.0f);
     }
 
     void SongBrowserUI::JumpSongList(int numJumps, float segmentPercent)

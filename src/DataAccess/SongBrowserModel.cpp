@@ -13,6 +13,8 @@
 #include "GlobalNamespace/LevelCollectionViewController.hpp"
 #include "GlobalNamespace/LevelPackDetailViewController.hpp"
 #include "GlobalNamespace/SongPreviewPlayer.hpp"
+#include "GlobalNamespace/LevelPackHeaderTableCell.hpp"
+#include "GlobalNamespace/LevelListTableCell.hpp"
 
 #include "System/Collections/Generic/HashSet_1.hpp"
 #include "System/Diagnostics/Stopwatch.hpp"
@@ -43,6 +45,9 @@
 #include "HMUI/TableCell.hpp"
 
 #include "System/Action_1.hpp"
+#include "System/Action_3.hpp"
+#include "System/Tuple_2.hpp"
+
 #include <algorithm>
 DEFINE_TYPE(SongBrowser, SongBrowserModel);
 
@@ -231,6 +236,156 @@ namespace SongBrowser
 		ScrollView_UpdateContentSize(self->scrollView);
     }
 
+    HMUI::TableCell* LevelCollectionTableView_CellForIdx(GlobalNamespace::LevelCollectionTableView* self, HMUI::TableView* tableView, int row)
+    {
+        INFO("Start cell");
+		if (row == 0 && self->showLevelPackHeader)
+		{
+            INFO("row 0 & show");
+			auto levelPackHeaderTableCell = reinterpret_cast<GlobalNamespace::LevelPackHeaderTableCell*>(tableView->DequeueReusableCellForIdentifier(self->packCellsReuseIdentifier));
+            INFO("check if found");
+			if (!levelPackHeaderTableCell)
+			{
+                INFO("make new");
+				levelPackHeaderTableCell = UnityEngine::Object::Instantiate<GlobalNamespace::LevelPackHeaderTableCell*>(self->packCellPrefab);
+				levelPackHeaderTableCell->reuseIdentifier = self->packCellsReuseIdentifier;
+			}
+            INFO("set data");
+			levelPackHeaderTableCell->SetData(self->headerText);
+            INFO("return");
+			return levelPackHeaderTableCell;
+		}
+        INFO("not 0 so next");
+		
+        auto levelListTableCell = reinterpret_cast<GlobalNamespace::LevelListTableCell*>(tableView->DequeueReusableCellForIdentifier(self->levelCellsReuseIdentifier));
+        INFO("check if found");
+		if (!levelListTableCell)
+		{
+            INFO("make new ");
+			levelListTableCell = UnityEngine::Object::Instantiate<GlobalNamespace::LevelListTableCell*>(self->levelCellPrefab);
+			levelListTableCell->reuseIdentifier = self->levelCellsReuseIdentifier;
+		}
+        INFO("get num");
+		int num = self->showLevelPackHeader ? (row - 1) : row;
+        INFO("get level");
+        INFO("Getting level %d, from array of %lu", num, self->previewBeatmapLevels->Length());
+		auto previewBeatmapLevel = self->previewBeatmapLevels->values[num];
+        if (previewBeatmapLevel)
+        {
+            INFO("set data from level async");
+		    levelListTableCell->SetDataFromLevelAsync(previewBeatmapLevel, self->favoriteLevelIds->Contains(previewBeatmapLevel->get_levelID()));
+            INFO("refresh availability");
+		    levelListTableCell->RefreshAvailabilityAsync(self->additionalContentModel, previewBeatmapLevel->get_levelID());
+            INFO("levelList");
+        }
+		return levelListTableCell;
+    }
+
+    void TableView_RefreshCells(HMUI::TableView* self, bool forcedVisualsRefresh, bool forcedContentRefresh)
+    {
+        int counter = 0;
+        INFO("%d", counter++);
+		self->LazyInit();
+		int num;
+		int num2;
+		num = self->GetVisibleCellsIdRange()->get_Item1();
+		num2 = self->GetVisibleCellsIdRange()->get_Item2();
+        INFO("%d", counter++);
+		if (num == self->prevMinIdx && num2 == self->prevMaxIdx && !forcedVisualsRefresh && !forcedContentRefresh)
+		{
+            INFO("%d", counter++);
+			return;
+		}
+		for (int i = self->visibleCells->get_Count() - 1; i >= 0; i--)
+		{
+            INFO("%d", counter++);
+			auto tableCell = self->visibleCells->items->values[i];
+			if (tableCell->idx < num || tableCell->idx > num2 || forcedContentRefresh)
+			{
+				tableCell->get_gameObject()->SetActive(false);
+				self->visibleCells->RemoveAt(i);
+				self->AddCellToReusableCells(tableCell);
+			}
+            INFO("%d", counter++);
+		}
+
+		auto rect = self->viewportTransform->get_rect();
+		float num5 = (self->tableType == HMUI::TableView::TableType::Vertical) ? rect.get_height() : rect.get_width();
+		float offset = 0.0f;
+        INFO("%d", counter++);
+		if (self->alignToCenter && self->scrollView->get_scrollableSize() == 0.0f)
+		{
+			offset = (num5 - (float)self->numberOfCells * self->cellSize) * 0.5f;
+		}
+        INFO("%d", counter++);
+		for (int j = num; j <= num2; j++)
+		{
+			HMUI::TableCell* tableCell2 = nullptr;
+			for (int k = 0; k < self->visibleCells->get_Count(); k++)
+			{
+				if (self->visibleCells->items->values[k]->idx == j)
+				{
+					tableCell2 = self->visibleCells->items->values[k];
+					break;
+				}
+			}
+            INFO("%d", counter++);
+			if (!tableCell2 || forcedVisualsRefresh || forcedContentRefresh)
+			{
+                INFO("%d", counter++);
+				bool flag = false;
+                INFO("%d", counter++);
+				if (!tableCell2)
+				{
+                    INFO("%d", counter++);
+					flag = true;
+                    INFO("%d", counter++);
+                    INFO("self->dataSource: %p", self->dataSource);
+                    INFO("self->dataSource->klass->name: %s", ((Il2CppObject*)self->dataSource)->klass->name);
+					tableCell2 = LevelCollectionTableView_CellForIdx(reinterpret_cast<GlobalNamespace::LevelCollectionTableView*>(self->dataSource), self, j);
+                    INFO("%d", counter++);
+					self->visibleCells->Add(tableCell2);
+                    INFO("%d", counter++);
+				}
+                INFO("%d", counter++);
+                INFO("TableCell: %p", tableCell2);
+				tableCell2->get_gameObject()->SetActive(true);
+                INFO("%d", counter++);
+				tableCell2->TableViewSetup(reinterpret_cast<HMUI::ITableCellOwner*>(self), j);
+                INFO("%d", counter++);
+                std::function<void(HMUI::SelectableCell*, HMUI::SelectableCell::TransitionType, ::Il2CppObject*)> fun = std::bind(&HMUI::TableView::HandleCellSelectionDidChange, self, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+                INFO("%d", counter++);
+                auto delegate = il2cpp_utils::MakeDelegate<System::Action_3<HMUI::SelectableCell*, HMUI::SelectableCell::TransitionType, ::Il2CppObject*>*>(classof(System::Action_3<HMUI::SelectableCell*, HMUI::SelectableCell::TransitionType, ::Il2CppObject*>*), fun);
+                INFO("%d", counter++);
+                tableCell2->remove_selectionDidChangeEvent(delegate);
+                INFO("%d", counter++);
+				tableCell2->add_selectionDidChangeEvent(delegate);
+                INFO("%d", counter++);
+				if (flag)
+				{
+                    INFO("%d", counter++);
+					tableCell2->ClearHighlight(HMUI::SelectableCell::TransitionType::Instant);
+				}
+                INFO("%d", counter++);
+				tableCell2->SetSelected(self->selectedCellIdxs->Contains(j), HMUI::SelectableCell::TransitionType::Instant, self, flag);
+				if (tableCell2->get_transform()->get_parent() != self->contentTransform)
+				{
+					tableCell2->get_transform()->SetParent(self->contentTransform, false);
+				}
+                INFO("%d", counter++);
+				self->LayoutCellForIdx(tableCell2, j, offset);
+				if (self->visibleCells->get_Count() == num2 - num + 1 && !forcedVisualsRefresh)
+				{
+					break;
+				}
+			}
+		}
+        INFO("");
+		self->prevMinIdx = num;
+		self->prevMaxIdx = num2;   
+        INFO("end");
+    }
+
     void TableView_ReloadData(HMUI::TableView* self)
     {
         INFO("Initialize Check");
@@ -274,7 +429,7 @@ namespace SongBrowser
 		else
 		{
             INFO("refresh cells");
-			self->RefreshCells(true, false);
+			TableView_RefreshCells(self, true, false);
 		}
 
         INFO("get action");
@@ -524,11 +679,11 @@ namespace SongBrowser
         INFO("Creating filtered level pack...");
         static auto collectionName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>(filteredSongsCollectionName);
                                                                         
-        auto levelCollection = reinterpret_cast<GlobalNamespace::IBeatmapLevelCollection*>(GlobalNamespace::BeatmapLevelCollection::New_ctor(sortedSongs->items));
+        auto levelCollection = reinterpret_cast<GlobalNamespace::IBeatmapLevelCollection*>(GlobalNamespace::BeatmapLevelCollection::New_ctor(sortedSongs->ToArray()));
 
         auto levelPack = GlobalNamespace::BeatmapLevelPack::New_ctor(   collectionName, 
-                                                                        collectionName,
-                                                                        collectionName, 
+                                                                        il2cpp_utils::newcsstr(selectedCollectionName),
+                                                                        selectedBeatmapCollection->get_collectionName(), 
                                                                         coverImage, 
                                                                         levelCollection);
         /*
@@ -562,24 +717,16 @@ namespace SongBrowser
         INFO("lcnvc->levelPackDetailViewController: %p", lcnvc->levelPackDetailViewController);
 
         // basically SetDataForPack but skipping the redundant re-assignments
-        lcnvc->levelPack = reinterpret_cast<GlobalNamespace::IBeatmapLevelPack*>(levelPack);
-        INFO("Collection SetData");
-        try
-        {
-		    lcnvc->levelCollectionViewController->SetData(levelCollection, il2cpp_utils::newcsstr(selectedCollectionName), coverImage, false, nullptr);
-        }
-        catch(const std::exception& e)
-        {
-            ERROR("%s", e.what());
-        }
-        /*
-        LevelCollectionViewController_SetData(lcnvc->levelCollectionViewController, levelCollection, il2cpp_utils::newcsstr(selectedCollectionName), coverImage, false, nullptr);
-		//lcnvc->levelCollectionViewController->SetData(levelCollection, il2cpp_utils::newcsstr(selectedCollectionName), coverImage, false, nullptr);
-        INFO("Detail SetData");
-		lcnvc->levelPackDetailViewController->SetData(lcnvc->levelPack);
-        INFO("Presenting");
-		lcnvc->PresentViewControllersForPack();
-        */
+        //lcnvc->levelPack = reinterpret_cast<GlobalNamespace::IBeatmapLevelPack*>(levelPack);
+        //INFO("Collection SetData");
+        //
+        //LevelCollectionViewController_SetData(lcnvc->levelCollectionViewController, levelCollection, il2cpp_utils::newcsstr(selectedCollectionName), coverImage, false, nullptr);
+		////lcnvc->levelCollectionViewController->SetData(levelCollection, il2cpp_utils::newcsstr(selectedCollectionName), coverImage, false, nullptr);
+        //INFO("Detail SetData");
+		//lcnvc->levelPackDetailViewController->SetData(lcnvc->levelPack);
+        //INFO("Presenting");
+		//lcnvc->PresentViewControllersForPack();
+        
         
         /*
         lcnvc->SetDataForPack(reinterpret_cast<GlobalNamespace::IBeatmapLevelPack*>(levelPack),
@@ -588,7 +735,7 @@ namespace SongBrowser
             !hidePracticeButton,
             actionButtonText);
         */
-        /*
+        
         lcnvc->SetData(reinterpret_cast<GlobalNamespace::IAnnotatedBeatmapLevelCollection*>(levelPack),
             true,
             showPlayerStatsInDetailView,
@@ -597,7 +744,7 @@ namespace SongBrowser
             noDataInfoPrefab,
             allowedBeatmapDifficultyMask,
             notAllowedCharacteristics);
-        */
+        
         INFO("Done Filtering & sorting");
     }
 

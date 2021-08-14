@@ -20,25 +20,18 @@ namespace SongBrowser
         UnityEngine::GameObject::New_ctor(il2cpp_utils::createcsstr("Beat Saber SongBrowser Plugin"))->AddComponent<SongBrowserApplication*>();
         mainProgressBar = SongBrowser::UI::ProgressBar::Create();
         SpriteUtils::Init();
-        INFO("Application load complete!");
     }
 
     void SongBrowserApplication::Awake()
     {
-        INFO("Awake");
         instance = this;
-        INFO("instance: %p", instance);
 
         songBrowserModel = il2cpp_utils::New<SongBrowserModel*>().value();
-        INFO("songBrowserModel: %p", songBrowserModel);
 
         songBrowserModel->Init();
-        INFO("get_gameObject: %p", get_gameObject());
 
         songBrowserUI = get_gameObject()->AddComponent<UI::SongBrowserUI*>();
-        INFO("songBrowserUI: %p", songBrowserUI);
         songBrowserUI->model = songBrowserModel;
-        INFO("songBrowserUI->model: %p", songBrowserUI->model);
     }
 
     void SongBrowserApplication::Start()
@@ -46,7 +39,6 @@ namespace SongBrowser
         //scoresaber, but we do not have scoresaber API
         //SongDataCore.Plugin.Songs.OnDataFinishedProcessing += OnScoreSaberDataDownloaded;
 
-        // I can't just check if songs are loaded, so lets hope we are adding this callback before songs are loaded
         if (RuntimeSongLoader::API::HasLoadedSongs()) SongBrowserApplication::OnSongLoaderLoadedSongs(RuntimeSongLoader::API::GetLoadedSongs());
         else RuntimeSongLoader::API::AddSongsLoadedEvent(std::bind(&SongBrowserApplication::OnSongLoaderLoadedSongs, this, std::placeholders::_1));
     }
@@ -55,13 +47,12 @@ namespace SongBrowser
     {
         songBrowserUI->UpdateLevelDataModel();
         songBrowserUI->RefreshSongList();
+        //mainProgressBar->ShowMessage("Songloader Finished", 2.0f);
     }
 
     void SongBrowserApplication::HandleSoloModeSelection()
     {
-        INFO("Solo Mode");
         HandleModeSelection(GlobalNamespace::MainMenuViewController::MenuButton::SoloFreePlay);
-        INFO("Show %p", songBrowserUI);
         songBrowserUI->Show();    
     }
 
@@ -91,7 +82,7 @@ namespace SongBrowser
         if (!hasShownProgressBar)
         {
             INFO("Showing progress bar");
-            mainProgressBar->ShowMessage("");
+            mainProgressBar->ShowMessage("", 5.0f);
             hasShownProgressBar = true;
         }
     }

@@ -160,58 +160,75 @@ namespace SongBrowser::DataAccess
 
     bool BeatSaberUIController::SelectLevelCategory(const std::string& input)
     {
-        std::string levelCategoryName = input;
-        if (levelCategoryName == "")
-            // hack for now, just assume custom levels if a user has an old settings file, corrects itself first time they change level packs.
-            levelCategoryName = "CustomSongs";
-
-        GlobalNamespace::SelectLevelCategoryViewController::LevelCategory category;
-        category = StringToLevelCategory(levelCategoryName);
-
-        if (category == LevelFilteringNavigationController->get_selectedLevelCategory())
+        try
         {
-            INFO("Level category [%d] is already selected", category.value);
+            std::string levelCategoryName = input;
+            if (levelCategoryName == "")
+                // hack for now, just assume custom levels if a user has an old settings file, corrects itself first time they change level packs.
+                levelCategoryName = "CustomSongs";
+
+            GlobalNamespace::SelectLevelCategoryViewController::LevelCategory category;
+            category = StringToLevelCategory(levelCategoryName);
+
+            if (category == LevelFilteringNavigationController->get_selectedLevelCategory())
+            {
+                INFO("Level category [%d] is already selected", category.value);
+                return false;
+            }
+
+            INFO("Selecting level category: %s", levelCategoryName.c_str());
+
+            auto selectLeveCategoryViewController = LevelFilteringNavigationController->GetComponentInChildren<GlobalNamespace::SelectLevelCategoryViewController*>();
+            auto iconSegementController = selectLeveCategoryViewController->GetComponentInChildren<HMUI::IconSegmentedControl*>();
+
+            auto levelCategoriesInfoArr = selectLeveCategoryViewController->levelCategoryInfos->values[category]->levelCategory;
+
+            int selectCellNumber = 0;
+            auto levelCategoryInfo = ArrayUtil::First(selectLeveCategoryViewController->levelCategoryInfos, [&](auto x) {
+                selectCellNumber++;
+                return x->levelCategory == category;
+            });
+            //by default we increment 1 too many, so we remove it if it wasnt 0
+            selectCellNumber = selectCellNumber > 0 ? selectCellNumber - 1 : 0;
+
+            iconSegementController->SelectCellWithNumber(selectCellNumber);
+            selectLeveCategoryViewController->LevelFilterCategoryIconSegmentedControlDidSelectCell(iconSegementController, selectCellNumber);
+            LevelFilteringNavigationController->UpdateSecondChildControllerContent(category);
+            //AnnotatedBeatmapLevelCollectionsViewController->RefreshAvailability();
+
+            INFO("Done selecting level category.");
+
+            return true;
+        }
+        catch (const std::exception& e)
+        {
+            ERROR("%s", e.what());
             return false;
         }
-
-        INFO("Selecting level category: %s", levelCategoryName.c_str());
-
-        auto selectLeveCategoryViewController = LevelFilteringNavigationController->GetComponentInChildren<GlobalNamespace::SelectLevelCategoryViewController*>();
-        auto iconSegementController = selectLeveCategoryViewController->GetComponentInChildren<HMUI::IconSegmentedControl*>();
-
-        auto levelCategoriesInfoArr = selectLeveCategoryViewController->levelCategoryInfos->values[category]->levelCategory;
-
-        auto levelCategoryInfo = ArrayUtil::First(selectLeveCategoryViewController->levelCategoryInfos, [&](auto x) {
-            return x->levelCategory == category;
-        });
-        
-        int selectCellNumber = levelCategoryInfo->levelCategory.value; 
-
-        iconSegementController->SelectCellWithNumber(selectCellNumber);
-        selectLeveCategoryViewController->LevelFilterCategoryIconSegmentedControlDidSelectCell(iconSegementController, selectCellNumber);
-        LevelFilteringNavigationController->UpdateSecondChildControllerContent(category);
-        //AnnotatedBeatmapLevelCollectionsViewController.RefreshAvailability();
-
-        INFO("Done selecting level category.");
-
-        return true;
     }
 
     void BeatSaberUIController::SelectLevelCollection(const std::string& levelCollectionName)
     {
-        auto collection = GetLevelCollectionByName(levelCollectionName);
-        if (!collection)
+        try
         {
-            INFO("Could not locate requested level collection...");
-            return;
+            auto collection = GetLevelCollectionByName(levelCollectionName);
+            if (!collection)
+            {
+                INFO("Could not locate requested level collection...");
+                return;
+            }
+
+            INFO("Selecting level collection: %s", levelCollectionName.c_str());
+
+            LevelFilteringNavigationController->SelectAnnotatedBeatmapLevelCollection(reinterpret_cast<GlobalNamespace::IBeatmapLevelPack*>(collection));
+            LevelFilteringNavigationController->HandleAnnotatedBeatmapLevelCollectionsViewControllerDidSelectAnnotatedBeatmapLevelCollection(collection);
+
+            INFO("Done selecting level collection!");
         }
-
-        INFO("Selecting level collection: %s", levelCollectionName.c_str());
-
-        LevelFilteringNavigationController->SelectAnnotatedBeatmapLevelCollection(reinterpret_cast<GlobalNamespace::IBeatmapLevelPack*>(collection));
-        LevelFilteringNavigationController->HandleAnnotatedBeatmapLevelCollectionsViewControllerDidSelectAnnotatedBeatmapLevelCollection(collection);
-
-        INFO("Done selecting level collection!");
+        catch (const std::exception& e)
+        {
+            ERROR("%s", e.what());
+        }
     }
 
     void BeatSaberUIController::SelectAndScrollToLevel(const std::string& levelID)
@@ -285,34 +302,41 @@ namespace SongBrowser::DataAccess
 
     void BeatSaberUIController::RefreshSongList(const std::string& currentSelectedLevelId, bool scrollToLevel)
     {
-        auto levels = GetCurrentLevelCollectionLevels();
-        if (!levels)
+        try
         {
-            INFO("Nothing to refresh yet.");
-            return;
-        }
-
-        INFO("Checking if TableView is initialized...");
-        auto tableView = LevelCollectionTableView->tableView;
-        bool tableViewInit = tableView->isInitialized;
-
-        INFO("Reloading SongList TableView");
-        tableView->ReloadData();
-
-        INFO("Attempting to scroll to level [%s]", currentSelectedLevelId.c_str());
-        std::string selectedLevelID = currentSelectedLevelId;
-        if (selectedLevelID == "")
-        {
-            if (levels->Length() > 0)
+            auto levels = GetCurrentLevelCollectionLevels();
+            if (!levels)
             {
-                INFO("Currently selected level ID does not exist, picking the first...");
-                selectedLevelID = to_utf8(csstrtostr(ArrayUtil::First(levels)->get_levelID()));
+                INFO("Nothing to refresh yet.");
+                return;
+            }
+
+            INFO("Checking if TableView is initialized...");
+            auto tableView = LevelCollectionTableView->tableView;
+            bool tableViewInit = tableView->isInitialized;
+
+            INFO("Reloading SongList TableView");
+            tableView->ReloadData();
+
+            INFO("Attempting to scroll to level [%s]", currentSelectedLevelId.c_str());
+            std::string selectedLevelID = currentSelectedLevelId;
+            if (selectedLevelID == "")
+            {
+                if (levels->Length() > 0)
+                {
+                    INFO("Currently selected level ID does not exist, picking the first...");
+                    selectedLevelID = to_utf8(csstrtostr(ArrayUtil::First(levels)->get_levelID()));
+                }
+            }
+
+            if (scrollToLevel)
+            {
+                SelectAndScrollToLevel(selectedLevelID);
             }
         }
-
-        if (scrollToLevel)
+        catch (const std::exception& e)
         {
-            SelectAndScrollToLevel(selectedLevelID);
+            ERROR("%s", e.what());
         }
     }
 }

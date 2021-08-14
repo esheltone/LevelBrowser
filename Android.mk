@@ -55,7 +55,7 @@ LOCAL_MODULE := songloader
 LOCAL_EXPORT_C_INCLUDES := extern/songloader
 LOCAL_SRC_FILES := extern/libsongloader.so
 include $(PREBUILT_SHARED_LIBRARY)
-# Creating prebuilt for dependency: songdatacore - version: 0.2.9
+# Creating prebuilt for dependency: songdatacore - version: 0.3.0
 include $(CLEAR_VARS)
 LOCAL_MODULE := android-libsong_data_core_rust
 LOCAL_EXPORT_C_INCLUDES := extern/songdatacore

@@ -68,47 +68,37 @@ namespace SongBrowser::UI
 
     void ProgressBar::Awake()
     {
-        INFO("Awake");
         get_gameObject()->get_transform()->set_position(Position);
         get_gameObject()->get_transform()->set_eulerAngles(Rotation);
         get_gameObject()->get_transform()->set_localScale(Scale);
-        INFO("Set some data");
+
         canvas = get_gameObject()->AddComponent<UnityEngine::Canvas*>();
         canvas->set_renderMode(UnityEngine::RenderMode::WorldSpace);
         get_gameObject()->AddComponent<HMUI::CurvedCanvasSettings*>()->SetRadius(0.0f);
         get_gameObject()->SetActive(false);
-        INFO("more data");
 
         auto ct = canvas->get_transform();
         ct->set_position(Position);
         ct->set_localScale(Scale);
-        INFO("scale again");
 
         auto rectTransform = reinterpret_cast<UnityEngine::RectTransform*>(ct);
         rectTransform->set_sizeDelta(CanvasSize);
-        INFO("rect");
 
         // why set everything after creating it in the first place ?
-        INFO("createauthor");
         authorNameText = UIUtils::CreateText(ct, AuthorNameText, AuthorNameFontSize, AuthorNamePosition, HeaderSize);
-        INFO("create name");
         pluginNameText = UIUtils::CreateText(ct, PluginNameText, PluginNameFontSize, PluginNamePosition, HeaderSize);
-        INFO("create header");
         headerText = UIUtils::CreateText(ct, HeaderText, HeaderFontSize, HeaderPosition, HeaderSize);
-        INFO("text");
 
         loadingBackground = UnityEngine::GameObject::New_ctor(il2cpp_utils::newcsstr("Background"))->AddComponent<UnityEngine::UI::Image*>();
         rectTransform = reinterpret_cast<UnityEngine::RectTransform*>(loadingBackground->get_transform());
         rectTransform->SetParent(ct, false); 
         rectTransform->set_sizeDelta(LoadingBarSize);
         loadingBackground->set_color(BackgroundColor);
-        INFO("background");
 
         loadingBar = UnityEngine::GameObject::New_ctor(il2cpp_utils::newcsstr("Loading Bar"))->AddComponent<UnityEngine::UI::Image*>();
         rectTransform = reinterpret_cast<UnityEngine::RectTransform*>(loadingBar->get_transform());
         rectTransform->SetParent(ct, false);
         rectTransform->set_sizeDelta(LoadingBarSize);
-        INFO("bar");
 
         auto tex = UnityEngine::Texture2D::get_whiteTexture();
         auto sprite = UnityEngine::Sprite::Create(tex, UnityEngine::Rect(0, 0, tex->get_width(), tex->get_height()), {0.5f, 0.5f}, 100, 1, UnityEngine::SpriteMeshType::FullRect, UnityEngine::Vector4::get_zero(), false);
@@ -116,11 +106,9 @@ namespace SongBrowser::UI
         loadingBar->set_type(UnityEngine::UI::Image::Type::Filled);
         loadingBar->set_fillMethod(UnityEngine::UI::Image::FillMethod::Horizontal);
         loadingBar->set_color({1.0f, 1.0f, 1.0f, 0.5f});
-        INFO("sprites");
 
         UnityEngine::Object::DontDestroyOnLoad(get_gameObject());
         inited = true;
-        INFO("progressbar inited");
     }
 
     void ProgressBar::Update()

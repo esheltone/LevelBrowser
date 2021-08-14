@@ -1,4 +1,4 @@
 & ./build.ps1
-$env:qmodName = "Qosmetics"
-$env:module_id = "questcosmetics"
+$env:qmodName = "SongBrowser"
+$env:module_id = "songbrowser"
 & ./CreateQmod.ps1

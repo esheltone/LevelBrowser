@@ -9,9 +9,11 @@
   "description": "Browsing your songs has never been easier!",
   "dependencies": [],
   "modFiles": [
+    "libsongbrowser.so"
   ],
   "libraryFiles": [
+    "libandroid-libsong_data_core_rust.so",
+    "libbeatsaber-hook_2_2_5.so"
   ],
-  "fileCopies": [
-  ]
+  "fileCopies": []
 }

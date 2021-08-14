@@ -3,12 +3,16 @@
 #include "logging.hpp"
 
 #include "GlobalNamespace/BeatmapLevelCollection.hpp"
+#include "GlobalNamespace/LevelCollectionTableView.hpp"
 #include "GlobalNamespace/BeatmapLevelPack.hpp"
 #include "GlobalNamespace/IBeatmapLevelCollection.hpp"
 #include "GlobalNamespace/PlayerDataModel.hpp"
 #include "GlobalNamespace/PlayerData.hpp"
 #include "GlobalNamespace/PlayerLevelStatsData.hpp"
 #include "GlobalNamespace/LevelCollectionNavigationController.hpp"
+#include "GlobalNamespace/LevelCollectionViewController.hpp"
+#include "GlobalNamespace/LevelPackDetailViewController.hpp"
+#include "GlobalNamespace/SongPreviewPlayer.hpp"
 
 #include "System/Collections/Generic/HashSet_1.hpp"
 #include "System/Diagnostics/Stopwatch.hpp"
@@ -23,9 +27,22 @@
 #include "Utils/ArrayUtil.hpp"
 #include "Utils/SongDataCoreUtils.hpp"
 #include "Utils/EnumToStringUtils.hpp"
+
+#include "UnityEngine/Rect.hpp"
 #include "UnityEngine/Resources.hpp"
 #include "UnityEngine/Sprite.hpp"
+#include "UnityEngine/GameObject.hpp"
+#include "UnityEngine/Object.hpp"
 
+#include "Zenject/DiContainer.hpp"
+
+#include "HMUI/AlphabetScrollbar.hpp"
+#include "HMUI/TableView.hpp"
+#include "HMUI/TableView_ScrollPositionType.hpp"
+#include "HMUI/ScrollView.hpp"
+#include "HMUI/TableCell.hpp"
+
+#include "System/Action_1.hpp"
 #include <algorithm>
 DEFINE_TYPE(SongBrowser, SongBrowserModel);
 
@@ -177,6 +194,184 @@ namespace SongBrowser
             itr->second += levelData->get_playCount();
         }
     }
+    
+    void ScrollView_UpdateContentSize(HMUI::ScrollView* self)
+    {
+        auto scrollViewDirection = self->scrollViewDirection;
+		if (scrollViewDirection != HMUI::ScrollView::ScrollViewDirection::Vertical)
+		{
+			if (scrollViewDirection == HMUI::ScrollView::ScrollViewDirection::Horizontal)
+			{
+                INFO("width set size");
+				self->SetContentSize(self->contentRectTransform->get_rect().get_width());
+			}
+		}
+		else
+		{
+            INFO("height set size");
+			self->SetContentSize(self->contentRectTransform->get_rect().get_height());
+		}
+        INFO("scroll to");
+		self->ScrollTo(0.0f, true);
+    }
+
+    void TableView_RefreshContentSize(HMUI::TableView* self)
+    {
+        if (self->tableType == HMUI::TableView::TableType::Vertical)
+		{
+            INFO("vert update");
+			self->contentTransform->set_sizeDelta(Vector2(0.0f, (float)self->numberOfCells * self->cellSize));
+		}
+		else
+		{
+            INFO("horizon update");
+			self->contentTransform->set_sizeDelta(Vector2((float)self->numberOfCells * self->cellSize, 0.0f));
+		}
+        INFO("update size");
+		ScrollView_UpdateContentSize(self->scrollView);
+    }
+
+    void TableView_ReloadData(HMUI::TableView* self)
+    {
+        INFO("Initialize Check");
+        if (!self->isInitialized)
+		{
+			self->LazyInit();
+		}
+        INFO("for every cell");
+        ArrayUtil::ForEach(self->visibleCells, [&](auto tableCell){
+            tableCell->get_gameObject()->SetActive(false);
+			self->AddCellToReusableCells(tableCell);
+        });
+
+        INFO("clear visible");
+		self->visibleCells->Clear();
+        INFO("check ifd data source");
+		if (self->dataSource)
+		{
+            INFO("there was a data source");
+			self->numberOfCells = self->dataSource->NumberOfCells();
+            INFO("setting cell size");
+			self->cellSize = self->dataSource->CellSize();
+		}
+		else
+		{
+            INFO("there was no data source");
+			self->numberOfCells = 0;
+            INFO("setting cell size");
+			self->cellSize = 1.0f;
+		}
+        INFO("setting fixed size");
+		self->scrollView->fixedCellSize = self->cellSize;
+        INFO("Refresh size");
+		TableView_RefreshContentSize(self);
+        INFO("check if now or later refresh");
+		if (!self->get_gameObject()->get_activeInHierarchy())
+		{
+        INFO("set refresh bool");
+			self->refreshCellsOnEnable = true;
+		}
+		else
+		{
+            INFO("refresh cells");
+			self->RefreshCells(true, false);
+		}
+
+        INFO("get action");
+		auto action = self->didReloadDataEvent;
+        INFO("invoke action");
+		if (action) action->Invoke(self);
+    }
+
+    void LevelCollectionTableView_SetData(GlobalNamespace::LevelCollectionTableView* self, Array<GlobalNamespace::IPreviewBeatmapLevel*>* previewBeatmapLevels, System::Collections::Generic::HashSet_1<Il2CppString*>* favoriteLevelIds, bool beatmapLevelsAreSorted)
+    {
+        INFO("Init");
+		self->Init();
+		self->previewBeatmapLevels = previewBeatmapLevels;
+		self->favoriteLevelIds = favoriteLevelIds;
+        INFO("get rect from table view");
+		auto rectTransform = reinterpret_cast<UnityEngine::RectTransform*>(self->tableView->get_transform());
+		if (false)//beatmapLevelsAreSorted && previewBeatmapLevels.Length > self->showAlphabetScrollbarLevelCountThreshold)
+		{
+            // we're never doing this so it's kind of irrelevant
+            /*
+			AlphabetScrollInfo.Data[] data = AlphabetScrollbarInfoBeatmapLevelHelper.CreateData(previewBeatmapLevels, out self->previewBeatmapLevels);
+			self->alphabetScrollbar.SetData(data);
+			rectTransform.offsetMin = new Vector2(((RectTransform)self->alphabetScrollbar.transform).rect.size.x + 1f, 0f);
+			self->alphabetScrollbar.gameObject.SetActive(true);
+            */
+		}
+		else
+		{
+			rectTransform->set_offsetMin(Vector2(0.0f, 0.0f));
+            INFO("alphabetscrollbar");
+			self->alphabetScrollbar->get_gameObject()->SetActive(false);
+		}
+
+        INFO("reload data");
+		TableView_ReloadData(self->tableView);
+        INFO("scroll to Idx");
+		self->tableView->ScrollToCellWithIdx(0, HMUI::TableView::ScrollPositionType::Beginning, false);
+    }
+
+    void LevelCollectionViewController_SetData(GlobalNamespace::LevelCollectionViewController* self, GlobalNamespace::IBeatmapLevelCollection* beatmapLevelCollection, Il2CppString* headerText, UnityEngine::Sprite* headerSprite, bool sortLevels, UnityEngine::GameObject* noDataInfoPrefab)
+    {
+        self->showHeader = !Il2CppString::IsNullOrEmpty(headerText);
+		self->levelCollectionTableView->Init(headerText, headerSprite);
+        INFO("Destroying no data GO");
+		if (self->noDataInfoGO)
+		{
+			UnityEngine::Object::Destroy(self->noDataInfoGO);
+			self->noDataInfoGO = nullptr;
+		}
+
+        INFO("Checking to refresh table");
+		if (beatmapLevelCollection && beatmapLevelCollection->get_beatmapLevels() && beatmapLevelCollection->get_beatmapLevels()->Length() != 0)
+		{
+            INFO("Updating table view");
+            INFO("Activate GO");
+			self->levelCollectionTableView->get_gameObject()->SetActive(true);
+            INFO("Get Level Array");
+			Array<GlobalNamespace::IPreviewBeatmapLevel*>* beatmapLevels = beatmapLevelCollection->get_beatmapLevels();
+            INFO("Setting data");
+            auto dataModel = self->playerDataModel;
+            INFO("dataModel: %p", dataModel);
+            auto data = dataModel ? dataModel->get_playerData() : nullptr;
+            INFO("data: %p", data);
+            auto favIds = data ? data->get_favoritesLevelIds() : nullptr;
+            INFO("favIds: %p", favIds);
+			LevelCollectionTableView_SetData(self->levelCollectionTableView, beatmapLevels, favIds, sortLevels);
+            INFO("Refresh levels availability");
+			self->levelCollectionTableView->RefreshLevelsAvailability();
+		}
+		else
+		{
+            INFO("instantiating new no data GO if available");
+			if (noDataInfoPrefab)
+			{
+				self->noDataInfoGO = self->container->InstantiatePrefab(noDataInfoPrefab, self->noDataInfoContainer);
+			}
+            INFO("Disablign table view");
+			self->levelCollectionTableView->get_gameObject()->SetActive(false);
+		}
+
+        INFO("checking if in hierarchy");
+		if (self->get_isInViewControllerHierarchy())
+		{
+			if (self->showHeader)
+			{
+                INFO("Showing header");
+				self->levelCollectionTableView->SelectLevelPackHeaderCell();
+			}
+			else
+			{
+                INFO("Clear selection");
+				self->levelCollectionTableView->ClearSelection();
+			}
+                INFO("Crossfade to menu music");
+			self->songPreviewPlayer->CrossfadeToDefault();
+		}
+    }
 
     void SongBrowserModel::ProcessSongList(GlobalNamespace::IAnnotatedBeatmapLevelCollection* selectedBeatmapCollection, GlobalNamespace::LevelSelectionNavigationController* navController)
     {
@@ -244,7 +439,7 @@ namespace SongBrowser
 
         // sort
         INFO("Starting to sort songs by %s", SongSortModeToString(config.sortMode).c_str());
-        stopwatch = stopwatch = System::Diagnostics::Stopwatch::New_ctor();
+        stopwatch->Reset();
         stopwatch->Start();
         sortWasMissingData = false;
         switch (config.sortMode)
@@ -288,6 +483,9 @@ namespace SongBrowser
             case SongSortMode::Length:
                 sortedSongs = SortSongLength(filteredSongs);
                 break;
+            case SongSortMode::Downloads:
+                sortedSongs = SortBeatSaverDownloads(filteredSongs);
+                break;
             case SongSortMode::CustomSort:
                 sortedSongs = customSortHandler ? customSortHandler(filteredSongs) : filteredSongs;
                 break;
@@ -322,14 +520,15 @@ namespace SongBrowser
             coverImage = BeatSaberMarkupLanguage.Utilities.ImageResources.BlankSprite;
         }
         */
+       
         INFO("Creating filtered level pack...");
         static auto collectionName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>(filteredSongsCollectionName);
                                                                         
         auto levelCollection = reinterpret_cast<GlobalNamespace::IBeatmapLevelCollection*>(GlobalNamespace::BeatmapLevelCollection::New_ctor(sortedSongs->items));
 
         auto levelPack = GlobalNamespace::BeatmapLevelPack::New_ctor(   collectionName, 
-                                                                        il2cpp_utils::newcsstr(selectedCollectionName),
-                                                                        selectedBeatmapCollection->get_collectionName(), 
+                                                                        collectionName,
+                                                                        collectionName, 
                                                                         coverImage, 
                                                                         levelCollection);
         /*
@@ -344,18 +543,62 @@ namespace SongBrowser
         auto showPlayerStatsInDetailView = navController->showPlayerStatsInDetailView;
         auto hidePracticeButton = navController->hidePracticeButton;
         auto actionButtonText = navController->actionButtonText;
+        auto noDataInfoPrefab = lcnvc->levelCollectionViewController->noDataInfoGO;
         auto allowedBeatmapDifficultyMask = navController->allowedBeatmapDifficultyMask;
         auto notAllowedCharacteristics = navController->notAllowedCharacteristics;
 
+
         INFO("Calling lcnvc.SetData...");
+
+        INFO("lcnvc: %p", lcnvc);
+        INFO("levelPack: %p", levelPack);
+        INFO("showPlayerStatsInDetailView: %d", showPlayerStatsInDetailView);
+        INFO("hidePracticeButton: %d", hidePracticeButton);
+        INFO("actionButtonText: %p", actionButtonText);
+        INFO("noDataInfoPrefab: %p", noDataInfoPrefab);
+        INFO("allowedBeatmapDifficultyMask: %d", allowedBeatmapDifficultyMask.value);
+        INFO("notAllowedCharacteristics: %p", notAllowedCharacteristics);
+        INFO("lcnvc->levelCollectionViewController: %p", lcnvc->levelCollectionViewController);
+        INFO("lcnvc->levelPackDetailViewController: %p", lcnvc->levelPackDetailViewController);
+
+        // basically SetDataForPack but skipping the redundant re-assignments
+        lcnvc->levelPack = reinterpret_cast<GlobalNamespace::IBeatmapLevelPack*>(levelPack);
+        INFO("Collection SetData");
+        try
+        {
+		    lcnvc->levelCollectionViewController->SetData(levelCollection, il2cpp_utils::newcsstr(selectedCollectionName), coverImage, false, nullptr);
+        }
+        catch(const std::exception& e)
+        {
+            ERROR("%s", e.what());
+        }
+        /*
+        LevelCollectionViewController_SetData(lcnvc->levelCollectionViewController, levelCollection, il2cpp_utils::newcsstr(selectedCollectionName), coverImage, false, nullptr);
+		//lcnvc->levelCollectionViewController->SetData(levelCollection, il2cpp_utils::newcsstr(selectedCollectionName), coverImage, false, nullptr);
+        INFO("Detail SetData");
+		lcnvc->levelPackDetailViewController->SetData(lcnvc->levelPack);
+        INFO("Presenting");
+		lcnvc->PresentViewControllersForPack();
+        */
+        
+        /*
+        lcnvc->SetDataForPack(reinterpret_cast<GlobalNamespace::IBeatmapLevelPack*>(levelPack),
+            true,
+            showPlayerStatsInDetailView,
+            !hidePracticeButton,
+            actionButtonText);
+        */
+        /*
         lcnvc->SetData(reinterpret_cast<GlobalNamespace::IAnnotatedBeatmapLevelCollection*>(levelPack),
             true,
             showPlayerStatsInDetailView,
             !hidePracticeButton,
             actionButtonText,
-            nullptr,
+            noDataInfoPrefab,
             allowedBeatmapDifficultyMask,
             notAllowedCharacteristics);
+        */
+        INFO("Done Filtering & sorting");
     }
 
     std::string SongBrowserModel::GetSongHash(std::string_view levelId)
@@ -426,6 +669,7 @@ namespace SongBrowser
         for (int i = 0; i < length; i++)
         {
             auto level = levels->values[i];
+            if (!level) continue;
             std::string searchString = "";
             searchString += to_utf8(csstrtostr(level->get_songName()));
             searchString += ' ';
@@ -451,11 +695,12 @@ namespace SongBrowser
         List<GlobalNamespace::IPreviewBeatmapLevel*>* filtered = List<GlobalNamespace::IPreviewBeatmapLevel*>::New_ctor();
 
         ArrayUtil::ForEach(levels, [&](auto x){
+            if (!x) return;
             std::string levelId = to_utf8(csstrtostr(x->get_levelID()));
             auto hash = GetSongHash(levelId);
-            auto song = SongDataCoreUtils::GetSong(hash);
+            auto song = SongDataCoreUtils::BeatStarSong::GetSong(hash);
             if (!song) return;
-            auto diffVec = SongDataCoreUtils::GetDiffVec(song);
+            auto diffVec = song->GetDiffVec();
 
             bool isRanked = false;
             for (auto diff : diffVec)
@@ -486,17 +731,18 @@ namespace SongBrowser
     {
         List<GlobalNamespace::IPreviewBeatmapLevel*>* filtered = List<GlobalNamespace::IPreviewBeatmapLevel*>::New_ctor();
         ArrayUtil::ForEach(levels, [&](auto x){
+            if (!x) return;
             std::string levelId = to_utf8(csstrtostr(x->get_levelID()));
             auto hash = GetSongHash(levelId);
-            auto song = SongDataCoreUtils::GetSong(hash);
+            auto song = SongDataCoreUtils::BeatStarSong::GetSong(hash);
             if (!song) return;
             // now we have our song
 
-            auto diffVec = SongDataCoreUtils::GetDiffVec(song);
+            auto diffVec = song->GetDiffVec();
 
             for (auto diff : diffVec)
             {
-                auto reqVec = SongDataCoreUtils::GetReqVec(diff);
+                auto reqVec = diff->GetReqVec();
                 if (reqVec.size() > 0)
                 {
                     // we have requirements
@@ -591,12 +837,12 @@ namespace SongBrowser
             auto firstHash = GetSongHash(firstlevelID);
             auto secondHash = GetSongHash(secondlevelID);
 
-            auto firstSong = SongDataCoreUtils::GetSong(firstHash);
-            auto secondSong = SongDataCoreUtils::GetSong(secondHash);
+            auto firstSong = SongDataCoreUtils::BeatStarSong::GetSong(firstHash);
+            auto secondSong = SongDataCoreUtils::BeatStarSong::GetSong(secondHash);
 
             if (!secondSong) return false;
             else if (!firstSong) return true;
-            else return SongDataCoreUtils::maxPpValue(firstSong) < SongDataCoreUtils::maxPpValue(secondSong);
+            else return firstSong->maxPpValue() < secondSong->maxPpValue();
         });
         return levels;
     }
@@ -616,12 +862,12 @@ namespace SongBrowser
             auto firstHash = GetSongHash(firstlevelID);
             auto secondHash = GetSongHash(secondlevelID);
 
-            auto firstSong = SongDataCoreUtils::GetSong(firstHash);
-            auto secondSong = SongDataCoreUtils::GetSong(secondHash);
+            auto firstSong = SongDataCoreUtils::BeatStarSong::GetSong(firstHash);
+            auto secondSong = SongDataCoreUtils::BeatStarSong::GetSong(secondHash);
 
             if (!secondSong) return false;
             else if (!firstSong) return true;
-            else return SongDataCoreUtils::maxStarValue(firstSong) < SongDataCoreUtils::maxStarValue(secondSong);
+            else return firstSong->maxStarValue() < secondSong->maxStarValue();
         });
         return levels;
     }
@@ -707,8 +953,8 @@ namespace SongBrowser
             auto firstHash = GetSongHash(firstlevelID);
             auto secondHash = GetSongHash(secondlevelID);
 
-            auto firstSong = SongDataCoreUtils::GetSong(firstHash);
-            auto secondSong = SongDataCoreUtils::GetSong(secondHash);
+            auto firstSong = SongDataCoreUtils::BeatStarSong::GetSong(firstHash);
+            auto secondSong = SongDataCoreUtils::BeatStarSong::GetSong(secondHash);
 
             if (!secondSong) return false;
             else if (!firstSong) return true;
@@ -734,8 +980,8 @@ namespace SongBrowser
             auto firstHash = GetSongHash(firstlevelID);
             auto secondHash = GetSongHash(secondlevelID);
 
-            auto firstSong = SongDataCoreUtils::GetSong(firstHash);
-            auto secondSong = SongDataCoreUtils::GetSong(secondHash);
+            auto firstSong = SongDataCoreUtils::BeatStarSong::GetSong(firstHash);
+            auto secondSong = SongDataCoreUtils::BeatStarSong::GetSong(secondHash);
 
             if (!secondSong) return false;
             else if (!firstSong) return true;
@@ -743,6 +989,31 @@ namespace SongBrowser
         });
         return levels;
         */
+    }
+
+    List<GlobalNamespace::IPreviewBeatmapLevel*>* SongBrowserModel::SortBeatSaverDownloads(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels)
+    {
+        if (!SongDataCoreUtils::get_loaded())
+        {
+            sortWasMissingData = true;
+            return levels;
+        }
+
+        std::sort(&levels->items->values[0], &levels->items->values[levels->get_Count()], [&](auto x, auto y) {
+            std::string firstlevelID = x ? to_utf8(csstrtostr(x->get_levelID())) : "";
+            std::string secondlevelID = y ? to_utf8(csstrtostr(y->get_levelID())) : "";
+
+            auto firstHash = GetSongHash(firstlevelID);
+            auto secondHash = GetSongHash(secondlevelID);
+
+            auto firstSong = SongDataCoreUtils::BeatStarSong::GetSong(firstHash);
+            auto secondSong = SongDataCoreUtils::BeatStarSong::GetSong(secondHash);
+
+            if (!secondSong) return false;
+            else if (!firstSong) return true;
+            else return firstSong->downloads < secondSong->downloads;
+        });
+        return levels;
     }
 
     List<GlobalNamespace::IPreviewBeatmapLevel*>* SongBrowserModel::SortBeatSaverRating(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels)
@@ -760,12 +1031,12 @@ namespace SongBrowser
             auto firstHash = GetSongHash(firstlevelID);
             auto secondHash = GetSongHash(secondlevelID);
 
-            auto firstSong = SongDataCoreUtils::GetSong(firstHash);
-            auto secondSong = SongDataCoreUtils::GetSong(secondHash);
+            auto firstSong = SongDataCoreUtils::BeatStarSong::GetSong(firstHash);
+            auto secondSong = SongDataCoreUtils::BeatStarSong::GetSong(secondHash);
 
             if (!secondSong) return false;
             else if (!firstSong) return true;
-            else return SongDataCoreUtils::GetRating(firstSong) < SongDataCoreUtils::GetRating(secondSong);
+            else return firstSong->GetRating() < secondSong->GetRating();
         });
         return levels;
     }
@@ -785,12 +1056,12 @@ namespace SongBrowser
             auto firstHash = GetSongHash(firstlevelID);
             auto secondHash = GetSongHash(secondlevelID);
 
-            auto firstSong = SongDataCoreUtils::GetSong(firstHash);
-            auto secondSong = SongDataCoreUtils::GetSong(secondHash);
+            auto firstSong = SongDataCoreUtils::BeatStarSong::GetSong(firstHash);
+            auto secondSong = SongDataCoreUtils::BeatStarSong::GetSong(secondHash);
 
             if (!secondSong) return false;
             else if (!firstSong) return true;
-            else return SongDataCoreUtils::GetHeat(firstSong) < SongDataCoreUtils::GetHeat(secondSong);
+            else return firstSong->GetHeat() < secondSong->GetHeat();
         });
         return levels;
     }

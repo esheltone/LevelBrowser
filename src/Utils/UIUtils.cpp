@@ -17,6 +17,8 @@
 
 #include <map>
 
+#include "logging.hpp"
+
 using namespace UnityEngine;
 using namespace UnityEngine::UI;
 using namespace UnityEngine::Events;
@@ -209,28 +211,38 @@ namespace UIUtils
 
     TMPro::TextMeshProUGUI* CreateText(Transform* parent, std::string_view text, float fontSize, Vector2 anchoredPosition, Vector2 sizeDelta)
     {
+        INFO("Creating text");
         GET_STRING(CustomUIText);
         auto gameObj = GameObject::New_ctor(CustomUIText_cs);
         gameObj->SetActive(false);
 
         auto textMesh = gameObj->AddComponent<CurvedTextMeshPro*>();
-        textMesh->set_font(Object::Instantiate(ArrayUtil::First(Resources::FindObjectsOfTypeAll<TMP_FontAsset*>(), [](auto t) { 
-            static auto font = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("Teko-Medium SDF No Glow");
+        INFO("find font");
+        static auto font = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("Teko-Medium SDF");
+        auto orig = ArrayUtil::First(Resources::FindObjectsOfTypeAll<TMP_FontAsset*>(), [&](auto t) { 
+            if (!t || !t->get_name()) return false;
             return t->get_name()->Equals(font);
-        })));
+        });
 
+        INFO("setting to font: %p", orig);
+        textMesh->set_font(orig);
+
+        INFO("rect");
         auto rect = textMesh->get_rectTransform();
         rect->SetParent(parent, false);
         textMesh->set_text(il2cpp_utils::newcsstr(text));
         textMesh->set_fontSize(fontSize);
         textMesh->set_color({1.0f, 1.0f, 1.0f, 1.0f});
+        INFO("text data set");
 
         rect->set_anchorMin(Vector2(0.5f, 0.5f));
         rect->set_anchorMax(Vector2(0.5f, 0.5f));
         rect->set_sizeDelta(sizeDelta);
         rect->set_anchoredPosition(anchoredPosition);
+        INFO("rect data set");
 
         gameObj->SetActive(true);
+        INFO("returning obj");
         return textMesh;
     }
 

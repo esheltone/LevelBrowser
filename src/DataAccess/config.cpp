@@ -46,6 +46,7 @@ void SaveConfig()
     ADD_VAL(randomSongSeed);
     ADD_VAL(invertSortResults);
 
+    getConfig().Write();
     INFO("Saved Configuration!");
 }
 

@@ -5,6 +5,7 @@
 
 #include "songloader/shared/API.hpp"
 #include "Utils/SpriteUtils.hpp"
+#include "Utils/SongDataCoreUtils.hpp"
 
 DEFINE_TYPE(SongBrowser, SongBrowserApplication);
 
@@ -17,7 +18,7 @@ namespace SongBrowser
     void SongBrowserApplication::OnLoad()
     {
         UnityEngine::GameObject::New_ctor(il2cpp_utils::createcsstr("Beat Saber SongBrowser Plugin"))->AddComponent<SongBrowserApplication*>();
-        //mainProgressBar = SongBrowser::UI::ProgressBar::Create();
+        mainProgressBar = SongBrowser::UI::ProgressBar::Create();
         SpriteUtils::Init();
         INFO("Application load complete!");
     }
@@ -46,7 +47,8 @@ namespace SongBrowser
         //SongDataCore.Plugin.Songs.OnDataFinishedProcessing += OnScoreSaberDataDownloaded;
 
         // I can't just check if songs are loaded, so lets hope we are adding this callback before songs are loaded
-        RuntimeSongLoader::API::AddSongsLoadedEvent(std::bind(&SongBrowserApplication::OnSongLoaderLoadedSongs, this, std::placeholders::_1));
+        if (RuntimeSongLoader::API::HasLoadedSongs()) SongBrowserApplication::OnSongLoaderLoadedSongs(RuntimeSongLoader::API::GetLoadedSongs());
+        else RuntimeSongLoader::API::AddSongsLoadedEvent(std::bind(&SongBrowserApplication::OnSongLoaderLoadedSongs, this, std::placeholders::_1));
     }
 
     void SongBrowserApplication::OnSongLoaderLoadedSongs(const std::vector<GlobalNamespace::CustomPreviewBeatmapLevel*>& levels)
@@ -89,7 +91,7 @@ namespace SongBrowser
         if (!hasShownProgressBar)
         {
             INFO("Showing progress bar");
-            //mainProgressBar->ShowMessage("");
+            mainProgressBar->ShowMessage("");
             hasShownProgressBar = true;
         }
     }

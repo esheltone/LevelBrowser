@@ -3,28 +3,42 @@
 #include <string_view>
 #include <vector>
 #include "songdatacore/shared/bindings.hpp"
+#include "GlobalNamespace/BeatmapCharacteristicSO.hpp"
 
 // this is just a wrapper around the bindings for songdatacore cause this looks a bit better :) 
 namespace SongDataCoreUtils
 {
-    using BeatStarSong = song_data_core::BeatStarSong;
-    using BeatStarSongDifficultyStats = song_data_core::BeatStarSongDifficultyStats;
+    struct BeatStarSong;
+    struct BeatStarSongDifficultyStats;
+    using BeatStarCharacteristics = song_data_core::BeatStarCharacteristics;
+    
+    struct BeatStarSong : public song_data_core::BeatStarSong
+    {
+        public:
+            BeatStarSong(song_data_core::BeatStarSong orig) : song_data_core::BeatStarSong(orig) {};
+            static const BeatStarSong* GetSong(std::string_view hash);
+            double maxPpValue() const;
+            double maxStarValue() const;
+            double approximatePpValue() const;
+            const BeatStarSongDifficultyStats* GetDiff(int idx) const;
+            const BeatStarSongDifficultyStats* GetDiff(const BeatStarCharacteristics* characteristic, int idx) const;
+            const BeatStarSongDifficultyStats* GetDiff(const BeatStarCharacteristics* characteristic, std::string_view name) const;
+            
+            std::vector<const BeatStarSongDifficultyStats*> GetDiffVec() const;
+            const BeatStarCharacteristics* GetChar(int char_) const;
+            const BeatStarCharacteristics* GetChar(GlobalNamespace::BeatmapCharacteristicSO* gameChar) const;
+            float GetHeat()const;
+            float GetRating() const;
+    };
+
+    struct BeatStarSongDifficultyStats : public song_data_core::BeatStarSongDifficultyStats
+    {
+        double approximatePpValue() const;
+        std::vector<std::string> GetReqVec() const;
+    };
+
+    BeatStarCharacteristics CharacteristicFromDiff(const BeatStarSongDifficultyStats* diff);
 
     void Init();
     bool get_loaded();
-
-    float GetHeat(const BeatStarSong* song);
-    float GetRating(const BeatStarSong* song);
-
-    double approximatePpValue(const BeatStarSongDifficultyStats* diff);
-    double approximatePpValue(const BeatStarSong* song);
-
-    double maxPpValue(const BeatStarSong* song);
-    double maxStarValue(const BeatStarSong* song);
-
-    const BeatStarSong* GetSong(const std::string_view& hash);
-    const BeatStarSongDifficultyStats* GetDiff(const BeatStarSong* song, int diff);
-
-    std::vector<const BeatStarSongDifficultyStats*> GetDiffVec(const BeatStarSong* song);
-    std::vector<std::string> GetReqVec(const BeatStarSongDifficultyStats* diff);
 }

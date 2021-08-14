@@ -67,6 +67,7 @@ DECLARE_CLASS_CODEGEN(SongBrowser, SongBrowserModel, Il2CppObject,
         List<GlobalNamespace::IPreviewBeatmapLevel*>* SortSongLength(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels);
         List<GlobalNamespace::IPreviewBeatmapLevel*>* SortUpVotes(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels);
         List<GlobalNamespace::IPreviewBeatmapLevel*>* SortBeatSaverPlayCount(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels);
+        List<GlobalNamespace::IPreviewBeatmapLevel*>* SortBeatSaverDownloads(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels);
         List<GlobalNamespace::IPreviewBeatmapLevel*>* SortBeatSaverRating(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels);
         List<GlobalNamespace::IPreviewBeatmapLevel*>* SortBeatSaverHeat(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels);
         

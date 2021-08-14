@@ -299,7 +299,7 @@ namespace SongBrowser::DataAccess
         INFO("Reloading SongList TableView");
         tableView->ReloadData();
 
-        INFO("Attempting to scroll to level [%s]]", currentSelectedLevelId.c_str());
+        INFO("Attempting to scroll to level [%s]", currentSelectedLevelId.c_str());
         std::string selectedLevelID = currentSelectedLevelId;
         if (selectedLevelID == "")
         {

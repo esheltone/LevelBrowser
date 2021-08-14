@@ -38,7 +38,7 @@ MAKE_AUTO_HOOK_MATCH(FlowCoordinator_PresentFlowCoordinator, &HMUI::FlowCoordina
 {
     FlowCoordinator_PresentFlowCoordinator(self, flowCoordinator, finishedCallback, animationDirection, immediately, replaceTopViewController);
     INFO("Checking if instance exists");
-    if (!SongBrowser::SongBrowserApplication::instance) SongBrowser::SongBrowserApplication::OnLoad();
+    //if (!SongBrowser::SongBrowserApplication::instance) SongBrowser::SongBrowserApplication::OnLoad();
     INFO("Going Ahead with checks");
 
     // postfix
@@ -66,7 +66,7 @@ MAKE_AUTO_HOOK_MATCH(FlowCoordinator_PresentFlowCoordinator, &HMUI::FlowCoordina
 
 MAKE_AUTO_HOOK_MATCH(MainFlowCoordinator_DidActivate, &GlobalNamespace::MainFlowCoordinator::DidActivate, void, GlobalNamespace::MainFlowCoordinator* self, bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling)
 {
-    //SongBrowser::SongBrowserApplication::OnLoad();
+    if (!SongBrowser::SongBrowserApplication::instance) SongBrowser::SongBrowserApplication::OnLoad();
     MainFlowCoordinator_DidActivate(self, firstActivation, addedToHierarchy, screenSystemEnabling);
 }
 

@@ -19,7 +19,8 @@ enum SongSortMode {
     Stars,
     Bpm,
     Length,
-
+    Downloads,
+    
     // Allow mods to extend functionality.
     CustomSort
 };

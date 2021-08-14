@@ -312,7 +312,7 @@ namespace SongBrowser::UI
         INFO("Create sort buttons...");
         static constexpr const float sortButtonFontSize = 2.0f;
         static constexpr const float sortButtonX = -63.0f;
-        static constexpr const float sortButtonWidth = 11.75f;
+        static constexpr const float sortButtonWidth = 10.50f;//= 11.75f;
         static constexpr const float buttonSpacing = 0.25f;
         static constexpr const float buttonY = BUTTON_ROW_Y;
         static constexpr const float buttonHeight = 5.0f;
@@ -323,12 +323,13 @@ namespace SongBrowser::UI
             {"Newest", SongSortMode::Newest},
             {"Plays", SongSortMode::YourPlayCount},
             {"BPM", SongSortMode::Bpm},
-            {"Time", SongSortMode::Length},
+            {"Length", SongSortMode::Length},
             {"PP", SongSortMode::PP},
             {"Stars", SongSortMode::Stars},
             {"UpVotes", SongSortMode::UpVotes},
             {"Rating", SongSortMode::Rating},
-            {"Heat", SongSortMode::Heat}
+            {"Heat", SongSortMode::Heat},
+            {"Downloads", SongSortMode::Downloads}
         };
 
         sortButtonGroup = List<SongSortButton*>::New_ctor();
@@ -402,7 +403,8 @@ namespace SongBrowser::UI
             UIUtils::SetButtonTextSize(filterButton->button, filterButtonFontSize);
             UIUtils::ToggleWordWrapping(filterButton->button, false);
 
-            if (i == 3)
+            // don't allow to filter for reqs if no cjd
+            if (p.second == SongFilterMode::Requirements)
             {
                 auto modList = Modloader::getMods();
                 auto itr = modList.find("CustomJSONData");
@@ -614,13 +616,11 @@ namespace SongBrowser::UI
     {
         if (!uiCreated)
             return;
-        model->ProcessSongList(lastLevelCollection, beatUi->LevelSelectionNavigationController);
+        model->ProcessSongList(lastLevelCollection ? lastLevelCollection : beatUi->GetCurrentSelectedAnnotatedBeatmapLevelCollection(), beatUi->LevelSelectionNavigationController);
     }
 
     void SongBrowserUI::CancelFilter()
     {
-        
-
         INFO("Cancelling filter, levelCollection %s", lastLevelCollection && lastLevelCollection->get_collectionName() ? to_utf8(csstrtostr(lastLevelCollection->get_collectionName())).c_str() : "NULL");
         config.filterMode = SongFilterMode::None;
 
@@ -756,6 +756,18 @@ namespace SongBrowser::UI
             INFO("Data for sort type is not available.");
             return;
         }
+        /*
+        auto curCollection = beatUi->GetCurrentSelectedAnnotatedBeatmapLevelCollection();
+        std::string collectionName = curCollection ? to_utf8(csstrtostr(curCollection->get_collectionName())) : "";
+        if (!lastLevelCollection ||
+            (curCollection &&
+            // strcmp returns 0 for same, so we need both to not be same
+            strcmp(collectionName.c_str(), SongBrowserModel::filteredSongsCollectionName) &&
+            strcmp(collectionName.c_str(), SongBrowserModel::playlistSongsCollectionName)))
+        {
+            lastLevelCollection = curCollection;
+        }
+        */
 
         // Clear current selected level id so our song list jumps to the start
         model->lastSelectedLevelId = "";
@@ -785,7 +797,7 @@ namespace SongBrowser::UI
         INFO("FilterButton %d clicked.", mode);
 
         auto curCollection = beatUi->GetCurrentSelectedAnnotatedBeatmapLevelCollection();
-        std::string collectionName = to_utf8(csstrtostr(curCollection->get_collectionName()));
+        std::string collectionName = curCollection ? to_utf8(csstrtostr(curCollection->get_collectionName())) : "";
         if (!lastLevelCollection ||
             (curCollection &&
             // strcmp returns 0 for same, so we need both to not be same
@@ -1094,14 +1106,13 @@ namespace SongBrowser::UI
     void SongBrowserUI::RefreshScoreSaberData(GlobalNamespace::IPreviewBeatmapLevel* level)
     {
         if (!SongDataCoreUtils::get_loaded()) return;
-
         auto difficulty = beatUi->LevelDifficultyViewController->get_selectedDifficulty();
         auto diffVal = difficulty.value;
         std::string difficultyString = BeatmapDifficultyToString(diffVal);
-        if (difficultyString == "ExpertPlus")
-        {
-            difficultyString = "Expert+";
-        }
+        //if (difficultyString == "ExpertPlus")
+        //{
+        //    difficultyString = "Expert+";
+        //}
 
         INFO("%s", difficultyString.c_str());
 
@@ -1112,21 +1123,30 @@ namespace SongBrowser::UI
         std::string levelID = levelIDcs ? to_utf8(csstrtostr(levelIDcs)) : "";
         auto hash = SongBrowserModel::GetSongHash(levelID);
         // BeatStarSong*, if null not found 
-        auto song = SongDataCoreUtils::GetSong(hash);
+        auto song = SongDataCoreUtils::BeatStarSong::GetSong(hash);
         if (song)
         {
             INFO("Song existed!");
-            // BeatStarSongDifficultyStats*, null if nonexistent
-            auto songDifficulty = SongDataCoreUtils::GetDiff(song, diffVal);
-            if (songDifficulty)
+            auto char_ = song->GetChar(beatUi->BeatmapCharacteristicSelectionViewController->get_selectedBeatmapCharacteristic());
+            if (char_)
             {
-                INFO("Display pp for song.");
-                // no pp cause songdatacore no pp
-                double pp = SongDataCoreUtils::approximatePpValue(songDifficulty);
-                double star = songDifficulty->stars;
+                // BeatStarSongDifficultyStats*, null if nonexistent
+                auto songDifficulty = song->GetDiff(char_, difficultyString);
+                if (songDifficulty)
+                {
+                    INFO("Display pp for diff %s", songDifficulty->diff.string_data);
+                    // no pp cause songdatacore no pp
+                    double pp = songDifficulty->approximatePpValue();
+                    double star = songDifficulty->stars;
 
-                UIUtils::SetStatButtonText(ppStatButton, string_format("%.1f", pp));
-                UIUtils::SetStatButtonText(starStatButton, string_format("%.1f", star));
+                    UIUtils::SetStatButtonText(ppStatButton, string_format("%.1f", pp));
+                    UIUtils::SetStatButtonText(starStatButton, string_format("%.1f", star));
+                }
+                else
+                {
+                    UIUtils::SetStatButtonText(ppStatButton, "NA");
+                    UIUtils::SetStatButtonText(starStatButton, "NA");
+                }
             }
             else
             {

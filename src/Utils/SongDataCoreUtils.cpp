@@ -1,6 +1,9 @@
+
 #include "Utils/SongDataCoreUtils.hpp"
+
 #include <thread>
 #include <cmath>
+#include <map>
 #include "logging.hpp"
 #include "System/DateTime.hpp"
 
@@ -23,39 +26,29 @@ namespace SongDataCoreUtils
     {
         return loaded;
     }
-
-    double approximatePpValue(const BeatStarSongDifficultyStats* diff)
+ 
+    const BeatStarSong* BeatStarSong::GetSong(std::string_view hash)
     {
-        if(!diff || diff->stars <= 0.05 || !diff->ranked)
-            return 0;
-
-        return diff->stars * (45.0f + ((10.0f - diff->stars) / 7.0f));
+        INFO("Getting song with hash %s", hash.data());
+        return reinterpret_cast<const BeatStarSong*>(song_data_core::Beatstar_GetSong(hash.data()));
     }
 
-    double approximatePpValue(const BeatStarSong* song)
+    double BeatStarSong::maxPpValue() const
     {
-        auto diffVec = GetDiffVec(song);
-        double pp = 0.0f;
-        for (auto diff : diffVec) pp += approximatePpValue(diff);
-        return pp; 
-    }
-
-    double maxPpValue(const BeatStarSong* song)
-    {
-        auto diffVec = GetDiffVec(song);
+        auto diffVec = GetDiffVec();
         double max = 0.0f;
-        for (auto diff : diffVec) 
+        for (auto diff : diffVec)
         {
-            double pp = approximatePpValue(diff);
+            double pp = diff->approximatePpValue();
             if (pp > max) max = pp;
         }
 
         return max;
     }
 
-    double maxStarValue(const BeatStarSong* song)
+    double BeatStarSong::maxStarValue() const
     {
-        auto diffVec = GetDiffVec(song);
+        auto diffVec = GetDiffVec();
         double max = 0.0f;
         for (auto diff : diffVec) 
         {
@@ -64,65 +57,159 @@ namespace SongDataCoreUtils
         return max;
     }
 
-    const BeatStarSong* GetSong(const std::string_view& hash)
+    std::map<const BeatStarSong*, double> ppSongMap;
+    double BeatStarSong::approximatePpValue() const
     {
-        INFO("Getting beatstar song with hash %s", hash.data());
-        return song_data_core::Beatstar_GetSong(hash.data());
+        auto itr = ppSongMap.find(this);
+        if (itr != ppSongMap.end()) return itr->second;
+        auto diffVec = GetDiffVec();
+        double pp = 0.0f;
+        for (auto diff : diffVec) pp += diff->approximatePpValue();
+        ppSongMap[this] = pp;
+        return pp; 
     }
 
-    const BeatStarSongDifficultyStats* GetDiff(const BeatStarSong* song, int diff)
+    const BeatStarSongDifficultyStats* BeatStarSong::GetDiff(int idx) const
     {
-        return song_data_core::BeatStarSong_DiffGet(song, diff);
+        return reinterpret_cast<const BeatStarSongDifficultyStats*>(song_data_core::BeatStarSong_DiffGet(this, idx));
     }
 
-    std::vector<const BeatStarSongDifficultyStats*> GetDiffVec(const BeatStarSong* song)
+    const BeatStarSongDifficultyStats* BeatStarSong::GetDiff(const BeatStarCharacteristics* characteristic, int idx) const
     {
-        int difflen = song_data_core::BeatStarSong_DiffLen(song);
+        char* key = const_cast<char*>(song_data_core::BeatStarSong_CharacteristicsGetStrKey(this, characteristic, idx));
+        return reinterpret_cast<const BeatStarSongDifficultyStats*>(song_data_core::BeatStarSong_CharacteristicStatsGet(this, characteristic, key));
+    }
+
+    const BeatStarSongDifficultyStats* BeatStarSong::GetDiff(const BeatStarCharacteristics* characteristic, std::string_view name) const
+    {
+        int charLen = song_data_core::BeatStarSong_CharacteristicDifficultyLen(this, characteristic);
+        INFO("Characteristic %p had %d diffs", characteristic, charLen);
+        for (int i = 0; i < charLen; i++)
+        {
+            char* key = const_cast<char*>(song_data_core::BeatStarSong_CharacteristicsGetStrKey(this, characteristic, i));
+            INFO("key: %s", key);
+            auto diff = reinterpret_cast<const BeatStarSongDifficultyStats*>(song_data_core::BeatStarSong_CharacteristicStatsGet(this, characteristic, key));
+            if (!diff) continue;
+            INFO("Comparing %s to %s", diff->diff.string_data, name.data());
+            if (!strcmp(diff->diff.string_data, name.data())) return diff;
+        }
+        return nullptr;
+    }
+
+    std::vector<const BeatStarSongDifficultyStats*> BeatStarSong::GetDiffVec() const
+    {
+        int difflen = song_data_core::BeatStarSong_DiffLen(this);
         std::vector<const BeatStarSongDifficultyStats*> vec;
         for (int i = 0; i < difflen; i++)
         {
-            vec.push_back(GetDiff(song, i));
+            vec.push_back(GetDiff(i));
         }
 
         return vec;
     }
 
-    std::vector<std::string> GetReqVec(const BeatStarSongDifficultyStats* diff)
+    const BeatStarCharacteristics* BeatStarSong::GetChar(int char_) const
     {
-        int len = BeatStarSongDifficultyStats_requirementsLen(diff);
-        std::vector<std::string> vec;
-        for (int i = 0; i < len; i++)
+        return reinterpret_cast<const BeatStarCharacteristics*>(song_data_core::BeatStarSong_map_CharacteristicsKeyGet(this, char_));
+    }
+    
+    BeatStarCharacteristics CharStringToEnum(std::string characteristic)
+    {
+        switch(characteristic.c_str()[0])
         {
-            auto stringWrapper = BeatStarSongDifficultyStats_requirementsGet(diff, i);
-            vec.push_back(std::string(stringWrapper->string_data));
+            case 'S': return BeatStarCharacteristics::Standard;
+            case 'O': return BeatStarCharacteristics::OneSaber;
+            case 'N': return BeatStarCharacteristics::NoArrows;
+            case 'D':
+                if (characteristic.c_str()[6] == '9') return BeatStarCharacteristics::Degree90;
+                else return BeatStarCharacteristics::Degree360;
+            case 'L': 
+                if (tolower(characteristic.c_str()[1]) == 'a') return BeatStarCharacteristics::Lawless;
+                else return BeatStarCharacteristics::Lightshow;
+            default: return BeatStarCharacteristics::Unknown;
+        }
+    }
+
+    const BeatStarCharacteristics* BeatStarSong::GetChar(GlobalNamespace::BeatmapCharacteristicSO* gameChar) const
+    {
+        auto mine = CharStringToEnum(to_utf8(csstrtostr(gameChar->get_serializedName())));
+        int chars = song_data_core::BeatStarSong_map_CharacteristicsLen(this);
+
+        for (int i = 0; i < chars; i++)
+        {
+            auto their = GetChar(i);
+            if (mine == *their) return their;
+        }
+        return nullptr;
+    }
+
+    std::map<const BeatStarSong*, float> heatmap;
+    float BeatStarSong::GetHeat() const
+    {
+        // find song in heatmap so that we dont just recalculate every time
+        auto itr = heatmap.find(this);
+        if (itr != heatmap.end())
+        {
+            return itr->second;
         }
 
-        return vec;
-    }
+        std::string date(uploaded.string_data);
 
-    float GetRating(const BeatStarSong* song)
-    {
-        return song_data_core::BeatStarSong_rating(song);
-    }
+        // optimization so that we only do the calculation once
+        static time_t time_past_epoch = time(0) - BEATSAVER_EPOCH;
 
-    float GetHeat(const BeatStarSong* song)
-    {
-        #warning not implemented
-        INFO("uploaded: %s", song->uploaded.string_data);
+        struct tm tm;
+        memset(&tm, 0, sizeof(struct tm));
+        strptime(uploaded.string_data, "%FT%T%z", &tm);
+        time_t uploaded = mktime(&tm);
 
-        static System::DateTime EPOCH = System::DateTime(1970, 1, 1);
-        //(this.uploaded.getTime() - epoch.getTime()) / 1000 - BEATSAVER_EPOCH
-        int seconds =
-          (EPOCH.get_Second() / 1000 - BEATSAVER_EPOCH);
+        int seconds = uploaded - time_past_epoch;
 
-        int score = song->upvotes - song->downvotes;
+        int score = upvotes - downvotes;
         int absolute = abs(score);
         int sign = score < 0 ? -1 : score > 0 ? 1 : 0;
 
         double order = log10(absolute > 1.0f ? absolute : 1);
         float heat = (float)sign * order + (float)seconds / 45000;
 
+        heatmap[this] = heat;
         return heat;
+    }
 
+    float BeatStarSong::GetRating() const
+    {
+        return song_data_core::BeatStarSong_rating(this);
+    }
+
+    std::map<const BeatStarSongDifficultyStats*, double> ppMap;
+    double BeatStarSongDifficultyStats::approximatePpValue() const
+    {
+        auto itr = ppMap.find(this);
+        if (itr != ppMap.end()) return itr->second;
+        double pp;
+        if(stars <= 0.05 || !ranked)
+            pp = 0;
+        else
+            pp = stars * (45.0 + ((10.0 - stars) / 7.0));
+        ppMap[this] = pp;
+        return pp;
+    }
+
+    std::vector<std::string> BeatStarSongDifficultyStats::GetReqVec() const
+    {
+        int len = BeatStarSongDifficultyStats_requirementsLen(this);
+        std::vector<std::string> vec;
+        for (int i = 0; i < len; i++)
+        {
+            auto stringWrapper = BeatStarSongDifficultyStats_requirementsGet(this, i);
+            vec.push_back(std::string(stringWrapper->string_data));
+        }
+
+        return vec;
+    }
+
+    BeatStarCharacteristics CharacteristicFromDiff(const BeatStarSongDifficultyStats* diff)
+    {
+        return song_data_core::BeatStarSongDifficultyStats_DiffCharacteristicsGet(diff);
     }
 }

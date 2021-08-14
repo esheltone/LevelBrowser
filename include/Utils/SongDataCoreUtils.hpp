@@ -12,8 +12,19 @@ namespace SongDataCoreUtils
 
     void Init();
     bool get_loaded();
+
+    float GetHeat(const BeatStarSong* song);
+    float GetRating(const BeatStarSong* song);
+
     double approximatePpValue(const BeatStarSongDifficultyStats* diff);
+    double approximatePpValue(const BeatStarSong* song);
+
+    double maxPpValue(const BeatStarSong* song);
+    double maxStarValue(const BeatStarSong* song);
+
     const BeatStarSong* GetSong(const std::string_view& hash);
     const BeatStarSongDifficultyStats* GetDiff(const BeatStarSong* song, int diff);
+
     std::vector<const BeatStarSongDifficultyStats*> GetDiffVec(const BeatStarSong* song);
+    std::vector<std::string> GetReqVec(const BeatStarSongDifficultyStats* diff);
 }

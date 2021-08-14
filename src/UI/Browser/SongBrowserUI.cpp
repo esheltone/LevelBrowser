@@ -321,7 +321,7 @@ namespace SongBrowser::UI
             {"Title", SongSortMode::Default},
             {"Author", SongSortMode::Author},
             {"Newest", SongSortMode::Newest},
-            {"#Plays", SongSortMode::YourPlayCount},
+            {"Plays", SongSortMode::YourPlayCount},
             {"BPM", SongSortMode::Bpm},
             {"Time", SongSortMode::Length},
             {"PP", SongSortMode::PP},

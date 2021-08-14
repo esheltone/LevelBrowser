@@ -245,7 +245,7 @@ namespace SongBrowser::DataAccess
         auto levelID_cs = il2cpp_utils::newcsstr(levelID);
         // acquire the index or try the last row
         selectedIndex = ArrayUtil::FirstIndexOf(levels, [&](auto x) { 
-            return x->get_levelID()->Equals(levelID_cs); 
+            return x && x->get_levelID()->Equals(levelID_cs); 
         });
         
         if (selectedIndex < 0)

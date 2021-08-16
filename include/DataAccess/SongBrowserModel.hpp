@@ -54,6 +54,7 @@ DECLARE_CLASS_CODEGEN(SongBrowser, SongBrowserModel, Il2CppObject,
         List<GlobalNamespace::IPreviewBeatmapLevel*>* FilterSearch(Array<GlobalNamespace::IPreviewBeatmapLevel*>* levels);
         List<GlobalNamespace::IPreviewBeatmapLevel*>* FilterRanked(Array<GlobalNamespace::IPreviewBeatmapLevel*>* levels, bool includeRanked, bool includeUnranked);
         List<GlobalNamespace::IPreviewBeatmapLevel*>* FilterRequirements(Array<GlobalNamespace::IPreviewBeatmapLevel*>* levels);
+        List<GlobalNamespace::IPreviewBeatmapLevel*>* FilterUnplayed(Array<GlobalNamespace::IPreviewBeatmapLevel*>* levels);
 
         /* -- Sorting --*/
         List<GlobalNamespace::IPreviewBeatmapLevel*>* SortOriginal(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels);

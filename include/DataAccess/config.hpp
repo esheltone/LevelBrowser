@@ -34,6 +34,7 @@ enum SongFilterMode {
     Ranked,
     Unranked,
     Requirements,
+    Unplayed,
 
     // For other mods that extend SongBrowser
     CustomFilter

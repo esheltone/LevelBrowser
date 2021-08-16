@@ -90,7 +90,7 @@ namespace EventUtils
         std::function<void(GlobalNamespace::StandardLevelDetailViewController*, GlobalNamespace::StandardLevelDetailViewController::ContentType)> didChangeContentFun = std::bind(&DidChangeContentEvent::invoke, &didChangeContentEvent, std::placeholders::_1, std::placeholders::_2);
         auto didChangeContentDelegate = MakeDelegate<System::Action_2<GlobalNamespace::StandardLevelDetailViewController*, GlobalNamespace::StandardLevelDetailViewController::ContentType>*>(didChangeContentFun);
         beatUi->LevelDetailViewController->add_didChangeContentEvent(didChangeContentDelegate);
-        
+
         INFO("LevelDetailViewController->add_didChangeDifficultyBeatmapEvent");
         std::function<void(GlobalNamespace::StandardLevelDetailViewController*, GlobalNamespace::IDifficultyBeatmap*)> didChangeDifficultyBeatmapFun = std::bind(&DidChangeDifficultyBeatmapEvent::invoke, &didChangeDifficultyBeatmapEvent, std::placeholders::_1, std::placeholders::_2);
         auto didChangeDifficultyBeatmapDelegate = MakeDelegate<System::Action_2<GlobalNamespace::StandardLevelDetailViewController*, GlobalNamespace::IDifficultyBeatmap*>*>(didChangeDifficultyBeatmapFun);

@@ -575,10 +575,13 @@ namespace SongBrowser
             case SongFilterMode::Requirements:
                 filteredSongs = FilterRequirements(unsortedSongs);
                 break;
+            case SongFilterMode::Unplayed:
+                filteredSongs = FilterUnplayed(unsortedSongs);
+                break;
             case SongFilterMode::CustomFilter:
                 INFO("Song filter mode set to custom. Deferring filter behaviour to another mod.");
                 filteredSongs = customFilterHandler ? customFilterHandler(unsortedSongs) : FilterOriginal(unsortedSongs);
-                break;
+                break;            
             case SongFilterMode::None:
             default:
                 INFO("No song filter selected...");
@@ -925,6 +928,19 @@ namespace SongBrowser
         });
         return filtered;
     }
+
+    List<GlobalNamespace::IPreviewBeatmapLevel*>* SongBrowserModel::FilterUnplayed(Array<GlobalNamespace::IPreviewBeatmapLevel*>* levels)
+    {
+        List<GlobalNamespace::IPreviewBeatmapLevel*>* filtered = List<GlobalNamespace::IPreviewBeatmapLevel*>::New_ctor();
+        ArrayUtil::ForEach(levels, [&](auto x){
+            if (!x) return;
+            std::string levelId = to_utf8(csstrtostr(x->get_levelID()));
+            auto itr = levelIdToPlayCount.find(levelId);
+            if (itr != levelIdToPlayCount.end() && itr->second == 0) filtered->Add(x);
+        });
+        return filtered;
+    }
+
 #pragma endregion
 
 #pragma region Sorting

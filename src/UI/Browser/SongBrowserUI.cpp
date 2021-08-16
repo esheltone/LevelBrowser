@@ -367,6 +367,7 @@ namespace SongBrowser::UI
         static constexpr const float buttonHeight = 5.0f;
 
         std::unordered_map<std::string, SongFilterMode> filterModes = {
+            {"Unplayed", SongFilterMode::Unplayed},
             {"Requirements", SongFilterMode::Requirements},
             {"Unranked", SongFilterMode::Unranked},
             {"Ranked", SongFilterMode::Ranked},
@@ -446,6 +447,19 @@ namespace SongBrowser::UI
     void SongBrowserUI::CreateDeleteUI()
     {
         INFO("Creating delete dialog...");
+        INFO("Due to songloader already implementing deletion we don't need to do it here ^_^");
+        /*
+        static auto deleteLevelButtonName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("DeleteLevelButton");
+        auto transform = beatUi->StandardLevelDetailView->practiceButton->get_transform()->get_parent()->Find(deleteLevelButtonName);
+
+        if (transform) 
+        {
+            deleteButton = transform->get_gameObject()->GetComponentInChildren<UnityEngine::UI::Button*>();
+            std::function<void(void)> fun = std::bind(&SongBrowserUI::HandleDeleteSelectedLevel, this);
+            deleteButton->get_onClick()->AddListener(il2cpp_utils::MakeDelegate<Events::UnityAction*>(classof(Events::UnityAction*), fun));
+        }
+        */
+        /*
         deleteDialog = Object::Instantiate<GlobalNamespace::SimpleDialogPromptViewController*>(beatUi->SimpleDialogPromptViewControllerPrefab);
         deleteDialog->GetComponent<VRUIControls::VRGraphicRaycaster*>()->physicsRaycaster = UIUtils::get_PhysicsRaycasterWithCache();
         deleteDialog->set_name(il2cpp_utils::newcsstr("DeleteDialogPromptViewController"));
@@ -457,6 +471,7 @@ namespace SongBrowser::UI
 
         std::function<void(void)> fun = std::bind(&SongBrowserUI::HandleDeleteSelectedLevel, this);
         deleteButton->get_onClick()->AddListener(il2cpp_utils::MakeDelegate<Events::UnityAction*>(classof(Events::UnityAction*), fun));
+        */
     }
 #pragma endregion
     
@@ -579,6 +594,9 @@ namespace SongBrowser::UI
                 Hide(true);
                 break;
         }
+        
+        ProcessSongList();
+        RefreshSongUI();
     }
 
     custom_types::Helpers::Coroutine SongBrowserUI::AsyncForceScrollToPosition(float position)
@@ -811,6 +829,7 @@ namespace SongBrowser::UI
             INFO("Data for sort type is not available.");
             return;
         }
+
         /*
         auto curCollection = beatUi->GetCurrentSelectedAnnotatedBeatmapLevelCollection();
         std::string collectionName = curCollection ? to_utf8(csstrtostr(curCollection->get_collectionName())) : "";
@@ -970,6 +989,7 @@ namespace SongBrowser::UI
 
     void SongBrowserUI::HandleDeleteSelectedLevel()
     {
+        /*
         auto level = reinterpret_cast<GlobalNamespace::IPreviewBeatmapLevel*>(beatUi->LevelDetailViewController->get_selectedDifficultyBeatmap()->get_level());
 
         std::function<void(int)> fun = [&](int selectedButton){
@@ -978,7 +998,10 @@ namespace SongBrowser::UI
 
             if (selectedButton == 0)
             {
-                List<GlobalNamespace::IPreviewBeatmapLevel*>* levels = System::Linq::Enumerable::ToList(reinterpret_cast<System::Collections::Generic::IEnumerable_1<GlobalNamespace::IPreviewBeatmapLevel*>*>(beatUi->GetCurrentLevelCollectionLevels()));
+                
+                
+                 
+                auto levels = System::Linq::Enumerable::ToList((System::Collections::Generic::IEnumerable_1<GlobalNamespace::IPreviewBeatmapLevel*>)beatUi->GetCurrentLevelCollectionLevels());
                 auto collection = beatUi->GetCurrentSelectedAnnotatedBeatmapLevelCollection()->get_collectionName();
                 std::string collectionCpp = to_utf8(csstrtostr(collection));
                 auto selectedLevelID = reinterpret_cast<GlobalNamespace::IPreviewBeatmapLevel*>(beatUi->StandardLevelDetailView->get_selectedDifficultyBeatmap()->get_level())->get_levelID();
@@ -1010,29 +1033,29 @@ namespace SongBrowser::UI
                     }
                     else if (collectionCpp == "Custom Levels")
                     {
-                        ArrayUtil::First(RuntimeSongLoader::API::GetLoadedSongs(), [&](auto x){
+                        song = ArrayUtil::First(RuntimeSongLoader::API::GetLoadedSongs(), [&](auto x){
                             return x->get_levelID()->Equals(selectedLevelID);
                         });
                     }
                     else
                     {
                         // I don't think we have this in runtime song loader
-                        /*
-                        var names = SongCore.Loader.SeperateSongFolders.Select(x => x.SongFolderEntry.Name);
-                        var separateFolders = SongCore.Loader.SeperateSongFolders;
-
-                        if (names.Count() > 0 && names.Contains(collection))
-                        {
-                            int folder_index = separateFolders.FindIndex(x => x.SongFolderEntry.Name.Equals(collection));
-                            song = separateFolders[folder_index].Levels.First(x => x.Value.levelID == selectedLevelID).Value;
-                        }
-                        else
-                        {
-                            // final guess - playlist
-                            song = SongCore.Loader.CustomLevels.First(x => x.Value.levelID == selectedLevelID).Value;
-                        }
-                        */
-                        ArrayUtil::First(RuntimeSongLoader::API::GetLoadedSongs(), [&](auto x){
+                        //
+                        //var names = SongCore.Loader.SeperateSongFolders.Select(x => x.SongFolderEntry.Name);
+                        //var separateFolders = SongCore.Loader.SeperateSongFolders;
+                        //
+                        //if (names.Count() > 0 && names.Contains(collection))
+                        //{
+                        //    int folder_index = separateFolders.FindIndex(x => x.SongFolderEntry.Name.Equals(collection));
+                        //    song = separateFolders[folder_index].Levels.First(x => x.Value.levelID == selectedLevelID).Value;
+                        //}
+                        //else
+                        //{
+                        //    // final guess - playlist
+                        //    song = SongCore.Loader.CustomLevels.First(x => x.Value.levelID == selectedLevelID).Value;
+                        //}
+                        //
+                        song = ArrayUtil::First(RuntimeSongLoader::API::GetLoadedSongs(), [&](auto x){
                             return x->get_levelID()->Equals(selectedLevelID);
                         });
                     }
@@ -1082,6 +1105,7 @@ namespace SongBrowser::UI
 
         beatUi->ScreenSystem->titleViewController->get_gameObject()->SetActive(false);
         beatUi->LevelSelectionNavigationController->__PresentViewController(deleteDialog, nullptr, HMUI::ViewController::AnimationDirection::Horizontal, false);
+        */
     }
 
     void SongBrowserUI::ShowSearchKeyboard()
@@ -1248,7 +1272,7 @@ namespace SongBrowser::UI
     {
         if (!deleteButton)
             return; 
-
+        /*
         deleteButton->get_gameObject()->SetActive(levelId ? levelId->get_Length() >= 32 : 0);
         deleteButton->get_transform()->SetAsFirstSibling();
 
@@ -1256,6 +1280,7 @@ namespace SongBrowser::UI
         static auto deleteLevelButtonName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("DeleteLevelButton");
         auto transform = beatUi->StandardLevelDetailView->practiceButton->get_transform()->get_parent()->Find(deleteLevelButtonName);
         if (transform) transform->get_gameObject()->SetActive(false);
+        */
     }
 
     void SongBrowserUI::SetVisibility(bool visible, bool fieldsVisibility)

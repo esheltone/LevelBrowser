@@ -14,6 +14,9 @@
 #include "GlobalNamespace/PartyFreePlayFlowCoordinator.hpp"
 #include "GlobalNamespace/CampaignFlowCoordinator.hpp"
 #include "GlobalNamespace/MainFlowCoordinator.hpp"
+#include "GlobalNamespace/StandardLevelDetailView.hpp"
+#include "GlobalNamespace/StandardLevelDetailView.hpp"
+#include "GlobalNamespace/LoadingControl.hpp"
 
 #include "SongBrowserApplication.hpp"
 #include "Utils/EventUtils.hpp"
@@ -36,6 +39,25 @@ MAKE_AUTO_HOOK_MATCH(SceneManager_SetActiveScene, &UnityEngine::SceneManagement:
     oldScene = newScene;
     return result;
 }
+
+/*
+// need to add these 2 hooks to remove the song loader delete button
+MAKE_AUTO_HOOK_MATCH(StandardLevelDetailView_RefreshContent, &GlobalNamespace::StandardLevelDetailView::RefreshContent, void, GlobalNamespace::StandardLevelDetailView* self)
+{
+    StandardLevelDetailView_RefreshContent(self);
+    static auto deleteLevelButtonName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("DeleteLevelButton");
+    auto transform = self->practiceButton->get_transform()->get_parent()->Find(deleteLevelButtonName);
+    if (transform) transform->get_gameObject()->SetActive(false);
+}
+
+MAKE_AUTO_HOOK_MATCH(StandardLevelDetailViewController_ShowContent, &GlobalNamespace::StandardLevelDetailViewController::ShowContent, void, GlobalNamespace::StandardLevelDetailViewController* self, GlobalNamespace::StandardLevelDetailViewController::ContentType contentType, Il2CppString* errorText, float downloadingProgress, Il2CppString* downloadingText)
+{
+    StandardLevelDetailViewController_ShowContent(self, contentType, errorText, downloadingProgress, downloadingText);
+    static auto deleteLevelButtonName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("DeleteLevelButton");
+    auto transform = self->loadingControl->refreshButton->get_transform()->get_parent()->Find(deleteLevelButtonName);
+    if (transform) transform->get_gameObject()->SetActive(false);
+}
+*/
 
 MAKE_AUTO_HOOK_MATCH(FlowCoordinator_PresentFlowCoordinator, &HMUI::FlowCoordinator::PresentFlowCoordinator, void, HMUI::FlowCoordinator* self, HMUI::FlowCoordinator* flowCoordinator, System::Action* finishedCallback, HMUI::ViewController::AnimationDirection animationDirection, bool immediately, bool replaceTopViewController)
 {

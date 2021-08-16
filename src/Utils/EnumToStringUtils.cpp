@@ -11,6 +11,7 @@ std::string SongFilterModeToString(const SongFilterMode& mode)
         case SongFilterMode::Ranked: return "Ranked";
         case SongFilterMode::Unranked: return "Unranked";
         case SongFilterMode::Requirements: return "Requirements";
+        case SongFilterMode::Unplayed: return "Unplayed";
         case SongFilterMode::CustomFilter: return "Custom";
     }
 }
@@ -23,7 +24,7 @@ std::string SongSortModeToString(const SongSortMode& mode)
         case SongSortMode::Author: return "Author";
         case SongSortMode::Original: return "Original";
         case SongSortMode::Newest: return "Newest";
-        case SongSortMode::YourPlayCount: return "YourPlayCount";
+        case SongSortMode::YourPlayCount: return "Plays";
         case SongSortMode::Difficulty: return "Difficulty";
         case SongSortMode::Random: return "Random";
         case SongSortMode::PP: return "PP";

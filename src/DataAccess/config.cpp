@@ -15,7 +15,6 @@ Configuration& getConfig()
 #define ADD_STR(str) doc.AddMember(#str, rapidjson::Value(config.str.c_str(), config.str.size(), allocator), allocator)
 #define ADD_VAL(val) doc.AddMember(#val, config.val, allocator)
 
-
 void SaveConfig()
 {
     INFO("Saving Configuration...");

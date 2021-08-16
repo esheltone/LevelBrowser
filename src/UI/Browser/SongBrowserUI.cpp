@@ -305,6 +305,8 @@ namespace SongBrowser::UI
             ShowInputKeyboard(std::bind(&SongBrowserUI::CreatePlaylistButtonPressed, this, std::placeholders::_1));
         }, SpriteUtils::get_PlaylistIcon(), "Export Playlist");
         UIUtils::SetButtonBackgroundActive(playlistExportButton, false);
+        playlistExportButton->set_interactable(false);
+        UIUtils::SetHoverHint(playlistExportButton->get_transform(), "Playlist Export Currently Disabled!_hoverHintText", "Playlist Export Currently Disabled!");
     }
 
     void SongBrowserUI::CreateSortButtons()
@@ -450,7 +452,7 @@ namespace SongBrowser::UI
         deleteDialog->get_gameObject()->SetActive(false);
 
         INFO("Creating delete button...");
-        deleteButton = UIUtils::CreateIconButton("DeleteLevelButton", reinterpret_cast<UnityEngine::Transform*>(beatUi->ActionButtons), "PracticeButton", SpriteUtils::get_DeleteIcon(), "Delete Level");
+        deleteButton = UIUtils::CreateIconButton("DeleteLevelButton_SB", reinterpret_cast<UnityEngine::Transform*>(beatUi->ActionButtons), "PracticeButton", SpriteUtils::get_DeleteIcon(), "Delete Level");
         deleteButton->get_transform()->SetAsFirstSibling();
 
         std::function<void(void)> fun = std::bind(&SongBrowserUI::HandleDeleteSelectedLevel, this);
@@ -702,7 +704,22 @@ namespace SongBrowser::UI
             return;
         }
 
-        Show();
+        // dont do stuff on the filter menu
+        switch (beatUi->LevelFilteringNavigationController->get_selectedLevelCategory())
+        {
+            case GlobalNamespace::SelectLevelCategoryViewController::LevelCategory::None: [[fallthrough]];
+            case GlobalNamespace::SelectLevelCategoryViewController::LevelCategory::OstAndExtras:  [[fallthrough]];
+            case GlobalNamespace::SelectLevelCategoryViewController::LevelCategory::CustomSongs: [[fallthrough]];
+            default:
+                Show();
+                break;
+            case GlobalNamespace::SelectLevelCategoryViewController::LevelCategory::MusicPacks:  [[fallthrough]];
+            case GlobalNamespace::SelectLevelCategoryViewController::LevelCategory::Favorites: [[fallthrough]];
+            case GlobalNamespace::SelectLevelCategoryViewController::LevelCategory::All:
+                return;
+                break;
+        }
+
 
         // category transition, just record the new collection
         if (selectingCategory)
@@ -1230,8 +1247,15 @@ namespace SongBrowser::UI
     void SongBrowserUI::UpdateDeleteButtonState(Il2CppString* levelId)
     {
         if (!deleteButton)
-            return;
+            return; 
+
         deleteButton->get_gameObject()->SetActive(levelId ? levelId->get_Length() >= 32 : 0);
+        deleteButton->get_transform()->SetAsFirstSibling();
+
+        // disable the songloader delete button
+        static auto deleteLevelButtonName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("DeleteLevelButton");
+        auto transform = beatUi->StandardLevelDetailView->practiceButton->get_transform()->get_parent()->Find(deleteLevelButtonName);
+        if (transform) transform->get_gameObject()->SetActive(false);
     }
 
     void SongBrowserUI::SetVisibility(bool visible, bool fieldsVisibility)

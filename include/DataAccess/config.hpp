@@ -18,6 +18,7 @@ enum SongSortMode {
     PlayCount,
     Stars,
     Bpm,
+    NJS,
     Length,
     Downloads,
     

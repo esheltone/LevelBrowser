@@ -199,7 +199,8 @@ namespace SongBrowser
             itr->second += levelData->get_playCount();
         }
     }
-    
+#pragma region Self implementation for bugfixing
+    /*
     void ScrollView_UpdateContentSize(HMUI::ScrollView* self)
     {
         auto scrollViewDirection = self->scrollViewDirection;
@@ -449,12 +450,6 @@ namespace SongBrowser
 		if (false)//beatmapLevelsAreSorted && previewBeatmapLevels.Length > self->showAlphabetScrollbarLevelCountThreshold)
 		{
             // we're never doing this so it's kind of irrelevant
-            /*
-			AlphabetScrollInfo.Data[] data = AlphabetScrollbarInfoBeatmapLevelHelper.CreateData(previewBeatmapLevels, out self->previewBeatmapLevels);
-			self->alphabetScrollbar.SetData(data);
-			rectTransform.offsetMin = new Vector2(((RectTransform)self->alphabetScrollbar.transform).rect.size.x + 1f, 0f);
-			self->alphabetScrollbar.gameObject.SetActive(true);
-            */
 		}
 		else
 		{
@@ -527,7 +522,9 @@ namespace SongBrowser
 			self->songPreviewPlayer->CrossfadeToDefault();
 		}
     }
-
+    */
+#pragma endregion
+    
     void SongBrowserModel::ProcessSongList(GlobalNamespace::IAnnotatedBeatmapLevelCollection* selectedBeatmapCollection, GlobalNamespace::LevelSelectionNavigationController* navController)
     {
         Array<GlobalNamespace::IPreviewBeatmapLevel*>* unsortedSongs = nullptr;
@@ -635,6 +632,9 @@ namespace SongBrowser
             case SongSortMode::Bpm:
                 sortedSongs = SortSongBpm(filteredSongs);
                 break;
+            case SongSortMode::NJS:
+                sortedSongs = SortSongNJS(filteredSongs);
+                break;
             case SongSortMode::Length:
                 sortedSongs = SortSongLength(filteredSongs);
                 break;
@@ -650,9 +650,34 @@ namespace SongBrowser
                 break;
         }
 
-        if (config.invertSortResults && config.sortMode != SongSortMode::Random)
+        switch (config.sortMode)
         {
-            sortedSongs->Reverse();
+            // dont auto revert for these cases
+            case SongSortMode::Original:
+            case SongSortMode::Author:
+            case SongSortMode::CustomSort:
+            case SongSortMode::Default:
+                if (config.invertSortResults)
+                    sortedSongs->Reverse();
+                break;
+            // for these cases we want to reverse by default so newest/longest/best end up on top when green
+            case SongSortMode::Newest:
+            case SongSortMode::UpVotes:
+            case SongSortMode::PlayCount:
+            case SongSortMode::Rating:
+            case SongSortMode::Heat:
+            case SongSortMode::YourPlayCount:
+            case SongSortMode::PP:
+            case SongSortMode::Stars:
+            case SongSortMode::Bpm:
+            case SongSortMode::NJS:
+            case SongSortMode::Length:
+            case SongSortMode::Downloads:
+                if (!config.invertSortResults)
+                    sortedSongs->Reverse();
+                break;
+            default:
+                break;
         }
 
         stopwatch->Stop();
@@ -681,6 +706,7 @@ namespace SongBrowser
                                                                         
         auto levelCollection = reinterpret_cast<GlobalNamespace::IBeatmapLevelCollection*>(GlobalNamespace::BeatmapLevelCollection::New_ctor(sortedSongs->ToArray()));
 
+        INFO("levelCollection size: %lu", levelCollection->get_beatmapLevels()->Length());
         auto levelPack = GlobalNamespace::BeatmapLevelPack::New_ctor(   collectionName, 
                                                                         il2cpp_utils::newcsstr(selectedCollectionName),
                                                                         selectedBeatmapCollection->get_collectionName(), 
@@ -715,18 +741,17 @@ namespace SongBrowser
         INFO("notAllowedCharacteristics: %p", notAllowedCharacteristics);
         INFO("lcnvc->levelCollectionViewController: %p", lcnvc->levelCollectionViewController);
         INFO("lcnvc->levelPackDetailViewController: %p", lcnvc->levelPackDetailViewController);
-
+        /*
         // basically SetDataForPack but skipping the redundant re-assignments
-        //lcnvc->levelPack = reinterpret_cast<GlobalNamespace::IBeatmapLevelPack*>(levelPack);
-        //INFO("Collection SetData");
-        //
-        //LevelCollectionViewController_SetData(lcnvc->levelCollectionViewController, levelCollection, il2cpp_utils::newcsstr(selectedCollectionName), coverImage, false, nullptr);
-		////lcnvc->levelCollectionViewController->SetData(levelCollection, il2cpp_utils::newcsstr(selectedCollectionName), coverImage, false, nullptr);
-        //INFO("Detail SetData");
-		//lcnvc->levelPackDetailViewController->SetData(lcnvc->levelPack);
-        //INFO("Presenting");
-		//lcnvc->PresentViewControllersForPack();
-        
+        lcnvc->levelPack = reinterpret_cast<GlobalNamespace::IBeatmapLevelPack*>(levelPack);
+        INFO("Collection SetData");
+        LevelCollectionViewController_SetData(lcnvc->levelCollectionViewController, levelCollection, il2cpp_utils::newcsstr(selectedCollectionName), coverImage, false, nullptr);
+		//lcnvc->levelCollectionViewController->SetData(levelCollection, il2cpp_utils::newcsstr(selectedCollectionName), coverImage, false, nullptr);
+        INFO("Detail SetData");
+		lcnvc->levelPackDetailViewController->SetData(lcnvc->levelPack);
+        INFO("Presenting");
+		lcnvc->PresentViewControllersForPack();
+        */
         
         /*
         lcnvc->SetDataForPack(reinterpret_cast<GlobalNamespace::IBeatmapLevelPack*>(levelPack),
@@ -1063,6 +1088,33 @@ namespace SongBrowser
                 return firstsongName < secondsongName;
             }
             else return firstbpm < secondbpm;
+        });
+        return levels;
+    }
+
+    List<GlobalNamespace::IPreviewBeatmapLevel*>* SongBrowserModel::SortSongNJS(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels)
+    {
+        // this is sketch but I think it should work
+        std::sort(&levels->items->values[0], &levels->items->values[levels->get_Count()], [&](auto x, auto y) {
+            std::string firstlevelID = x ? to_utf8(csstrtostr(x->get_levelID())) : "";
+            std::string secondlevelID = y ? to_utf8(csstrtostr(y->get_levelID())) : "";
+
+            auto firstHash = GetSongHash(firstlevelID);
+            auto secondHash = GetSongHash(secondlevelID);
+
+            auto firstSong = SongDataCoreUtils::BeatStarSong::GetSong(firstHash);
+            auto secondSong = SongDataCoreUtils::BeatStarSong::GetSong(secondHash);
+
+            float firstMaxNJS = firstSong ? firstSong->maxNJS() : 0.0f;
+            float secondMaxNJS = secondSong ? secondSong->maxNJS() : 0.0f;
+            
+            if (firstMaxNJS == secondMaxNJS)
+            {
+                std::string firstsongName = x ? to_utf8(csstrtostr(x->get_songName())) : "";
+                std::string secondsongName = y ? to_utf8(csstrtostr(y->get_songName())) : "";
+                return firstsongName < secondsongName;
+            }
+            else return firstMaxNJS < secondMaxNJS;
         });
         return levels;
     }

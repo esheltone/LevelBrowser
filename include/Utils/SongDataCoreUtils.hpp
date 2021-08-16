@@ -15,11 +15,11 @@ namespace SongDataCoreUtils
     struct BeatStarSong : public song_data_core::BeatStarSong
     {
         public:
-            BeatStarSong(song_data_core::BeatStarSong orig) : song_data_core::BeatStarSong(orig) {};
             static const BeatStarSong* GetSong(std::string_view hash);
+            float maxNJS() const;
             double maxPpValue() const;
             double maxStarValue() const;
-            double approximatePpValue() const;
+            
             const BeatStarSongDifficultyStats* GetDiff(int idx) const;
             const BeatStarSongDifficultyStats* GetDiff(const BeatStarCharacteristics* characteristic, int idx) const;
             const BeatStarSongDifficultyStats* GetDiff(const BeatStarCharacteristics* characteristic, std::string_view name) const;
@@ -27,13 +27,12 @@ namespace SongDataCoreUtils
             std::vector<const BeatStarSongDifficultyStats*> GetDiffVec() const;
             const BeatStarCharacteristics* GetChar(int char_) const;
             const BeatStarCharacteristics* GetChar(GlobalNamespace::BeatmapCharacteristicSO* gameChar) const;
-            float GetHeat()const;
+            float GetHeat() const;
             float GetRating() const;
     };
 
     struct BeatStarSongDifficultyStats : public song_data_core::BeatStarSongDifficultyStats
     {
-        double approximatePpValue() const;
         std::vector<std::string> GetReqVec() const;
     };
 

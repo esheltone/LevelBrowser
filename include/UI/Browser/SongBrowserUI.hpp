@@ -77,7 +77,7 @@ DECLARE_CLASS_CODEGEN(SongBrowser::UI, SongBrowserUI, UnityEngine::MonoBehaviour
     //DECLARE_CTOR(ctor);
     public:
         void Show();
-        void Hide();
+        void Hide(bool dontHideFields = false);
         void UpdateLevelDataModel();
         bool UpdateLevelCollectionSelection();
         void RefreshSongList();
@@ -93,6 +93,7 @@ DECLARE_CLASS_CODEGEN(SongBrowser::UI, SongBrowserUI, UnityEngine::MonoBehaviour
         void ModifySongStatsPanel();
         void ResizeSongUI();
         void InstallHandlers();
+        void OnDidSelectLevelCategory(GlobalNamespace::SelectLevelCategoryViewController* viewController, GlobalNamespace::SelectLevelCategoryViewController::LevelCategory levelCategory);
         void OnDidFavoriteToggleChangeEvent(GlobalNamespace::StandardLevelDetailView* arg1, UnityEngine::UI::Toggle* arg2);
         custom_types::Helpers::Coroutine AsyncForceScrollToPosition(float position);
         custom_types::Helpers::Coroutine AsyncWaitForSongUIUpdate();
@@ -127,7 +128,7 @@ DECLARE_CLASS_CODEGEN(SongBrowser::UI, SongBrowserUI, UnityEngine::MonoBehaviour
         void RefreshQuickScrollButtons();
         custom_types::Helpers::Coroutine RefreshQuickScrollButtonsAsync();
         void UpdateDeleteButtonState(Il2CppString* levelId);
-        void SetVisibility(bool visible);
+        void SetVisibility(bool visible, bool fieldsVisibility = true);
         void RefreshOuterUIState(UIState state);
         void RefreshCurrentSelectionDisplay();
         void RefreshSortButtonUI();

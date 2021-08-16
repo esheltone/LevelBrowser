@@ -24,7 +24,7 @@ DECLARE_CLASS_CODEGEN(SongBrowser, SongBrowserModel, Il2CppObject,
     DECLARE_INSTANCE_FIELD(double, customSongDirLastWriteTime);
 
     public:
-        static constexpr const char* filteredSongsCollectionName = "custom_levelpack_SongBrowser_FilteredSongPack";
+        static constexpr const char* filteredSongsCollectionName = "custom_levelPack_SongBrowser_FilteredSongPack";
         static constexpr const char* playlistSongsCollectionName = "SongBrowser_PlaylistPack";
         
         static std::function<List<GlobalNamespace::IPreviewBeatmapLevel*>*(Array<GlobalNamespace::IPreviewBeatmapLevel*>*)> customFilterHandler;
@@ -65,6 +65,7 @@ DECLARE_CLASS_CODEGEN(SongBrowser, SongBrowserModel, Il2CppObject,
         List<GlobalNamespace::IPreviewBeatmapLevel*>* SortRandom(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels);
         List<GlobalNamespace::IPreviewBeatmapLevel*>* SortSongName(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels);
         List<GlobalNamespace::IPreviewBeatmapLevel*>* SortSongBpm(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels);
+        List<GlobalNamespace::IPreviewBeatmapLevel*>* SortSongNJS(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels);
         List<GlobalNamespace::IPreviewBeatmapLevel*>* SortSongLength(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels);
         List<GlobalNamespace::IPreviewBeatmapLevel*>* SortUpVotes(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels);
         // not accessible VV

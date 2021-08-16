@@ -62,9 +62,9 @@ namespace SongBrowser::UI
         SetVisibility(true);
     }
 
-    void SongBrowserUI::Hide()
+    void SongBrowserUI::Hide(bool dontHideFields)
     {
-        SetVisibility(false);
+        SetVisibility(false, dontHideFields);
     }
 
     void SongBrowserUI::UpdateLevelDataModel()
@@ -324,6 +324,7 @@ namespace SongBrowser::UI
             {"Plays", SongSortMode::YourPlayCount},
             {"BPM", SongSortMode::Bpm},
             {"Length", SongSortMode::Length},
+            {"NJS", SongSortMode::NJS},
             {"PP", SongSortMode::PP},
             {"Stars", SongSortMode::Stars},
             {"UpVotes", SongSortMode::UpVotes},
@@ -532,6 +533,10 @@ namespace SongBrowser::UI
         EventUtils::DidSelectBeatmapCharacteristic() -= {&SongBrowserUI::OnDidSelectBeatmapCharacteristic, this};
         EventUtils::DidSelectBeatmapCharacteristic() += {&SongBrowserUI::OnDidSelectBeatmapCharacteristic, this};
 
+        EventUtils::DidSelectLevelCategory() -= {&SongBrowserUI::OnDidSelectLevelCategory, this};
+        EventUtils::DidSelectLevelCategory() += {&SongBrowserUI::OnDidSelectLevelCategory, this};
+
+
         std::function<void(void)> fun = [this](){
             this->StartCoroutine(reinterpret_cast<System::Collections::IEnumerator*>(custom_types::Helpers::CoroutineHelper::New(this->RefreshQuickScrollButtonsAsync())));
         };
@@ -556,6 +561,24 @@ namespace SongBrowser::UI
             StartCoroutine(reinterpret_cast<System::Collections::IEnumerator*>(custom_types::Helpers::CoroutineHelper::New(AsyncForceScrollToPosition(model->lastScrollIndex))));
         }
     }
+
+    void SongBrowserUI::OnDidSelectLevelCategory(GlobalNamespace::SelectLevelCategoryViewController* viewController, GlobalNamespace::SelectLevelCategoryViewController::LevelCategory levelCategory)
+    {
+        switch (levelCategory)
+        {
+            case GlobalNamespace::SelectLevelCategoryViewController::LevelCategory::None: [[fallthrough]];
+            case GlobalNamespace::SelectLevelCategoryViewController::LevelCategory::OstAndExtras:  [[fallthrough]];
+            case GlobalNamespace::SelectLevelCategoryViewController::LevelCategory::CustomSongs: [[fallthrough]];
+            default:
+                break;
+            case GlobalNamespace::SelectLevelCategoryViewController::LevelCategory::MusicPacks:  [[fallthrough]];
+            case GlobalNamespace::SelectLevelCategoryViewController::LevelCategory::Favorites: [[fallthrough]];
+            case GlobalNamespace::SelectLevelCategoryViewController::LevelCategory::All:
+                Hide(true);
+                break;
+        }
+    }
+
     custom_types::Helpers::Coroutine SongBrowserUI::AsyncForceScrollToPosition(float position)
     {
         INFO("Will attempt force scrolling to position [%.2f] at end of frame.", position);
@@ -616,6 +639,21 @@ namespace SongBrowser::UI
     {
         if (!uiCreated)
             return;
+
+        // dont do stuff on the filter menu
+        switch (beatUi->LevelFilteringNavigationController->get_selectedLevelCategory())
+        {
+            case GlobalNamespace::SelectLevelCategoryViewController::LevelCategory::None: [[fallthrough]];
+            case GlobalNamespace::SelectLevelCategoryViewController::LevelCategory::OstAndExtras:  [[fallthrough]];
+            case GlobalNamespace::SelectLevelCategoryViewController::LevelCategory::CustomSongs: [[fallthrough]];
+            default:
+                break;
+            case GlobalNamespace::SelectLevelCategoryViewController::LevelCategory::MusicPacks:  [[fallthrough]];
+            case GlobalNamespace::SelectLevelCategoryViewController::LevelCategory::Favorites: [[fallthrough]];
+            case GlobalNamespace::SelectLevelCategoryViewController::LevelCategory::All:
+                return;
+                break;
+        }
         model->ProcessSongList(lastLevelCollection ? lastLevelCollection : beatUi->GetCurrentSelectedAnnotatedBeatmapLevelCollection(), beatUi->LevelSelectionNavigationController);
     }
 
@@ -690,7 +728,7 @@ namespace SongBrowser::UI
             return;
         }
 
-        std::string collectionName = to_utf8(csstrtostr(levelCollection->get_collectionName()));
+        std::string collectionName = levelCollection->get_collectionName() ? to_utf8(csstrtostr(levelCollection->get_collectionName())) : "";
         // store the real level collection
         if (strcmp(collectionName.c_str(), SongBrowserModel::filteredSongsCollectionName) && lastLevelCollection)
         {
@@ -1136,7 +1174,7 @@ namespace SongBrowser::UI
                 {
                     INFO("Display pp for diff %s", songDifficulty->diff.string_data);
                     // no pp cause songdatacore no pp
-                    double pp = songDifficulty->approximatePpValue();
+                    double pp = songDifficulty->approximate_pp_value;
                     double star = songDifficulty->stars;
 
                     UIUtils::SetStatButtonText(ppStatButton, string_format("%.1f", pp));
@@ -1196,13 +1234,14 @@ namespace SongBrowser::UI
         deleteButton->get_gameObject()->SetActive(levelId ? levelId->get_Length() >= 32 : 0);
     }
 
-    void SongBrowserUI::SetVisibility(bool visible)
+    void SongBrowserUI::SetVisibility(bool visible, bool fieldsVisibility)
     {
         if (!uiCreated)
             return;
-        if (ppStatButton) ppStatButton->get_gameObject()->SetActive(visible);
-        if (starStatButton) starStatButton->get_gameObject()->SetActive(visible);
-        if (njsStatButton) njsStatButton->get_gameObject()->SetActive(visible);
+        if (ppStatButton) ppStatButton->get_gameObject()->SetActive(visible || fieldsVisibility);
+        if (starStatButton) starStatButton->get_gameObject()->SetActive(visible || fieldsVisibility);
+        if (njsStatButton) njsStatButton->get_gameObject()->SetActive(visible || fieldsVisibility);
+        if (noteJumpStartBeatOffsetLabel) noteJumpStartBeatOffsetLabel->get_gameObject()->SetActive(visible || fieldsVisibility);
 
         RefreshOuterUIState(visible ? UIState::Main : UIState::Disabled);
 
@@ -1278,6 +1317,7 @@ namespace SongBrowser::UI
     {
         if (!uiCreated)
             return;
+
         INFO("Refreshing song sort UI");
         int length = sortButtonGroup->get_Count();
         for (int i = 0; i < length; i++)

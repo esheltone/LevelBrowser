@@ -11,6 +11,7 @@
 #include "UnityEngine/Sprite.hpp"
 #include "UnityEngine/SpriteMeshType.hpp"
 #include "UnityEngine/Rect.hpp"
+#include "UnityEngine/Time.hpp"
 
 #include "questui/shared/BeatSaberUI.hpp"
 #include "HMUI/CurvedCanvasSettings.hpp"
@@ -19,6 +20,8 @@
 
 #include "sombrero/shared/HSBColor.hpp"
 #include "sombrero/shared/MiscUtils.hpp"
+#include "sombrero/shared/Vector2Utils.hpp"
+#include "sombrero/shared/Vector3Utils.hpp"
 
 #include "songloader/shared/API.hpp"
 
@@ -37,8 +40,8 @@ namespace SongBrowser::UI
         if (!inited) return;
         showingMessage = true;
         headerText->set_text(il2cpp_utils::newcsstr(message));
-        loadingBar->set_enabled(false);
-        loadingBackground->set_enabled(false);
+        //loadingBar->set_enabled(false);
+        //loadingBackground->set_enabled(false);
         get_gameObject()->SetActive(true);
         StartCoroutine(reinterpret_cast<System::Collections::IEnumerator*>(custom_types::Helpers::CoroutineHelper::New(DisableCanvasRoutine(time))));
     }
@@ -49,8 +52,8 @@ namespace SongBrowser::UI
         if (!inited) return;
         showingMessage = true;
         headerText->set_text(il2cpp_utils::newcsstr(message));
-        loadingBar->set_enabled(false);
-        loadingBackground->set_enabled(false);
+        //loadingBar->set_enabled(false);
+        //loadingBackground->set_enabled(false);
         get_gameObject()->SetActive(true);
     }
 
@@ -64,6 +67,7 @@ namespace SongBrowser::UI
     {
         EventUtils::OnActiveSceneChanged() -= {&ProgressBar::SceneManagerOnActiveSceneChanged, this};
         SongBrowser::SongBrowserModel::didFinishProcessingSongs -= {&ProgressBar::SongBrowserFinishedProcessingSongs, this};
+        SetProgress(0);
     }
 
     void ProgressBar::Awake()
@@ -93,15 +97,17 @@ namespace SongBrowser::UI
         rectTransform = reinterpret_cast<UnityEngine::RectTransform*>(loadingBackground->get_transform());
         rectTransform->SetParent(ct, false); 
         rectTransform->set_sizeDelta(LoadingBarSize);
+        //rectTransform->set_position(Sombrero::FastVector3::zero());
         loadingBackground->set_color(BackgroundColor);
-
+        
         loadingBar = UnityEngine::GameObject::New_ctor(il2cpp_utils::newcsstr("Loading Bar"))->AddComponent<UnityEngine::UI::Image*>();
         rectTransform = reinterpret_cast<UnityEngine::RectTransform*>(loadingBar->get_transform());
         rectTransform->SetParent(ct, false);
+        //rectTransform->set_position(Sombrero::FastVector3::zero());
         rectTransform->set_sizeDelta(LoadingBarSize);
 
         auto tex = UnityEngine::Texture2D::get_whiteTexture();
-        auto sprite = UnityEngine::Sprite::Create(tex, UnityEngine::Rect(0, 0, tex->get_width(), tex->get_height()), {0.5f, 0.5f}, 100, 1, UnityEngine::SpriteMeshType::FullRect, UnityEngine::Vector4::get_zero(), false);
+        auto sprite = UnityEngine::Sprite::CreateSprite(tex, UnityEngine::Rect(0, 0, tex->get_width(), tex->get_height()), Sombrero::FastVector2(0.5f, 0.5f), 100.0f, 1, UnityEngine::SpriteMeshType::Tight, UnityEngine::Vector4::get_zero(), false);
         loadingBar->set_sprite(sprite);
         loadingBar->set_type(UnityEngine::UI::Image::Type::Filled);
         loadingBar->set_fillMethod(UnityEngine::UI::Image::FillMethod::Horizontal);
@@ -111,13 +117,19 @@ namespace SongBrowser::UI
         inited = true;
     }
 
+    void ProgressBar::SetProgress(float progress)
+    {
+        if (!inited) return;
+        loadingBar->set_fillAmount(Sombrero::Clamp01(progress));
+    }
+
     void ProgressBar::Update()
     {
         if (!canvas || !canvas->get_enabled()) return;
-        loadingBar->set_fillAmount(RuntimeSongLoader::API::GetLoadedProgress());
-        time_t theTime = time(0);
-        loadingBar->set_color(Sombrero::HSBColor(Sombrero::PingPong(theTime * 0.35f, 1), 1, 1).ToColor());
-        headerText->set_color(Sombrero::HSBColor(Sombrero::PingPong(theTime * 0.35f, 1), 1, 1).ToColor());
+        float pong = UnityEngine::Time::get_time() * 0.35f;
+        auto color = Sombrero::HSBColor(Sombrero::PingPong(pong, 1), 1, 1).ToColor();
+        loadingBar->set_color(color);
+        headerText->set_color(color);
     }
 
     void ProgressBar::SongLoaderOnLoadingStartedEvent()
@@ -126,8 +138,8 @@ namespace SongBrowser::UI
         if (!inited) return;
         showingMessage = false;
         headerText->set_text(il2cpp_utils::newcsstr(HeaderText));
-        loadingBar->set_enabled(true);
-        loadingBackground->set_enabled(true);
+        //loadingBar->set_enabled(true);
+        //loadingBackground->set_enabled(true);
         get_gameObject()->SetActive(true);
     }
 
@@ -136,8 +148,8 @@ namespace SongBrowser::UI
         if (!inited) return;
         showingMessage = false;
         headerText->set_text(il2cpp_utils::newcsstr(string_format("%lu songs processed.", levels.size())));
-        loadingBar->set_enabled(false);
-        loadingBackground->set_enabled(false);
+        //loadingBar->set_enabled(false);
+        //loadingBackground->set_enabled(false);
         StartCoroutine(reinterpret_cast<System::Collections::IEnumerator*>(custom_types::Helpers::CoroutineHelper::New(DisableCanvasRoutine(7.0f))));
     }
 
@@ -150,7 +162,15 @@ namespace SongBrowser::UI
 
     custom_types::Helpers::Coroutine ProgressBar::DisableCanvasRoutine(float time)
     {
-        co_yield reinterpret_cast<System::Collections::IEnumerator*>(UnityEngine::WaitForSecondsRealtime::New_ctor(time));
+        static constexpr const float increment = 0.2f;
+        float accumulation = 0.0f;
+        while (accumulation < time)
+        {
+            SetProgress(accumulation / time);
+            co_yield reinterpret_cast<System::Collections::IEnumerator*>(UnityEngine::WaitForSecondsRealtime::New_ctor(increment));
+            accumulation += increment;
+        }
+
         get_gameObject()->SetActive(false);
         showingMessage = false;
         co_return;

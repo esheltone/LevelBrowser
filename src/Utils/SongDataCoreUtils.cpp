@@ -32,6 +32,18 @@ namespace SongDataCoreUtils
         return reinterpret_cast<const BeatStarSong*>(song_data_core::Beatstar_GetSong(hash.data()));
     }
 
+    float BeatStarSong::maxNJS() const
+    {
+        auto diffVec = GetDiffVec();
+        float max = 0.0f;
+        for (auto diff : diffVec)
+        {
+            float njs = diff->njs;
+            if (njs > max) max = njs;
+        }
+        return max;
+    }
+
     double BeatStarSong::maxPpValue() const
     {
         auto diffVec = GetDiffVec();
@@ -54,18 +66,6 @@ namespace SongDataCoreUtils
             if (diff->stars > max) max = diff->stars;
         }
         return max;
-    }
-
-    std::map<const BeatStarSong*, double> ppSongMap;
-    double BeatStarSong::approximatePpValue() const
-    {
-        auto itr = ppSongMap.find(this);
-        if (itr != ppSongMap.end()) return itr->second;
-        auto diffVec = GetDiffVec();
-        double pp = 0.0f;
-        for (auto diff : diffVec) pp += diff->approximate_pp_value;
-        ppSongMap[this] = pp;
-        return pp; 
     }
 
     const BeatStarSongDifficultyStats* BeatStarSong::GetDiff(int idx) const
@@ -176,11 +176,6 @@ namespace SongDataCoreUtils
     float BeatStarSong::GetRating() const
     {
         return song_data_core::BeatStarSong_rating(this);
-    }
-
-    double BeatStarSongDifficultyStats::approximatePpValue() const
-    {
-        return approximate_pp_value;
     }
 
     std::vector<std::string> BeatStarSongDifficultyStats::GetReqVec() const

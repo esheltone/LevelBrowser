@@ -19,6 +19,9 @@
 #include "Utils/EventUtils.hpp"
 #include "Utils/SongDataCoreUtils.hpp"
 
+#include "GlobalNamespace/MenuTransitionsHelper.hpp"
+#include "Zenject/DiContainer.hpp"
+#include "System/Action_1.hpp"
 
 ModInfo modInfo = {ID, VERSION};
 
@@ -68,6 +71,13 @@ MAKE_AUTO_HOOK_MATCH(MainFlowCoordinator_DidActivate, &GlobalNamespace::MainFlow
 {
     if (!SongBrowser::SongBrowserApplication::instance) SongBrowser::SongBrowserApplication::OnLoad();
     MainFlowCoordinator_DidActivate(self, firstActivation, addedToHierarchy, screenSystemEnabling);
+}
+
+MAKE_AUTO_HOOK_MATCH(MenuTransitionsHelper_RestartGame, &GlobalNamespace::MenuTransitionsHelper::RestartGame, void, GlobalNamespace::MenuTransitionsHelper* self, System::Action_1<Zenject::DiContainer*>* finishCallback)
+{
+    INFO("Game is soft restarting, handling it by throwing away pointers!");
+    SongBrowser::SongBrowserApplication::Reset();
+    MenuTransitionsHelper_RestartGame(self, finishCallback);
 }
 
 extern "C" void setup(ModInfo& info)

@@ -60,6 +60,8 @@ DECLARE_CLASS_CODEGEN(SongBrowser::UI, ProgressBar, UnityEngine::MonoBehaviour,
         void SongBrowserFinishedProcessingSongs(const std::vector<GlobalNamespace::CustomPreviewBeatmapLevel*>& levels);
         void SceneManagerOnActiveSceneChanged(UnityEngine::SceneManagement::Scene oldScene, UnityEngine::SceneManagement::Scene newScene);
         custom_types::Helpers::Coroutine DisableCanvasRoutine(float time);
+        void SetProgress(float progress);
+
     public:
         static ProgressBar* Create();
         void ShowMessage(const std::string_view& message, float time);

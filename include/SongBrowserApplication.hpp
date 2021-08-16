@@ -56,6 +56,7 @@ DECLARE_CLASS_CODEGEN(SongBrowser, SongBrowserApplication, UnityEngine::MonoBeha
     
     public:
         static void OnLoad();
+        static void Reset();
 
     DECLARE_INSTANCE_METHOD(void, Awake);
     DECLARE_INSTANCE_METHOD(void, Start);
@@ -73,4 +74,5 @@ DECLARE_CLASS_CODEGEN(SongBrowser, SongBrowserApplication, UnityEngine::MonoBeha
     private:
         /* coro, in C# IEnumerator */
         custom_types::Helpers::Coroutine UpdateBrowserUI();
+        custom_types::Helpers::Coroutine WaitForSongLoader();
 )

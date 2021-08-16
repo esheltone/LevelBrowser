@@ -33,6 +33,7 @@ std::string SongSortModeToString(const SongSortMode& mode)
         case SongSortMode::PlayCount: return "PlayCount";
         case SongSortMode::Stars: return "Stars";
         case SongSortMode::Bpm: return "Bpm";
+        case SongSortMode::NJS: return "NJS";
         case SongSortMode::Length: return "Length";
         case SongSortMode::Downloads: return "Downloads";
         case SongSortMode::CustomSort: return "Custom";

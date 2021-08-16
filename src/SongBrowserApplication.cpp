@@ -12,8 +12,16 @@ DEFINE_TYPE(SongBrowser, SongBrowserApplication);
 
 namespace SongBrowser
 {
+    
     SongBrowser::UI::ProgressBar* SongBrowserApplication::mainProgressBar = nullptr;
     SongBrowser::SongBrowserApplication* SongBrowserApplication::instance = nullptr;
+
+    void SongBrowserApplication::Reset()
+    {
+        instance = nullptr;
+        mainProgressBar = nullptr;
+        SpriteUtils::Reset();
+    }
 
     void SongBrowserApplication::OnLoad()
     {
@@ -38,16 +46,16 @@ namespace SongBrowser
     {
         //scoresaber, but we do not have scoresaber API
         //SongDataCore.Plugin.Songs.OnDataFinishedProcessing += OnScoreSaberDataDownloaded;
-
+        
         if (RuntimeSongLoader::API::HasLoadedSongs()) SongBrowserApplication::OnSongLoaderLoadedSongs(RuntimeSongLoader::API::GetLoadedSongs());
-        else RuntimeSongLoader::API::AddSongsLoadedEvent(std::bind(&SongBrowserApplication::OnSongLoaderLoadedSongs, this, std::placeholders::_1));
+        else StartCoroutine(reinterpret_cast<System::Collections::IEnumerator*>(custom_types::Helpers::CoroutineHelper::New(WaitForSongLoader())));
     }
 
     void SongBrowserApplication::OnSongLoaderLoadedSongs(const std::vector<GlobalNamespace::CustomPreviewBeatmapLevel*>& levels)
     {
         songBrowserUI->UpdateLevelDataModel();
         songBrowserUI->RefreshSongList();
-        //mainProgressBar->ShowMessage("Songloader Finished", 2.0f);
+        mainProgressBar->ShowMessage("Songloader Finished", 2.0f);
     }
 
     void SongBrowserApplication::HandleSoloModeSelection()
@@ -94,6 +102,17 @@ namespace SongBrowser
         songBrowserUI->UpdateLevelDataModel();
         songBrowserUI->UpdateLevelCollectionSelection();
         songBrowserUI->RefreshSongList();
+        co_return;
+    }
+
+    custom_types::Helpers::Coroutine SongBrowserApplication::WaitForSongLoader()
+    {
+        while (!RuntimeSongLoader::API::HasLoadedSongs())
+        {
+            co_yield nullptr;
+        }
+
+        SongBrowserApplication::OnSongLoaderLoadedSongs(RuntimeSongLoader::API::GetLoadedSongs());
         co_return;
     }
 }

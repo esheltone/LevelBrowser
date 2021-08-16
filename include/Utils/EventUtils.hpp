@@ -12,6 +12,7 @@
 #include "GlobalNamespace/BeatmapCharacteristicSO.hpp"
 #include "GlobalNamespace/LevelCollectionViewController.hpp"
 #include "GlobalNamespace/IPreviewBeatmapLevel.hpp"
+#include "GlobalNamespace/SelectLevelCategoryViewController.hpp"
 
 namespace EventUtils
 {
@@ -23,6 +24,7 @@ namespace EventUtils
     using DidSelectAnnotatedBeatmapLevelCollectionEvent_1Arg = UnorderedEventCallback<GlobalNamespace::IAnnotatedBeatmapLevelCollection*>;
     using DidSelectBeatmapCharacteristicEvent = UnorderedEventCallback<GlobalNamespace::BeatmapCharacteristicSegmentedControlController*, GlobalNamespace::BeatmapCharacteristicSO*>;
     using DidFavoriteToggleChangeEvent = UnorderedEventCallback<GlobalNamespace::StandardLevelDetailView*, UnityEngine::UI::Toggle*>;
+    using DidSelectLevelCategoryEvent = UnorderedEventCallback<GlobalNamespace::SelectLevelCategoryViewController* , GlobalNamespace::SelectLevelCategoryViewController::LevelCategory>;
 
     OnActiveSceneChangedEvent& OnActiveSceneChanged();
     DidSelectAnnotatedBeatmapLevelCollectionEvent& DidSelectAnnotatedBeatmapLevelCollection();
@@ -32,6 +34,7 @@ namespace EventUtils
     DidSelectAnnotatedBeatmapLevelCollectionEvent_1Arg& DidSelectAnnotatedBeatmapLevelCollection_1Arg();
     DidSelectBeatmapCharacteristicEvent& DidSelectBeatmapCharacteristic();
     DidFavoriteToggleChangeEvent& DidFavoriteToggleChange(); 
+    DidSelectLevelCategoryEvent& DidSelectLevelCategory(); 
     
     void Init(SongBrowser::DataAccess::BeatSaberUIController* beatUi);
 }

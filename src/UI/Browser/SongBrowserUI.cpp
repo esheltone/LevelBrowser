@@ -303,6 +303,7 @@ namespace SongBrowser::UI
         INFO("Creating playlist export button...");
         playlistExportButton = nullptr;
         /*
+        // we dont need no playlist button
         playlistExportButton =  UIUtils::CreateIconButton("playlistExportButton", viewController->get_transform(), "PracticeButton", Vector2(curX + (randomButtonWidth / 4.0f), clearButtonY), Vector2(randomButtonWidth, randomButtonWidth), 
         [&]() {
             ShowInputKeyboard(std::bind(&SongBrowserUI::CreatePlaylistButtonPressed, this, std::placeholders::_1));

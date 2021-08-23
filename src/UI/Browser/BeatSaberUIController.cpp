@@ -118,9 +118,11 @@ namespace SongBrowser::DataAccess
 
         // search level packs
         auto beatMapLevelPackCollection = ArrayUtil::Last(UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::BeatmapLevelPackCollectionSO*>());
-        ArrayWrapper<GlobalNamespace::IAnnotatedBeatmapLevelCollection*> levelpacks = reinterpret_cast<Array<GlobalNamespace::IAnnotatedBeatmapLevelCollection*>*>(beatMapLevelPackCollection->allBeatmapLevelPacks);
-        for (auto o : levelpacks)
+        Array<GlobalNamespace::IAnnotatedBeatmapLevelCollection*>* levelpacks = reinterpret_cast<Array<GlobalNamespace::IAnnotatedBeatmapLevelCollection*>*>(beatMapLevelPackCollection->allBeatmapLevelPacks);
+        int length = levelpacks->Length();
+        for (int i = 0; i < length; i++)
         {
+            auto o = levelpacks->values[i];
             if (o->get_collectionName()->Equals(levelCollectionNameCS))
             {
                 levelCollection = o;
@@ -131,10 +133,12 @@ namespace SongBrowser::DataAccess
         // search playlists
         if (!levelCollection)
         {
-            ArrayWrapper<GlobalNamespace::IAnnotatedBeatmapLevelCollection*> annotatedBeatmapLevelCollections = reinterpret_cast<Array<GlobalNamespace::IAnnotatedBeatmapLevelCollection *>*>(AnnotatedBeatmapLevelCollectionsViewController->annotatedBeatmapLevelCollections);
+            Array<GlobalNamespace::IAnnotatedBeatmapLevelCollection*>* annotatedBeatmapLevelCollections = reinterpret_cast<Array<GlobalNamespace::IAnnotatedBeatmapLevelCollection *>*>(AnnotatedBeatmapLevelCollectionsViewController->annotatedBeatmapLevelCollections);
             //IReadOnlyList<IAnnotatedBeatmapLevelCollection> _annotatedBeatmapLevelCollections = AnnotatedBeatmapLevelCollectionsViewController.GetField<IReadOnlyList<IAnnotatedBeatmapLevelCollection>, AnnotatedBeatmapLevelCollectionsViewController>("_annotatedBeatmapLevelCollections");
-            for (auto c : annotatedBeatmapLevelCollections)
+            length = annotatedBeatmapLevelCollections->Length();
+            for (int i = 0; i < length; i++)
             {
+                auto c = annotatedBeatmapLevelCollections->values[i];
                 if (c->get_collectionName()->Equals(levelCollectionNameCS))
                 {
                     levelCollection = c;

@@ -34,7 +34,7 @@ DECLARE_CLASS_CODEGEN(SongBrowser::UI, SongBrowserViewController, HMUI::ViewCont
 DECLARE_CLASS_CODEGEN(SongBrowser::UI, SongBrowserUI, UnityEngine::MonoBehaviour,
     static constexpr const char* Name = "SongBrowserUI";
     static constexpr const float SEGMENT_PERCENT = 0.1f;
-    static constexpr const int LIST_ITEMS_VISIBLE_AT_ONCE = 6;
+    static constexpr const int LIST_ITEMS_VISIBLE_AT_ONCE = 7;
     static constexpr const float CLEAR_BUTTON_Y = -31.5f;
     static constexpr const float BUTTON_ROW_Y = -31.5f;
     

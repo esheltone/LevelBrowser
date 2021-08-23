@@ -4,6 +4,7 @@
 #include <string>
 #include <fstream>
 
+#include "UnityEngine/Object.hpp"
 #include "UnityEngine/Texture2D.hpp"
 #include "UnityEngine/SpriteMeshType.hpp"
 #include "UnityEngine/TextureWrapMode.hpp"
@@ -11,74 +12,6 @@
 
 namespace SpriteUtils
 {
-    UnityEngine::Sprite* StarFullIcon = nullptr;
-    UnityEngine::Sprite* SpeedIcon = nullptr;
-    UnityEngine::Sprite* GraphIcon = nullptr;
-    UnityEngine::Sprite* DeleteIcon = nullptr;
-    UnityEngine::Sprite* XIcon = nullptr;
-    UnityEngine::Sprite* DoubleArrow = nullptr;
-    UnityEngine::Sprite* RandomIcon = nullptr;
-    UnityEngine::Sprite* NoteStartOffsetIcon = nullptr;
-    UnityEngine::Sprite* PlaylistIcon = nullptr;
-
-    UnityEngine::Sprite* get_StarFullIcon()
-    {
-        return StarFullIcon;
-    }
-
-    UnityEngine::Sprite* get_SpeedIcon()
-    {
-        return SpeedIcon;
-    }
-
-    UnityEngine::Sprite* get_GraphIcon()
-    {
-        return GraphIcon;
-    }
-
-    UnityEngine::Sprite* get_DeleteIcon()
-    {
-        return DeleteIcon;
-    }
-
-    UnityEngine::Sprite* get_XIcon()
-    {
-        return XIcon;
-    }
-
-    UnityEngine::Sprite* get_DoubleArrow()
-    {
-        return DoubleArrow;
-    }
-
-    UnityEngine::Sprite* get_RandomIcon()
-    {
-        return RandomIcon;
-    }
-
-    UnityEngine::Sprite* get_NoteStartOffsetIcon()
-    {
-        return NoteStartOffsetIcon;
-    }
-
-    UnityEngine::Sprite* get_PlaylistIcon()
-    {
-        return PlaylistIcon;
-    }
-
-    void Reset()
-    {
-        StarFullIcon = nullptr;
-        SpeedIcon = nullptr;
-        GraphIcon = nullptr;
-        DeleteIcon = nullptr;
-        XIcon = nullptr;
-        DoubleArrow = nullptr;
-        RandomIcon = nullptr;
-        NoteStartOffsetIcon = nullptr;
-        PlaylistIcon = nullptr;
-    }
-    
     UnityEngine::Sprite* FileToSprite(std::string_view path)
     {
         std::ifstream instream(std::string(path.data()), std::ios::in | std::ios::binary);
@@ -98,16 +31,48 @@ namespace SpriteUtils
         return FileToSprite(path);
     }
 
-    void Init()
+    UnityEngine::Sprite* get_StarFullIcon()
     {
-        SpeedIcon = LoadSprite("Speed.png");
-        GraphIcon = LoadSprite("Graph.png");
-        XIcon = LoadSprite("X.png");
-        StarFullIcon = LoadSprite("StarFull.png");
-        DeleteIcon = LoadSprite("DeleteIcon.png");
-        DoubleArrow = LoadSprite("DoubleArrow.png");
-        RandomIcon = LoadSprite("RandomIcon.png");
-        NoteStartOffsetIcon = LoadSprite("NoteStartOffset.png");
-        PlaylistIcon = LoadSprite("PlaylistIcon.png");
+        return LoadSprite("StarFull.png");
+    }
+
+    UnityEngine::Sprite* get_SpeedIcon()
+    {
+        return LoadSprite("Speed.png");
+    }
+
+    UnityEngine::Sprite* get_GraphIcon()
+    {
+        return LoadSprite("Graph.png");
+    }
+
+    UnityEngine::Sprite* get_DeleteIcon()
+    {
+        return LoadSprite("DeleteIcon.png");
+    }
+
+    UnityEngine::Sprite* get_XIcon()
+    {
+        return LoadSprite("X.png");
+    }
+
+    UnityEngine::Sprite* get_DoubleArrow()
+    {
+        return LoadSprite("DoubleArrow.png");
+    }
+
+    UnityEngine::Sprite* get_RandomIcon()
+    {
+        return LoadSprite("RandomIcon.png");
+    }
+
+    UnityEngine::Sprite* get_NoteStartOffsetIcon()
+    {
+        return LoadSprite("NoteStartOffset.png");
+    }
+
+    UnityEngine::Sprite* get_PlaylistIcon()
+    {
+        return LoadSprite("PlaylistIcon.png");
     }
 }

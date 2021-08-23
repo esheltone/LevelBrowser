@@ -20,14 +20,12 @@ namespace SongBrowser
     {
         instance = nullptr;
         mainProgressBar = nullptr;
-        SpriteUtils::Reset();
     }
 
     void SongBrowserApplication::OnLoad()
     {
         UnityEngine::GameObject::New_ctor(il2cpp_utils::createcsstr("Beat Saber SongBrowser Plugin"))->AddComponent<SongBrowserApplication*>();
         mainProgressBar = SongBrowser::UI::ProgressBar::Create();
-        SpriteUtils::Init();
     }
 
     void SongBrowserApplication::Awake()

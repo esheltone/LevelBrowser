@@ -300,6 +300,8 @@ namespace SongBrowser::UI
 
         // playlist export
         INFO("Creating playlist export button...");
+        playlistExportButton = nullptr;
+        /*
         playlistExportButton =  UIUtils::CreateIconButton("playlistExportButton", viewController->get_transform(), "PracticeButton", Vector2(curX + (randomButtonWidth / 4.0f), clearButtonY), Vector2(randomButtonWidth, randomButtonWidth), 
         [&]() {
             ShowInputKeyboard(std::bind(&SongBrowserUI::CreatePlaylistButtonPressed, this, std::placeholders::_1));
@@ -307,6 +309,7 @@ namespace SongBrowser::UI
         UIUtils::SetButtonBackgroundActive(playlistExportButton, false);
         playlistExportButton->set_interactable(false);
         UIUtils::SetHoverHint(playlistExportButton->get_transform(), "Playlist Export Currently Disabled!_hoverHintText", "Playlist Export Currently Disabled!");
+        */
     }
 
     void SongBrowserUI::CreateSortButtons()

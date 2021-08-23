@@ -16,6 +16,7 @@ namespace SongDataCoreUtils
     {
         public:
             static const BeatStarSong* GetSong(std::string_view hash);
+            
             float maxNJS() const;
             double maxPpValue() const;
             double maxStarValue() const;

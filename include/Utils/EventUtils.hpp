@@ -37,4 +37,5 @@ namespace EventUtils
     DidSelectLevelCategoryEvent& DidSelectLevelCategory(); 
     
     void Init(SongBrowser::DataAccess::BeatSaberUIController* beatUi);
+    void Reset();
 }

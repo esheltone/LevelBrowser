@@ -53,7 +53,7 @@ namespace SongBrowser
     {
         songBrowserUI->UpdateLevelDataModel();
         songBrowserUI->RefreshSongList();
-        mainProgressBar->ShowMessage("Songloader Finished", 2.0f);
+        //mainProgressBar->ShowMessage("Songloader Finished", 2.0f);
     }
 
     void SongBrowserApplication::HandleSoloModeSelection()
@@ -88,7 +88,7 @@ namespace SongBrowser
         if (!hasShownProgressBar)
         {
             INFO("Showing progress bar");
-            mainProgressBar->ShowMessage("", 5.0f);
+            mainProgressBar->ShowMessage("SongBrowser Loaded!", 5.0f);
             hasShownProgressBar = true;
         }
     }

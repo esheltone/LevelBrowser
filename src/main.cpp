@@ -99,6 +99,7 @@ MAKE_AUTO_HOOK_MATCH(MenuTransitionsHelper_RestartGame, &GlobalNamespace::MenuTr
 {
     INFO("Game is soft restarting, handling it by throwing away pointers!");
     SongBrowser::SongBrowserApplication::Reset();
+    EventUtils::Reset();
     MenuTransitionsHelper_RestartGame(self, finishCallback);
 }
 

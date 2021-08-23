@@ -211,6 +211,7 @@ namespace SongBrowser::UI
         uiCreated = true;
 
         RefreshSortButtonUI();
+        StartCoroutine(reinterpret_cast<System::Collections::IEnumerator*>(custom_types::Helpers::CoroutineHelper::New(ProcessSongListEndOfFrame())));
     }
     void SongBrowserUI::CreateOuterUI()
     {
@@ -958,10 +959,9 @@ namespace SongBrowser::UI
 
     void SongBrowserUI::OnDidChangeDifficultyEvent(GlobalNamespace::StandardLevelDetailViewController* view, GlobalNamespace::IDifficultyBeatmap* beatmap)
     {
-        if (!view->get_selectedDifficultyBeatmap())
+        if (!view || !view->get_selectedDifficultyBeatmap() || !view->get_selectedDifficultyBeatmap()->get_level()) 
             return;
-
-        UpdateDeleteButtonState(reinterpret_cast<GlobalNamespace::IPreviewBeatmapLevel*>(view->get_selectedDifficultyBeatmap()->get_level())->get_levelID());
+        
         RefreshScoreSaberData(reinterpret_cast<GlobalNamespace::IPreviewBeatmapLevel*>(view->get_selectedDifficultyBeatmap()->get_level()));
         RefreshNoteJumpSpeed(beatmap->get_noteJumpMovementSpeed(), beatmap->get_noteJumpStartBeatOffset());
     }
@@ -979,14 +979,12 @@ namespace SongBrowser::UI
         auto sv = tv->scrollView;
         model->lastScrollIndex = sv->get_position();
 
-        UpdateDeleteButtonState(reinterpret_cast<GlobalNamespace::IPreviewBeatmapLevel*>(view->get_selectedDifficultyBeatmap()->get_level())->get_levelID());
         RefreshScoreSaberData(reinterpret_cast<GlobalNamespace::IPreviewBeatmapLevel*>(view->get_selectedDifficultyBeatmap()->get_level()));
         RefreshNoteJumpSpeed(view->get_selectedDifficultyBeatmap()->get_noteJumpMovementSpeed(), view->get_selectedDifficultyBeatmap()->get_noteJumpStartBeatOffset());
     }
 
     void SongBrowserUI::HandleDidSelectLevelRow(GlobalNamespace::IPreviewBeatmapLevel* level)
     {
-        UpdateDeleteButtonState(level->get_levelID());
         RefreshQuickScrollButtons();
     }
 

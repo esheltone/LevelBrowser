@@ -71,6 +71,19 @@ namespace EventUtils
     {
         return didSelectLevelCategoryEvent;
     }
+    
+    void Reset()
+    {
+        onActiveSceneChanged.clear();
+        didSelectAnnotatedBeatmapLevelCollectionEvent.clear();
+        didSelectLevelEvent.clear();
+        didChangeContentEvent.clear();
+        didChangeDifficultyBeatmapEvent.clear();
+        didSelectAnnotatedBeatmapLevelCollectionEvent_1Arg.clear();
+        didSelectBeatmapCharacteristicEvent.clear();
+        didFavoriteToggleChangeEvent.clear();
+        didSelectLevelCategoryEvent.clear();
+    }
 
     void Init(SongBrowser::DataAccess::BeatSaberUIController* beatUi)
     {
@@ -115,6 +128,5 @@ namespace EventUtils
         std::function<void(GlobalNamespace::SelectLevelCategoryViewController*, GlobalNamespace::SelectLevelCategoryViewController::LevelCategory)> didSelectLevelCategoryEventFun = std::bind(&DidSelectLevelCategoryEvent::invoke, &didSelectLevelCategoryEvent, std::placeholders::_1, std::placeholders::_2);
         auto didSelectLevelCategoryEventDelegate = MakeDelegate<System::Action_2<GlobalNamespace::SelectLevelCategoryViewController*, GlobalNamespace::SelectLevelCategoryViewController::LevelCategory>*>(didSelectLevelCategoryEventFun);
         beatUi->LevelFilteringNavigationController->selectLevelCategoryViewController->add_didSelectLevelCategoryEvent(didSelectLevelCategoryEventDelegate);
-        
     }
 }

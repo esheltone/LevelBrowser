@@ -61,12 +61,6 @@ LOCAL_MODULE := android-libsong_data_core_rust
 LOCAL_EXPORT_C_INCLUDES := extern/songdatacore
 LOCAL_SRC_FILES := extern/libandroid-libsong_data_core_rust.so
 include $(PREBUILT_SHARED_LIBRARY)
-# Creating prebuilt for dependency: libcryptopp - version: 8.5.0
-include $(CLEAR_VARS)
-LOCAL_MODULE := cryptopp
-LOCAL_EXPORT_C_INCLUDES := extern/libcryptopp
-LOCAL_SRC_FILES := extern/libcryptopp.a
-include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := songbrowser
@@ -80,8 +74,7 @@ LOCAL_SHARED_LIBRARIES += custom-types
 LOCAL_SHARED_LIBRARIES += questui
 LOCAL_SHARED_LIBRARIES += songloader
 LOCAL_SHARED_LIBRARIES += android-libsong_data_core_rust
-LOCAL_STATIC_LIBRARIES += cryptopp
-LOCAL_LDLIBS += -llog -lz
+LOCAL_LDLIBS += -llog
 LOCAL_CFLAGS += -DID='"SongBrowser"' -DVERSION='"0.1.0"' -I'./shared' -I'./extern' -Wno-inaccessible-base -O2
 LOCAL_C_INCLUDES += ./include ./src ./extern ./extern/codegen/include ./extern/libil2cpp/il2cpp/libil2cpp ./shared
 LOCAL_CPP_FEATURES += rtti exceptions

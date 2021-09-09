@@ -12,11 +12,6 @@
   },
   "dependencies": [
     {
-      "id": "codegen",
-      "versionRange": "*",
-      "additionalData": {}
-    },
-    {
       "id": "beatsaber-hook",
       "versionRange": "*",
       "additionalData": {
@@ -24,6 +19,11 @@
           "src/inline-hook"
         ]
       }
+    },
+    {
+      "id": "codegen",
+      "versionRange": "*",
+      "additionalData": {}
     },
     {
       "id": "questui",

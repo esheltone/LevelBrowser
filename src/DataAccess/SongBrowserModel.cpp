@@ -27,8 +27,10 @@
 #include "songloader/shared/API.hpp"
 
 #include "Utils/ArrayUtil.hpp"
-#include "Utils/SongDataCoreUtils.hpp"
 #include "Utils/EnumToStringUtils.hpp"
+#include "Utils/SongDataCoreUtils.hpp"
+
+#include "sdc-wrapper/shared/BeatStarSong.hpp"
 
 #include "UnityEngine/Rect.hpp"
 #include "UnityEngine/Resources.hpp"
@@ -873,9 +875,9 @@ namespace SongBrowser
             if (!x) return;
             std::string levelId = to_utf8(csstrtostr(x->get_levelID()));
             auto hash = GetSongHash(levelId);
-            auto song = SongDataCoreUtils::BeatStarSong::GetSong(hash);
+            auto song = SDC_wrapper::BeatStarSong::GetSong(hash);
             if (!song) return;
-            auto diffVec = song->GetDiffVec();
+            auto diffVec = song->GetDifficultyVector();
 
             bool isRanked = false;
             for (auto diff : diffVec)
@@ -909,15 +911,15 @@ namespace SongBrowser
             if (!x) return;
             std::string levelId = to_utf8(csstrtostr(x->get_levelID()));
             auto hash = GetSongHash(levelId);
-            auto song = SongDataCoreUtils::BeatStarSong::GetSong(hash);
+            auto song = SDC_wrapper::BeatStarSong::GetSong(hash);
             if (!song) return;
             // now we have our song
 
-            auto diffVec = song->GetDiffVec();
+            auto diffVec = song->GetDifficultyVector();
 
             for (auto diff : diffVec)
             {
-                auto reqVec = diff->GetReqVec();
+                auto reqVec = diff->GetRequirementVector();
                 if (reqVec.size() > 0)
                 {
                     // we have requirements
@@ -1025,12 +1027,12 @@ namespace SongBrowser
             auto firstHash = GetSongHash(firstlevelID);
             auto secondHash = GetSongHash(secondlevelID);
 
-            auto firstSong = SongDataCoreUtils::BeatStarSong::GetSong(firstHash);
-            auto secondSong = SongDataCoreUtils::BeatStarSong::GetSong(secondHash);
+            auto firstSong = SDC_wrapper::BeatStarSong::GetSong(firstHash);
+            auto secondSong = SDC_wrapper::BeatStarSong::GetSong(secondHash);
 
             if (!secondSong) return false;
             else if (!firstSong) return true;
-            else return firstSong->maxPpValue() < secondSong->maxPpValue();
+            else return firstSong->GetMaxPpValue() < secondSong->GetMaxPpValue();
         });
         return levels;
     }
@@ -1050,12 +1052,12 @@ namespace SongBrowser
             auto firstHash = GetSongHash(firstlevelID);
             auto secondHash = GetSongHash(secondlevelID);
 
-            auto firstSong = SongDataCoreUtils::BeatStarSong::GetSong(firstHash);
-            auto secondSong = SongDataCoreUtils::BeatStarSong::GetSong(secondHash);
+            auto firstSong = SDC_wrapper::BeatStarSong::GetSong(firstHash);
+            auto secondSong = SDC_wrapper::BeatStarSong::GetSong(secondHash);
 
             if (!secondSong) return false;
             else if (!firstSong) return true;
-            else return firstSong->maxStarValue() < secondSong->maxStarValue();
+            else return firstSong->GetMaxStarValue() < secondSong->GetMaxStarValue();
         });
         return levels;
     }
@@ -1118,11 +1120,11 @@ namespace SongBrowser
             auto firstHash = GetSongHash(firstlevelID);
             auto secondHash = GetSongHash(secondlevelID);
 
-            auto firstSong = SongDataCoreUtils::BeatStarSong::GetSong(firstHash);
-            auto secondSong = SongDataCoreUtils::BeatStarSong::GetSong(secondHash);
+            auto firstSong = SDC_wrapper::BeatStarSong::GetSong(firstHash);
+            auto secondSong = SDC_wrapper::BeatStarSong::GetSong(secondHash);
 
-            float firstMaxNJS = firstSong ? firstSong->maxNJS() : 0.0f;
-            float secondMaxNJS = secondSong ? secondSong->maxNJS() : 0.0f;
+            float firstMaxNJS = firstSong ? firstSong->GetMaxNJS() : 0.0f;
+            float secondMaxNJS = secondSong ? secondSong->GetMaxNJS() : 0.0f;
             
             if (firstMaxNJS == secondMaxNJS)
             {
@@ -1168,8 +1170,8 @@ namespace SongBrowser
             auto firstHash = GetSongHash(firstlevelID);
             auto secondHash = GetSongHash(secondlevelID);
 
-            auto firstSong = SongDataCoreUtils::BeatStarSong::GetSong(firstHash);
-            auto secondSong = SongDataCoreUtils::BeatStarSong::GetSong(secondHash);
+            auto firstSong = SDC_wrapper::BeatStarSong::GetSong(firstHash);
+            auto secondSong = SDC_wrapper::BeatStarSong::GetSong(secondHash);
 
             if (!secondSong) return false;
             else if (!firstSong) return true;
@@ -1195,8 +1197,8 @@ namespace SongBrowser
             auto firstHash = GetSongHash(firstlevelID);
             auto secondHash = GetSongHash(secondlevelID);
 
-            auto firstSong = SongDataCoreUtils::BeatStarSong::GetSong(firstHash);
-            auto secondSong = SongDataCoreUtils::BeatStarSong::GetSong(secondHash);
+            auto firstSong = SDC_wrapper::BeatStarSong::GetSong(firstHash);
+            auto secondSong = SDC_wrapper::BeatStarSong::GetSong(secondHash);
 
             if (!secondSong) return false;
             else if (!firstSong) return true;
@@ -1221,8 +1223,8 @@ namespace SongBrowser
             auto firstHash = GetSongHash(firstlevelID);
             auto secondHash = GetSongHash(secondlevelID);
 
-            auto firstSong = SongDataCoreUtils::BeatStarSong::GetSong(firstHash);
-            auto secondSong = SongDataCoreUtils::BeatStarSong::GetSong(secondHash);
+            auto firstSong = SDC_wrapper::BeatStarSong::GetSong(firstHash);
+            auto secondSong = SDC_wrapper::BeatStarSong::GetSong(secondHash);
 
             if (!secondSong) return false;
             else if (!firstSong) return true;
@@ -1246,8 +1248,8 @@ namespace SongBrowser
             auto firstHash = GetSongHash(firstlevelID);
             auto secondHash = GetSongHash(secondlevelID);
 
-            auto firstSong = SongDataCoreUtils::BeatStarSong::GetSong(firstHash);
-            auto secondSong = SongDataCoreUtils::BeatStarSong::GetSong(secondHash);
+            auto firstSong = SDC_wrapper::BeatStarSong::GetSong(firstHash);
+            auto secondSong = SDC_wrapper::BeatStarSong::GetSong(secondHash);
 
             if (!secondSong) return false;
             else if (!firstSong) return true;
@@ -1271,12 +1273,12 @@ namespace SongBrowser
             auto firstHash = GetSongHash(firstlevelID);
             auto secondHash = GetSongHash(secondlevelID);
 
-            auto firstSong = SongDataCoreUtils::BeatStarSong::GetSong(firstHash);
-            auto secondSong = SongDataCoreUtils::BeatStarSong::GetSong(secondHash);
+            auto firstSong = SDC_wrapper::BeatStarSong::GetSong(firstHash);
+            auto secondSong = SDC_wrapper::BeatStarSong::GetSong(secondHash);
 
             if (!secondSong) return false;
             else if (!firstSong) return true;
-            else return firstSong->GetHeat() < secondSong->GetHeat();
+            else return firstSong->heat < secondSong->heat;
         });
         return levels;
     }

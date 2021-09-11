@@ -8,6 +8,7 @@
 // this is just a wrapper around the bindings for songdatacore cause this looks a bit better :) 
 namespace SongDataCoreUtils
 {
+    /*
     struct BeatStarSong;
     struct BeatStarSongDifficultyStats;
     using BeatStarCharacteristics = song_data_core::BeatStarCharacteristics;
@@ -36,7 +37,7 @@ namespace SongDataCoreUtils
     {
         std::vector<std::string> GetReqVec() const;
     };
-
+    */
     void Init();
     bool get_loaded();
 }

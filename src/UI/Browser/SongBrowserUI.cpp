@@ -34,6 +34,8 @@
 #include "Utils/EnumToStringUtils.hpp"
 #include "Utils/SongDataCoreUtils.hpp"
 
+#include "sdc-wrapper/shared/BeatStarSong.hpp"
+
 #include "questui/shared/BeatSaberUI.hpp"
 #include "logging.hpp"
 
@@ -1204,30 +1206,22 @@ namespace SongBrowser::UI
         std::string levelID = levelIDcs ? to_utf8(csstrtostr(levelIDcs)) : "";
         auto hash = SongBrowserModel::GetSongHash(levelID);
         // BeatStarSong*, if null not found 
-        auto song = SongDataCoreUtils::BeatStarSong::GetSong(hash);
+        auto song = SDC_wrapper::BeatStarSong::GetSong(hash);
         if (song)
         {
             INFO("Song existed!");
-            auto char_ = song->GetChar(beatUi->BeatmapCharacteristicSelectionViewController->get_selectedBeatmapCharacteristic());
-            if (char_)
+            auto char_ = SDC_wrapper::BeatStarCharacteristic(beatUi->BeatmapCharacteristicSelectionViewController->get_selectedBeatmapCharacteristic());
+            // BeatStarSongDifficultyStats*, null if nonexistent
+            auto songDifficulty = song->GetDifficulty(char_, difficultyString);
+            if (songDifficulty)
             {
-                // BeatStarSongDifficultyStats*, null if nonexistent
-                auto songDifficulty = song->GetDiff(char_, difficultyString);
-                if (songDifficulty)
-                {
-                    INFO("Display pp for diff %s", songDifficulty->diff.string_data);
-                    // no pp cause songdatacore no pp
-                    double pp = songDifficulty->approximate_pp_value;
-                    double star = songDifficulty->stars;
+                INFO("Display pp for diff %s", songDifficulty->GetName().data());
+                // no pp cause songdatacore no pp
+                double pp = songDifficulty->approximate_pp_value;
+                double star = songDifficulty->stars;
 
-                    UIUtils::SetStatButtonText(ppStatButton, string_format("%.1f", pp));
-                    UIUtils::SetStatButtonText(starStatButton, string_format("%.1f", star));
-                }
-                else
-                {
-                    UIUtils::SetStatButtonText(ppStatButton, "NA");
-                    UIUtils::SetStatButtonText(starStatButton, "NA");
-                }
+                UIUtils::SetStatButtonText(ppStatButton, string_format("%.1f", pp));
+                UIUtils::SetStatButtonText(starStatButton, string_format("%.1f", star));
             }
             else
             {

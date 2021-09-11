@@ -26,7 +26,7 @@ namespace SongDataCoreUtils
     {
         return loaded;
     }
- 
+    /*
     const BeatStarSong* BeatStarSong::GetSong(std::string_view hash)
     {
         return reinterpret_cast<const BeatStarSong*>(song_data_core::Beatstar_GetSong(hash.data()));
@@ -190,4 +190,5 @@ namespace SongDataCoreUtils
 
         return vec;
     }
+    */
 }

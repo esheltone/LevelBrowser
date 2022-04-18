@@ -50,7 +50,7 @@ Android.mk
 *.log
 cover.gif
 qpm.shared.json
-extern/*
+extern/
 Android.mk.backup
 src/QuestNotes.cpp.txt
 src/QuestWalls.cpp.txt
@@ -74,6 +74,10 @@ addr2line.bat
 *.~hpp
 PhotoshopFiles/
 log.bat
+qpm_defines.cmake
+extern.cmake
+*.txt
+mod.json
 tombstone_*
 # =============== #
 # Unity generated #
@@ -165,3 +169,7 @@ ehthumbs.db
 Corridor/Library/ShaderCache/
 Corridor/Library/metadata/
 
+cmake-build-debug/.cmake
+cmake-build-debug/CMakeFiles
+cmake-build-debug
+.idea

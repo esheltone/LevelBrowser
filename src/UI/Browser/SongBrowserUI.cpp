@@ -1,22 +1,16 @@
 #include "UI/Browser/SongBrowserUI.hpp"
 #include "SongBrowserApplication.hpp"
 
-#include "modloader/shared/modloader.hpp"
-
 #include "UnityEngine/Object.hpp"
 #include "UnityEngine/Resources.hpp"
 #include "UnityEngine/Transform.hpp"
 #include "UnityEngine/GameObject.hpp"
 #include "UnityEngine/WaitForEndOfFrame.hpp"
 
-#include "HMUI/ViewController.hpp"
 #include "HMUI/ViewController_AnimationDirection.hpp"
 #include "HMUI/TitleViewController.hpp"
 #include "HMUI/CurvedCanvasSettings.hpp"
 #include "HMUI/ScrollView.hpp"
-
-#include "System/Linq/Enumerable.hpp"
-#include "System/Collections/Generic/IEnumerable_1.hpp"
 
 #include "GlobalNamespace/IBeatmapLevelPackCollection.hpp"
 #include "GlobalNamespace/IBeatmapLevel.hpp"
@@ -28,7 +22,6 @@
 #include "GlobalNamespace/LevelParamsPanel.hpp"
 
 #include "Utils/EventUtils.hpp"
-#include "Utils/ArrayUtil.hpp"
 #include "Utils/UIUtils.hpp"
 #include "Utils/SpriteUtils.hpp"
 #include "Utils/EnumToStringUtils.hpp"
@@ -36,13 +29,10 @@
 
 #include "sdc-wrapper/shared/BeatStarSong.hpp"
 
-#include "questui/shared/BeatSaberUI.hpp"
 #include "logging.hpp"
 
 #include <unordered_map>
 #include "System/Enum.hpp"
-
-#include "sombrero/shared/RandomUtils.hpp"
 
 #include "songloader/shared/API.hpp"
 
@@ -74,7 +64,7 @@ namespace SongBrowser::UI
         // get a current beatmap characteristic...
         if (!model->currentBeatmapCharacteristicSO && uiCreated)
         {
-            model->currentBeatmapCharacteristicSO = beatUi->BeatmapCharacteristicSelectionViewController->selectedBeatmapCharacteristic;
+            model->currentBeatmapCharacteristicSO = beatUi->BeatmapCharacteristicSelectionViewController->dyn__selectedBeatmapCharacteristic();
         }
 
         model->UpdateLevelRecords();
@@ -149,13 +139,13 @@ namespace SongBrowser::UI
         switch(mode)
         {
             case GlobalNamespace::MainMenuViewController::MenuButton::SoloFreePlay:
-                flowCoordinator = ArrayUtil::Last(Resources::FindObjectsOfTypeAll<GlobalNamespace::SoloFreePlayFlowCoordinator*>());
+                flowCoordinator = Resources::FindObjectsOfTypeAll<GlobalNamespace::SoloFreePlayFlowCoordinator*>().Last();
                 break;
             case GlobalNamespace::MainMenuViewController::MenuButton::Party:
-                flowCoordinator = ArrayUtil::Last(Resources::FindObjectsOfTypeAll<GlobalNamespace::PartyFreePlayFlowCoordinator*>());
+                flowCoordinator = Resources::FindObjectsOfTypeAll<GlobalNamespace::PartyFreePlayFlowCoordinator*>().Last();
                 break;
             case GlobalNamespace::MainMenuViewController::MenuButton::Multiplayer:
-                flowCoordinator = ArrayUtil::Last(Resources::FindObjectsOfTypeAll<GlobalNamespace::MultiplayerLevelSelectionFlowCoordinator*>());
+                flowCoordinator = Resources::FindObjectsOfTypeAll<GlobalNamespace::MultiplayerLevelSelectionFlowCoordinator*>().Last();
                 break;
             default:
                 return;
@@ -164,10 +154,10 @@ namespace SongBrowser::UI
         beatUi = *il2cpp_utils::New<SongBrowser::DataAccess::BeatSaberUIController*>(flowCoordinator);
         lastLevelCollection = nullptr;
         
-        auto screenContainer = ArrayUtil::First(Resources::FindObjectsOfTypeAll<Transform*>(), [](auto x) {
-                static Il2CppString* screenContainerName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("ScreenContainer");
-                return screenContainerName->Equals(x->get_name());
-            });
+        auto screenContainer = Resources::FindObjectsOfTypeAll<Transform*>().First([](auto x) {
+            static Il2CppString* screenContainerName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("ScreenContainer");
+            return screenContainerName->Equals(x->get_name());
+        });
 
         INFO("screenContainer: %p", screenContainer);
         
@@ -202,7 +192,6 @@ namespace SongBrowser::UI
         CreateOuterUI();
         CreateSortButtons();
         CreateFilterButtons();
-        CreateDeleteUI();
         CreateFastPageButtons();
 
         InstallHandlers();
@@ -213,7 +202,7 @@ namespace SongBrowser::UI
         uiCreated = true;
 
         RefreshSortButtonUI();
-        StartCoroutine(reinterpret_cast<System::Collections::IEnumerator*>(custom_types::Helpers::CoroutineHelper::New(ProcessSongListEndOfFrame())));
+        StartCoroutine(custom_types::Helpers::CoroutineHelper::New(ProcessSongListEndOfFrame()));
     }
     void SongBrowserUI::CreateOuterUI()
     {
@@ -338,8 +327,7 @@ namespace SongBrowser::UI
             {"Stars", SongSortMode::Stars},
             {"UpVotes", SongSortMode::UpVotes},
             {"Rating", SongSortMode::Rating},
-            {"Heat", SongSortMode::Heat},
-            {"Downloads", SongSortMode::Downloads}
+            {"Heat", SongSortMode::Heat}
         };
 
         sortButtonGroup = List<SongSortButton*>::New_ctor();
@@ -414,6 +402,7 @@ namespace SongBrowser::UI
             UIUtils::SetButtonTextSize(filterButton->button, filterButtonFontSize);
             UIUtils::ToggleWordWrapping(filterButton->button, false);
 
+            /* >>>>>>> NOT REQUIRED IN QUEST
             // don't allow to filter for reqs if no cjd
             if (p.second == SongFilterMode::Requirements)
             {
@@ -427,6 +416,7 @@ namespace SongBrowser::UI
                 else filterButton->button->set_interactable(false);
 
             }
+             */
 
             filterButtonGroup->Add(filterButton);
             i++;
@@ -450,36 +440,6 @@ namespace SongBrowser::UI
                 JumpSongList(1, SEGMENT_PERCENT);
             }, SpriteUtils::get_DoubleArrow());
     }
-
-    void SongBrowserUI::CreateDeleteUI()
-    {
-        INFO("Creating delete dialog...");
-        INFO("Due to songloader already implementing deletion we don't need to do it here ^_^");
-        /*
-        static auto deleteLevelButtonName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("DeleteLevelButton");
-        auto transform = beatUi->StandardLevelDetailView->practiceButton->get_transform()->get_parent()->Find(deleteLevelButtonName);
-
-        if (transform) 
-        {
-            deleteButton = transform->get_gameObject()->GetComponentInChildren<UnityEngine::UI::Button*>();
-            std::function<void(void)> fun = std::bind(&SongBrowserUI::HandleDeleteSelectedLevel, this);
-            deleteButton->get_onClick()->AddListener(il2cpp_utils::MakeDelegate<Events::UnityAction*>(classof(Events::UnityAction*), fun));
-        }
-        */
-        /*
-        deleteDialog = Object::Instantiate<GlobalNamespace::SimpleDialogPromptViewController*>(beatUi->SimpleDialogPromptViewControllerPrefab);
-        deleteDialog->GetComponent<VRUIControls::VRGraphicRaycaster*>()->physicsRaycaster = UIUtils::get_PhysicsRaycasterWithCache();
-        deleteDialog->set_name(il2cpp_utils::newcsstr("DeleteDialogPromptViewController"));
-        deleteDialog->get_gameObject()->SetActive(false);
-
-        INFO("Creating delete button...");
-        deleteButton = UIUtils::CreateIconButton("DeleteLevelButton_SB", reinterpret_cast<UnityEngine::Transform*>(beatUi->ActionButtons), "PracticeButton", SpriteUtils::get_DeleteIcon(), "Delete Level");
-        deleteButton->get_transform()->SetAsFirstSibling();
-
-        std::function<void(void)> fun = std::bind(&SongBrowserUI::HandleDeleteSelectedLevel, this);
-        deleteButton->get_onClick()->AddListener(il2cpp_utils::MakeDelegate<Events::UnityAction*>(classof(Events::UnityAction*), fun));
-        */
-    }
 #pragma endregion
     
     void SongBrowserUI::ModifySongStatsPanel()
@@ -487,7 +447,7 @@ namespace SongBrowser::UI
         // modify stat panel, inject extra row of stats
         INFO("Resizing Stats Panel...");
 
-        auto statsPanel = beatUi->StandardLevelDetailView->levelParamsPanel;
+        auto statsPanel = beatUi->StandardLevelDetailView->dyn__levelParamsPanel();
         reinterpret_cast<RectTransform*>(statsPanel->get_transform())->Translate(0.0f, 0.05f, 0.0f);
 
         auto NPS_cs = il2cpp_utils::newcsstr("NPS");
@@ -496,7 +456,7 @@ namespace SongBrowser::UI
         auto BombsCount_cs = il2cpp_utils::newcsstr("BombsCount");
 
         ppStatButton = reinterpret_cast<UnityEngine::RectTransform*>(UIUtils::CreateStatIcon("PPStatLabel",
-            reinterpret_cast<UnityEngine::Transform*>(ArrayUtil::First(statsPanel->get_gameObject()->GetComponentsInChildren<RectTransform*>(), [NPS_cs](auto x) {
+            reinterpret_cast<UnityEngine::Transform*>(statsPanel->get_gameObject()->GetComponentsInChildren<RectTransform*>().First([NPS_cs](auto x) {
                 return x->get_name()->Equals(NPS_cs); 
             })),
             statsPanel->get_transform(),
@@ -504,7 +464,7 @@ namespace SongBrowser::UI
             "PP Value"));
 
         starStatButton = reinterpret_cast<UnityEngine::RectTransform*>(UIUtils::CreateStatIcon("StarStatLabel",
-            reinterpret_cast<UnityEngine::Transform*>(ArrayUtil::First(statsPanel->get_gameObject()->GetComponentsInChildren<RectTransform*>(), [NotesCount_cs](auto x) {
+            reinterpret_cast<UnityEngine::Transform*>(statsPanel->get_gameObject()->GetComponentsInChildren<RectTransform*>().First([NotesCount_cs](auto x) {
                 return x->get_name()->Equals(NotesCount_cs); 
             })),
             statsPanel->get_transform(),
@@ -512,7 +472,7 @@ namespace SongBrowser::UI
             "Star Difficulty Rating"));
 
         njsStatButton = reinterpret_cast<UnityEngine::RectTransform*>(UIUtils::CreateStatIcon("NoteJumpSpeedLabel",
-            reinterpret_cast<UnityEngine::Transform*>(ArrayUtil::First(statsPanel->get_gameObject()->GetComponentsInChildren<RectTransform*>(), [ObstaclesCount_cs](auto x) {
+            reinterpret_cast<UnityEngine::Transform*>(statsPanel->get_gameObject()->GetComponentsInChildren<RectTransform*>().First([ObstaclesCount_cs](auto x) {
                 return x->get_name()->Equals(ObstaclesCount_cs); 
             })),
             statsPanel->get_transform(),
@@ -520,7 +480,7 @@ namespace SongBrowser::UI
             "Note Jump Speed"));
 
         noteJumpStartBeatOffsetLabel = reinterpret_cast<UnityEngine::RectTransform*>(UIUtils::CreateStatIcon("NoteJumpStartBeatOffsetLabel",
-            reinterpret_cast<UnityEngine::Transform*>(ArrayUtil::First(statsPanel->get_gameObject()->GetComponentsInChildren<RectTransform*>(), [BombsCount_cs](auto x) {
+            reinterpret_cast<UnityEngine::Transform*>(statsPanel->get_gameObject()->GetComponentsInChildren<RectTransform*>().First([BombsCount_cs](auto x) {
                 return x->get_name()->Equals(BombsCount_cs); 
             })),
             statsPanel->get_transform(),
@@ -562,7 +522,7 @@ namespace SongBrowser::UI
 
 
         std::function<void(void)> fun = [this](){
-            this->StartCoroutine(reinterpret_cast<System::Collections::IEnumerator*>(custom_types::Helpers::CoroutineHelper::New(this->RefreshQuickScrollButtonsAsync())));
+            this->StartCoroutine(custom_types::Helpers::CoroutineHelper::New(this->RefreshQuickScrollButtonsAsync()));
         };
 
         auto delegate = il2cpp_utils::MakeDelegate<UnityEngine::Events::UnityAction*>(classof(UnityEngine::Events::UnityAction*), fun);
@@ -582,7 +542,7 @@ namespace SongBrowser::UI
         }
         else
         {
-            StartCoroutine(reinterpret_cast<System::Collections::IEnumerator*>(custom_types::Helpers::CoroutineHelper::New(AsyncForceScrollToPosition(model->lastScrollIndex))));
+            StartCoroutine(custom_types::Helpers::CoroutineHelper::New(AsyncForceScrollToPosition(model->lastScrollIndex)));
         }
     }
 
@@ -591,7 +551,6 @@ namespace SongBrowser::UI
         switch (levelCategory)
         {
             case GlobalNamespace::SelectLevelCategoryViewController::LevelCategory::None: [[fallthrough]];
-            case GlobalNamespace::SelectLevelCategoryViewController::LevelCategory::OstAndExtras:  [[fallthrough]];
             case GlobalNamespace::SelectLevelCategoryViewController::LevelCategory::CustomSongs: [[fallthrough]];
             default:
                 break;
@@ -612,8 +571,8 @@ namespace SongBrowser::UI
 
         co_yield reinterpret_cast<System::Collections::IEnumerator*>(UnityEngine::WaitForEndOfFrame::New_ctor());
 
-        auto tv = beatUi->LevelCollectionTableView->tableView;
-        auto sv = tv->scrollView;
+        auto tv = beatUi->LevelCollectionTableView->dyn__tableView();
+        auto sv = tv->dyn__scrollView();
         INFO("Force scrolling to %.2f", position);
         sv->ScrollTo(position, false);
         co_return;
@@ -671,7 +630,6 @@ namespace SongBrowser::UI
         switch (beatUi->LevelFilteringNavigationController->get_selectedLevelCategory())
         {
             case GlobalNamespace::SelectLevelCategoryViewController::LevelCategory::None: [[fallthrough]];
-            case GlobalNamespace::SelectLevelCategoryViewController::LevelCategory::OstAndExtras:  [[fallthrough]];
             case GlobalNamespace::SelectLevelCategoryViewController::LevelCategory::CustomSongs: [[fallthrough]];
             default:
                 break;
@@ -689,9 +647,9 @@ namespace SongBrowser::UI
         INFO("Cancelling filter, levelCollection %s", lastLevelCollection && lastLevelCollection->get_collectionName() ? to_utf8(csstrtostr(lastLevelCollection->get_collectionName())).c_str() : "NULL");
         config.filterMode = SongFilterMode::None;
 
-        auto noDataGO = beatUi->LevelCollectionViewController->noDataInfoGO;
-        auto headerText = beatUi->LevelCollectionTableView->headerText;
-        auto headerSprite = beatUi->LevelCollectionTableView->headerSprite;
+        auto noDataGO = beatUi->LevelCollectionViewController->dyn__noDataInfoGO();
+        auto headerText = beatUi->LevelCollectionTableView->dyn__headerText();
+        auto headerSprite = beatUi->LevelCollectionTableView->dyn__headerSprite();
 
         auto levelCollection = beatUi->GetCurrentSelectedAnnotatedBeatmapLevelCollection()->get_beatmapLevelCollection();
         beatUi->LevelCollectionViewController->SetData(levelCollection, headerText, headerSprite, false, noDataGO);
@@ -733,7 +691,6 @@ namespace SongBrowser::UI
         switch (beatUi->LevelFilteringNavigationController->get_selectedLevelCategory())
         {
             case GlobalNamespace::SelectLevelCategoryViewController::LevelCategory::None: [[fallthrough]];
-            case GlobalNamespace::SelectLevelCategoryViewController::LevelCategory::OstAndExtras:  [[fallthrough]];
             case GlobalNamespace::SelectLevelCategoryViewController::LevelCategory::CustomSongs: [[fallthrough]];
             default:
                 Show();
@@ -751,7 +708,7 @@ namespace SongBrowser::UI
         {
             INFO("Transitioning level category");
             lastLevelCollection = arg2;
-            StartCoroutine(reinterpret_cast<System::Collections::IEnumerator*>(custom_types::Helpers::CoroutineHelper::New(RefreshSongListEndOfFrame())));
+            StartCoroutine(custom_types::Helpers::CoroutineHelper::New(RefreshSongListEndOfFrame()));
             return;
         }
 
@@ -786,7 +743,7 @@ namespace SongBrowser::UI
         config.currentLevelCollectionName = collectionName;
         SaveConfig();
 
-        StartCoroutine(reinterpret_cast<System::Collections::IEnumerator*>(custom_types::Helpers::CoroutineHelper::New(ProcessSongListEndOfFrame())));
+        StartCoroutine(custom_types::Helpers::CoroutineHelper::New(ProcessSongListEndOfFrame()));
     }
 
     custom_types::Helpers::Coroutine SongBrowserUI::ProcessSongListEndOfFrame()
@@ -794,7 +751,7 @@ namespace SongBrowser::UI
         co_yield reinterpret_cast<System::Collections::IEnumerator*>(UnityEngine::WaitForEndOfFrame::New_ctor());
 
         bool scrollToLevel = true;
-        if (lastLevelCollection && il2cpp_utils::try_cast<GlobalNamespace::IPlaylist>(lastLevelCollection))
+        if (lastLevelCollection && il2cpp_utils::try_cast<GlobalNamespace::IBeatmapLevelPackCollection>(lastLevelCollection))
         {
             scrollToLevel = false;
             config.sortMode = SongSortMode::Original;
@@ -894,9 +851,9 @@ namespace SongBrowser::UI
         }
         else
         {
-            auto noDataGO = beatUi->LevelCollectionViewController->noDataInfoGO;
-            auto headerText = beatUi->LevelCollectionTableView->headerText;
-            auto headerSprite = beatUi->LevelCollectionTableView->headerSprite;
+            auto noDataGO = beatUi->LevelCollectionViewController->dyn__noDataInfoGO();
+            auto headerText = beatUi->LevelCollectionTableView->dyn__headerText();
+            auto headerSprite = beatUi->LevelCollectionTableView->dyn__headerSprite();
 
             auto levelCollection = beatUi->GetCurrentSelectedAnnotatedBeatmapLevelCollection()->get_beatmapLevelCollection();
             beatUi->LevelCollectionViewController->SetData(levelCollection, headerText, headerSprite, false, noDataGO);
@@ -978,8 +935,8 @@ namespace SongBrowser::UI
             return;
 
         // stash the scroll index
-        auto tv = beatUi->LevelCollectionTableView->tableView;
-        auto sv = tv->scrollView;
+        auto tv = beatUi->LevelCollectionTableView->dyn__tableView();
+        auto sv = tv->dyn__scrollView();
         model->lastScrollIndex = sv->get_position();
 
         RefreshScoreSaberData(reinterpret_cast<GlobalNamespace::IPreviewBeatmapLevel*>(view->get_selectedDifficultyBeatmap()->get_level()));
@@ -1157,10 +1114,9 @@ namespace SongBrowser::UI
     void SongBrowserUI::JumpSongList(int numJumps, float segmentPercent)
     {
         auto levels = beatUi->GetCurrentLevelCollectionLevels();
-        if (!levels)
-            return;
+        if (!levels) return;
 
-        int totalSize = levels->Length();
+        int totalSize = levels->max_length;
         int segmentSize = (int)(totalSize * segmentPercent);
 
         // Jump at least one scree size.
@@ -1169,7 +1125,7 @@ namespace SongBrowser::UI
             segmentSize = LIST_ITEMS_VISIBLE_AT_ONCE;
         }
 
-        int currentRow = beatUi->LevelCollectionTableView->selectedRow;
+        int currentRow = beatUi->LevelCollectionTableView->dyn__selectedRow();
         int jumpDirection = 1 - ((numJumps < 0) * 2);
         int newRow = currentRow + (jumpDirection * segmentSize);
         if (newRow <= 0)

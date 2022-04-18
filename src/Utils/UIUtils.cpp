@@ -51,7 +51,7 @@ namespace UIUtils
     Button* CreateBaseButton(std::string_view name, Transform* parent, std::string_view buttonTemplate)
     {
         Il2CppString* templCS = il2cpp_utils::newcsstr(buttonTemplate.data());
-        auto btn = Object::Instantiate(ArrayUtil::Last(Resources::FindObjectsOfTypeAll<Button*>(),  [&](Button* x) {
+        auto btn = Object::Instantiate(Resources::FindObjectsOfTypeAll<Button*>().Last([&](Button* x) {
             return x->get_name()->Equals(templCS);
         }), parent, false);
 
@@ -66,7 +66,7 @@ namespace UIUtils
 
         SetHoverHint(btn->get_transform(), string_format("%s_hoverHintText", name.data()), hint);
         GET_STRING(Content);
-        btn->get_gameObject()->AddComponent<QuestUI::ExternalComponents*>()->Add( ArrayUtil::First(btn->GetComponentsInChildren<LayoutGroup*>(), [&](auto x) -> bool { 
+        btn->get_gameObject()->AddComponent<QuestUI::ExternalComponents*>()->Add( btn->GetComponentsInChildren<LayoutGroup*>().First([&](auto x) -> bool {
             return x->get_gameObject()->get_name()->Equals(Content_cs);
         }));
 
@@ -80,7 +80,7 @@ namespace UIUtils
         // idk what mat that is
 
         Il2CppString* templCS = il2cpp_utils::newcsstr(buttonTemplate.data());
-        auto orig = ArrayUtil::Last(Resources::FindObjectsOfTypeAll<Button*>(),  [&](Button* x) {
+        auto orig = Resources::FindObjectsOfTypeAll<Button*>().Last([&](Button* x) {
             return x->get_name()->Equals(templCS);
         });
 
@@ -97,7 +97,7 @@ namespace UIUtils
         }
 
         Object::Destroy(btn->get_transform()->Find(Content_cs)->GetComponent<LayoutElement*>());
-        ArrayUtil::First(btn->GetComponentsInChildren<RectTransform*>(), [&](auto x) -> bool {
+        btn->GetComponentsInChildren<RectTransform*>().First([&](auto x) -> bool {
             return x->get_name()->Equals(Underline_cs);
         })->get_gameObject()->SetActive(false);
 
@@ -136,7 +136,7 @@ namespace UIUtils
         rect->set_pivot(Vector2(0.5f, 0.5f));
 
         auto btnIcon = btn->get_gameObject()->AddComponent<SongBrowser::Components::ButtonIconImage*>();
-        btnIcon->image = ArrayUtil::First(btn->get_gameObject()->GetComponentsInChildren<Image*>(true), [](auto x) -> bool { 
+        btnIcon->image = btn->get_gameObject()->GetComponentsInChildren<Image*>(true).First([](auto x) -> bool {
             GET_STRING(Icon); 
             return x->get_gameObject()->get_name()->Equals(Icon_cs); 
         });
@@ -217,7 +217,7 @@ namespace UIUtils
 
         auto textMesh = gameObj->AddComponent<CurvedTextMeshPro*>();
         static auto font = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("Teko-Medium SDF");
-        auto orig = ArrayUtil::First(Resources::FindObjectsOfTypeAll<TMP_FontAsset*>(), [&](auto t) { 
+        auto orig = Resources::FindObjectsOfTypeAll<TMP_FontAsset*>().First([&](auto t) {
             if (!t || !t->get_name()) return false;
             return t->get_name()->Equals(font);
         });
@@ -244,7 +244,7 @@ namespace UIUtils
         auto hover = button->get_gameObject()->AddComponent<HoverHint*>();
         hover->set_text(il2cpp_utils::newcsstr(text.data()));
         hover->set_name(il2cpp_utils::newcsstr(name.data()));
-        hover->hoverHintController = ArrayUtil::First(Resources::FindObjectsOfTypeAll<HoverHintController*>());
+        hover->dyn__hoverHintController() = Resources::FindObjectsOfTypeAll<HoverHintController*>().First();
     }
 
     void DestroyHoverHint(Transform* button)
@@ -255,7 +255,7 @@ namespace UIUtils
 
     void SetButtonTextColor(Button* button, Color color)
     {
-        auto txt = ArrayUtil::First(button->get_gameObject()->GetComponentsInChildren<TextMeshProUGUI*>(), [](auto x) { 
+        auto txt = button->get_gameObject()->GetComponentsInChildren<TextMeshProUGUI*>().First([](auto x) {
             GET_STRING(Text); 
             return x->get_gameObject()->get_name()->Equals(Text_cs); 
         });
@@ -264,7 +264,7 @@ namespace UIUtils
 
     void SetStatButtonText(Transform* transform, std::string_view text)
     {
-        auto txt = ArrayUtil::First(transform->get_gameObject()->GetComponentsInChildren<TextMeshProUGUI*>(), [](auto x) { 
+        auto txt = transform->get_gameObject()->GetComponentsInChildren<TextMeshProUGUI*>().First([](auto x) {
             GET_STRING(ValueText); 
             return x->get_gameObject()->get_name()->Equals(ValueText_cs); 
         });
@@ -273,7 +273,7 @@ namespace UIUtils
 
     void SetStatButtonIcon(Transform* transform, Sprite* icon)
     {
-        auto img = ArrayUtil::First(transform->get_gameObject()->GetComponentsInChildren<Image*>(), [](auto x) { 
+        auto img = transform->get_gameObject()->GetComponentsInChildren<Image*>().First([](auto x) {
             GET_STRING(Icon); 
             return x->get_gameObject()->get_name()->Equals(Icon_cs); 
         });
@@ -304,7 +304,7 @@ namespace UIUtils
 
     void SetButtonBackgroundActive(UnityEngine::UI::Button* button, bool active)
     {
-        auto img = ArrayUtil::Last(button->get_gameObject()->GetComponentsInChildren<ImageView*>(true), [](auto x) { 
+        auto img = button->get_gameObject()->GetComponentsInChildren<ImageView*>(true).Last([](auto x) {
             GET_STRING(BG);
             return x->get_gameObject()->get_name()->Equals(BG_cs);
         });
@@ -313,7 +313,7 @@ namespace UIUtils
 
     void SetButtonUnderlineColor(UnityEngine::UI::Button* button, UnityEngine::Color color)
     {
-        auto img = ArrayUtil::First(button->get_gameObject()->GetComponentsInChildren<ImageView*>(), [](auto x) { 
+        auto img = button->get_gameObject()->GetComponentsInChildren<ImageView*>().First([](auto x) {
             GET_STRING(Underline);
             return x->get_gameObject()->get_name()->Equals(Underline_cs);
         });
@@ -322,7 +322,7 @@ namespace UIUtils
 
     void SetButtonBorder(UnityEngine::UI::Button* button, UnityEngine::Color color)
     {
-        auto img = ArrayUtil::First(button->get_gameObject()->GetComponentsInChildren<ImageView*>(), [](auto x) { 
+        auto img = button->get_gameObject()->GetComponentsInChildren<ImageView*>().First([](auto x) {
             GET_STRING(Border);
             return x->get_gameObject()->get_name()->Equals(Border_cs);
         });
@@ -335,69 +335,4 @@ namespace UIUtils
             img->SetAllDirty();
         }
     }
-    /*
-    UnityEngine::GameObject* CreateModalKeyboard(UnityEngine::Transform* parent)
-    {
-        auto gameObject = CreateModal(parent); 
-        // yoinked from https://github.com/monkeymanboy/BeatSaberMarkupLanguage/blob/master/BeatSaberMarkupLanguage/Tags/ModalKeyboardTag.cs
-        GameObject gameObject = base.CreateObject(parent);
-        RectTransform windowTransform = gameObject.transform as RectTransform;
-        windowTransform.name = "BSMLModalKeyboard";
-        windowTransform.sizeDelta = new Vector2(135, 75);
-
-        RectTransform parentTransform = new GameObject("KeyboardParent").AddComponent<RectTransform>();
-        parentTransform.SetParent(gameObject.transform, false);
-
-        KEYBOARD keyboard = new KEYBOARD(parentTransform, KEYBOARD.QWERTY, true, 4, -12);
-        parentTransform.localScale *= 1.4f;
-
-        ModalKeyboard modalKeyboard = gameObject.AddComponent<ModalKeyboard>();
-        modalKeyboard.keyboard = keyboard;
-        modalKeyboard.modalView = gameObject.GetComponent<ModalView>();
-        keyboard.EnterPressed += delegate (string value) { modalKeyboard.OnEnter(value); };
-
-        return gameObject;
-    }
-    
-    HMUI::ModalView* modalViewTemplate = nullptr;
-    UnityEngine::GameObject* CreateModal(UnityEngine::Transform* parent)
-    {
-         //yoinked from https://github.com/monkeymanboy/BeatSaberMarkupLanguage/blob/master/BeatSaberMarkupLanguage/Tags/ModalTag.cs
-         if (modalViewTemplate == null)
-            modalViewTemplate = Resources.FindObjectsOfTypeAll<HMUI::ModalView*>().First(x => x.name == "DropdownTableView");
-         ModalView modalView = Object.Instantiate(modalViewTemplate, parent);
-         modalView.SetField("_presentPanelAnimations", modalViewTemplate.GetField<PanelAnimationSO, ModalView>("_presentPanelAnimations"));
-         modalView.SetField("_dismissPanelAnimation", modalViewTemplate.GetField<PanelAnimationSO, ModalView>("_dismissPanelAnimation"));
-         modalView.SetField("_container", BeatSaberUI.DiContainer);
-         modalView.GetComponent<VRGraphicRaycaster>().SetField("_physicsRaycaster", BeatSaberUI.PhysicsRaycasterWithCache);
-
-         Object.DestroyImmediate(modalView.GetComponent<TableView>());
-         Object.DestroyImmediate(modalView.GetComponent<ScrollRect>());
-         Object.DestroyImmediate(modalView.GetComponent<ScrollView>());
-         Object.DestroyImmediate(modalView.GetComponent<EventSystemListener>());
-         //GameObject.DestroyImmediate(modalView.GetComponent<Touchable>());
-         //modalView.gameObject.AddComponent<CurvedCanvasSettings>();
-         //modalView.gameObject.AddComponent<EventSystemListener>();
-
-         foreach (RectTransform child in modalView.transform)
-         {
-             if (child.name == "BG")
-             {
-                 child.anchoredPosition = Vector2.zero;
-                 child.sizeDelta = Vector2.zero;
-             }
-             else
-             {
-                 Object.Destroy(child.gameObject);
-             }
-         }
-
-         RectTransform rectTransform = modalView.transform as RectTransform;
-         rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
-         rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
-         rectTransform.sizeDelta = new Vector2(0, 0);
-
-         return modalView.gameObject;
-    }
-    */
 }

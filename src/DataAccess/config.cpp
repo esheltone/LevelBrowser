@@ -2,6 +2,7 @@
 #include "logging.hpp"
 #include "beatsaber-hook/shared/config/config-utils.hpp"
 #include "beatsaber-hook/shared/rapidjson/include/rapidjson/document.h"
+#include "static-defines.h"
 
 config_t config;
 
@@ -81,7 +82,7 @@ bool LoadConfig()
         const auto& arr = itr_searchTerms->value.GetArray();
         for (const auto& t : arr)
         {
-            config.searchTerms.push_back(t.GetString());
+            config.searchTerms.emplace_back(t.GetString());
         }
     }
 

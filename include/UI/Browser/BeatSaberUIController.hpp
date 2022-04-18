@@ -21,7 +21,6 @@
 
 #include "GlobalNamespace/IBeatmapLevelPack.hpp"
 #include "GlobalNamespace/IAnnotatedBeatmapLevelCollection.hpp"
-#include "GlobalNamespace/IPlaylist.hpp"
 #include "GlobalNamespace/IPreviewBeatmapLevel.hpp"
 
 DECLARE_CLASS_CODEGEN(SongBrowser::DataAccess, BeatSaberUIController, Il2CppObject,
@@ -61,11 +60,12 @@ DECLARE_CLASS_CODEGEN(SongBrowser::DataAccess, BeatSaberUIController, Il2CppObje
         bool checkedForTwitchPlugin = false;
 
         GlobalNamespace::IBeatmapLevelPack* GetCurrentSelectedLevelPack();
-        GlobalNamespace::IPlaylist* GetCurrentSelectedPlaylist();
+        GlobalNamespace::IAnnotatedBeatmapLevelCollection* GetCurrentSelectedPlaylist();
     public:
         GlobalNamespace::IAnnotatedBeatmapLevelCollection* GetCurrentSelectedAnnotatedBeatmapLevelCollection();
         GlobalNamespace::IAnnotatedBeatmapLevelCollection* GetLevelCollectionByName(const std::string& levelCollectionName);
         Array<GlobalNamespace::IPreviewBeatmapLevel*>* GetCurrentLevelCollectionLevels();
+        List<GlobalNamespace::IPreviewBeatmapLevel*>* GetCurrentLevelCollectionLevelsList();
         bool SelectLevelCategory(const std::string& levelCategoryName);
         void SelectLevelCollection(const std::string& levelCollectionName);
         void SelectAndScrollToLevel(const std::string& levelID);

@@ -1,6 +1,7 @@
 #include "logging.hpp"
 #include <map>
 #include <string>
+#include "static-defines.h"
 
 std::map<std::string, LoggerContextObject> contextLoggers;
 namespace SongBrowser

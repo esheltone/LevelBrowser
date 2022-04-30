@@ -8,9 +8,7 @@
   "packageVersion": "1.21.0",
   "description": "Browsing your songs has never been easier!",
   "dependencies": [],
-  "modFiles": [
-    "libsongbrowser.so"
-  ],
+  "modFiles": [],
   "libraryFiles": [
     "libandroid-libsong_data_core_rust.so",
     "libbeatsaber-hook_3_8_1.so"

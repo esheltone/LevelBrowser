@@ -1,14 +1,13 @@
 #include "logging.hpp"
 #include <map>
 #include <string>
-#include "static-defines.h"
 
 std::map<std::string, LoggerContextObject> contextLoggers;
 namespace SongBrowser
 {
     Logger& Logging::getLogger()
     {
-        static Logger* logger = new Logger({ID, VERSION}, LoggerOptions(false, true));
+        static Logger* logger = new Logger({MOD_ID, VERSION}, LoggerOptions(false, true));
         return *logger;
     }
     

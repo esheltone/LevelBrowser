@@ -23,9 +23,8 @@
 #include "GlobalNamespace/MenuTransitionsHelper.hpp"
 #include "Zenject/DiContainer.hpp"
 #include "System/Action_1.hpp"
-#include "static-defines.h"
 
-ModInfo modInfo = {ID, VERSION};
+ModInfo modInfo = {MOD_ID, VERSION};
 
 UnityEngine::SceneManagement::Scene oldScene;
 bool firstLoad = true;

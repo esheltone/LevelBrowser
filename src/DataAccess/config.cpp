@@ -2,13 +2,12 @@
 #include "logging.hpp"
 #include "beatsaber-hook/shared/config/config-utils.hpp"
 #include "beatsaber-hook/shared/rapidjson/include/rapidjson/document.h"
-#include "static-defines.h"
 
 config_t config;
 
 Configuration& getConfig()
 {
-    static Configuration config({ID, VERSION});
+    static Configuration config({MOD_ID, VERSION});
     config.Load();
     return config;
 }

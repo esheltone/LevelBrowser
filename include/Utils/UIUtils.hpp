@@ -19,11 +19,10 @@
 
 #include <string_view>
 #include <functional>
-#include "static-defines.h"
 
 static Logger& getUIUtilLogger()
 {
-    static Logger* logger = new Logger({ID, VERSION}, LoggerOptions(false, true));
+    static Logger* logger = new Logger({MOD_ID, VERSION}, LoggerOptions(false, true));
     return *logger;
 } 
 

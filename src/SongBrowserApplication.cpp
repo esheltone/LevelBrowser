@@ -24,7 +24,7 @@ namespace SongBrowser
 
     void SongBrowserApplication::OnLoad()
     {
-        UnityEngine::GameObject::New_ctor(il2cpp_utils::createcsstr("Beat Saber SongBrowser Plugin"))->AddComponent<SongBrowserApplication*>();
+        UnityEngine::GameObject::New_ctor(StringW("Beat Saber SongBrowser Plugin"))->AddComponent<SongBrowserApplication*>();
         mainProgressBar = SongBrowser::UI::ProgressBar::Create();
     }
 
@@ -46,7 +46,7 @@ namespace SongBrowser
         //SongDataCore.Plugin.Songs.OnDataFinishedProcessing += OnScoreSaberDataDownloaded;
         
         if (RuntimeSongLoader::API::HasLoadedSongs()) SongBrowserApplication::OnSongLoaderLoadedSongs(RuntimeSongLoader::API::GetLoadedSongs());
-        else StartCoroutine(reinterpret_cast<System::Collections::IEnumerator*>(custom_types::Helpers::CoroutineHelper::New(WaitForSongLoader())));
+        else StartCoroutine(custom_types::Helpers::CoroutineHelper::New(WaitForSongLoader()));
     }
 
     void SongBrowserApplication::OnSongLoaderLoadedSongs(const std::vector<GlobalNamespace::CustomPreviewBeatmapLevel*>& levels)

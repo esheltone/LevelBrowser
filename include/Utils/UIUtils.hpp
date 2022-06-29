@@ -22,12 +22,12 @@
 
 static Logger& getUIUtilLogger()
 {
-    static Logger* logger = new Logger({ID, VERSION}, LoggerOptions(false, true));
+    static Logger* logger = new Logger({MOD_ID, VERSION}, LoggerOptions(false, true));
     return *logger;
 } 
 
 namespace UIUtils
-{   
+{
     inline VRUIControls::PhysicsRaycasterWithCache* get_PhysicsRaycasterWithCache()
     {
         return QuestUI::BeatSaberUI::GetPhysicsRaycasterWithCache();
@@ -43,7 +43,7 @@ namespace UIUtils
         typearr->values[2] = il2cpp_utils::GetSystemType(classof(T));
 
         T vc = UnityEngine::GameObject::New_ctor(il2cpp_utils::newcsstr(classof(T)->klass->name), typearr)->template GetComponent<T>();
-        vc->template GetComponent<VRUIControls::VRGraphicRaycaster*>()->physicsRaycaster = get_PhysicsRaycasterWithCache();
+        vc->template GetComponent<VRUIControls::VRGraphicRaycaster*>()->dyn__physicsRaycaster() = get_PhysicsRaycasterWithCache();
         auto rec = vc->get_rectTransform();
         rec->set_anchorMin(UnityEngine::Vector2(0.0f, 0.0f));
         rec->set_anchorMax(UnityEngine::Vector2(1.0f, 1.0f));
@@ -65,7 +65,7 @@ namespace UIUtils
         typearr->values[3] = il2cpp_utils::GetSystemType(classof(T));
         
         T vc = UnityEngine::GameObject::New_ctor(il2cpp_utils::newcsstr(classof(T)->klass->name), typearr)->template GetComponent<T>();
-        vc->template GetComponent<VRUIControls::VRGraphicRaycaster*>()->physicsRaycaster = get_PhysicsRaycasterWithCache();
+        vc->template GetComponent<VRUIControls::VRGraphicRaycaster*>()->dyn__physicsRaycaster() = get_PhysicsRaycasterWithCache();
 
         vc->template GetComponent<HMUI::CurvedCanvasSettings*>()->SetRadius(curveRadius);
         auto rec = vc->get_rectTransform();

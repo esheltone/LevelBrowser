@@ -7,7 +7,7 @@ config_t config;
 
 Configuration& getConfig()
 {
-    static Configuration config({ID, VERSION});
+    static Configuration config({MOD_ID, VERSION});
     config.Load();
     return config;
 }
@@ -81,7 +81,7 @@ bool LoadConfig()
         const auto& arr = itr_searchTerms->value.GetArray();
         for (const auto& t : arr)
         {
-            config.searchTerms.push_back(t.GetString());
+            config.searchTerms.emplace_back(t.GetString());
         }
     }
 

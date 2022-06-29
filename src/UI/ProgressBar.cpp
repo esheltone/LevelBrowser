@@ -43,7 +43,7 @@ namespace SongBrowser::UI
         //loadingBar->set_enabled(false);
         //loadingBackground->set_enabled(false);
         get_gameObject()->SetActive(true);
-        StartCoroutine(reinterpret_cast<System::Collections::IEnumerator*>(custom_types::Helpers::CoroutineHelper::New(DisableCanvasRoutine(time))));
+        StartCoroutine(custom_types::Helpers::CoroutineHelper::New(DisableCanvasRoutine(time)));
     }
 
     void ProgressBar::ShowMessage(const std::string_view& message)
@@ -150,7 +150,7 @@ namespace SongBrowser::UI
         headerText->set_text(il2cpp_utils::newcsstr(string_format("%lu songs processed.", levels.size())));
         //loadingBar->set_enabled(false);
         //loadingBackground->set_enabled(false);
-        StartCoroutine(reinterpret_cast<System::Collections::IEnumerator*>(custom_types::Helpers::CoroutineHelper::New(DisableCanvasRoutine(7.0f))));
+        StartCoroutine(custom_types::Helpers::CoroutineHelper::New(DisableCanvasRoutine(7.0f)));
     }
 
     void ProgressBar::SceneManagerOnActiveSceneChanged(UnityEngine::SceneManagement::Scene oldScene, UnityEngine::SceneManagement::Scene newScene)

@@ -43,6 +43,7 @@ DECLARE_CLASS_CODEGEN(SongBrowser, SongBrowserModel, Il2CppObject,
         void ProcessSongList(GlobalNamespace::IAnnotatedBeatmapLevelCollection* selectedBeatmapCollection, GlobalNamespace::LevelSelectionNavigationController* navController);
         static std::string GetSongHash(std::string_view levelId);
         static Array<GlobalNamespace::IPreviewBeatmapLevel*>* GetLevelsForLevelCollection(GlobalNamespace::IAnnotatedBeatmapLevelCollection* levelCollection);
+        static List<GlobalNamespace::IPreviewBeatmapLevel*>* GetLevelsListForLevelCollection(GlobalNamespace::IAnnotatedBeatmapLevelCollection* levelCollection);
         float lastScrollIndex = 0.0f;
         std::string lastSelectedLevelId = "";
     private:

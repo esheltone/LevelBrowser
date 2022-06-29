@@ -4,8 +4,8 @@
   "info": {
     "name": "SongBrowser",
     "id": "songbrowser",
-    "version": "0.1.0",
-    "url": null,
+    "version": "1.0.2",
+    "url": "https://github.com/RedBrumbler/SongBrowser",
     "additionalData": {
       "overrideSoName": "libsongbrowser.so"
     }

@@ -14,8 +14,6 @@
 #include "GlobalNamespace/PartyFreePlayFlowCoordinator.hpp"
 #include "GlobalNamespace/CampaignFlowCoordinator.hpp"
 #include "GlobalNamespace/MainFlowCoordinator.hpp"
-#include "GlobalNamespace/StandardLevelDetailView.hpp"
-#include "GlobalNamespace/StandardLevelDetailView.hpp"
 #include "GlobalNamespace/LoadingControl.hpp"
 
 #include "SongBrowserApplication.hpp"
@@ -26,7 +24,7 @@
 #include "Zenject/DiContainer.hpp"
 #include "System/Action_1.hpp"
 
-ModInfo modInfo = {ID, VERSION};
+ModInfo modInfo = {MOD_ID, VERSION};
 
 UnityEngine::SceneManagement::Scene oldScene;
 bool firstLoad = true;

@@ -20,7 +20,6 @@ enum SongSortMode {
     Bpm,
     NJS,
     Length,
-    Downloads,
     
     // Allow mods to extend functionality.
     CustomSort

@@ -36,7 +36,6 @@ std::string SongSortModeToString(const SongSortMode& mode)
         case SongSortMode::Bpm: return "Bpm";
         case SongSortMode::NJS: return "NJS";
         case SongSortMode::Length: return "Length";
-        case SongSortMode::Downloads: return "Downloads";
         case SongSortMode::CustomSort: return "Custom";
     }
 }
@@ -46,11 +45,10 @@ std::string LevelCategoryToString(int cat)
     switch (cat)
     {
         case 0: return "None";
-        case 1: return "OstAndExtras";
-        case 2: return "MusicPacks";
-        case 3: return "CustomSongs";
-        case 4: return "Favorites";
-        case 5: return "All";
+        case 1: return "MusicPacks";
+        case 2: return "CustomSongs";
+        case 3: return "Favorites";
+        case 4: return "All";
         default: return "";
     }
 }
@@ -61,11 +59,10 @@ int StringToLevelCategory(std::string_view str)
     switch (str.data()[0])
     {
         case 'N': return 0;
-        case 'O': return 1;
-        case 'M': return 2;
-        case 'C': return 3;
-        case 'F': return 4;
-        case 'A': return 5;
+        case 'M': return 1;
+        case 'C': return 2;
+        case 'F': return 3;
+        case 'A': return 4;
         default: return 0;
     }
 }

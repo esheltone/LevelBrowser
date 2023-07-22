@@ -4,7 +4,7 @@
   "info": {
     "name": "SongBrowser",
     "id": "songbrowser",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "url": "https://github.com/RedBrumbler/SongBrowser",
     "additionalData": {
       "overrideSoName": "libsongbrowser.so"
@@ -13,7 +13,7 @@
   "dependencies": [
     {
       "id": "beatsaber-hook",
-      "versionRange": "*",
+      "versionRange": "=3.14.0",
       "additionalData": {
         "extraFiles": [
           "src/inline-hook"
@@ -22,22 +22,22 @@
     },
     {
       "id": "codegen",
-      "versionRange": "*",
+      "versionRange": "^0.33.0",
       "additionalData": {}
     },
     {
       "id": "questui",
-      "versionRange": "*",
+      "versionRange": "^0.17.11",
       "additionalData": {}
     },
     {
       "id": "custom-types",
-      "versionRange": "*",
+      "versionRange": "^0.15.24",
       "additionalData": {}
     },
     {
       "id": "songloader",
-      "versionRange": "*",
+      "versionRange": "^0.10.15",
       "additionalData": {}
     },
     {
@@ -47,7 +47,7 @@
     },
     {
       "id": "songdatacore",
-      "versionRange": "*",
+      "versionRange": "^0.6.3",
       "additionalData": {}
     },
     {

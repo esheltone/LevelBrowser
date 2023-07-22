@@ -2,7 +2,7 @@ name: Publish QPM Package
 
 # set env variables
 env:
-    ndkname: android-ndk-r22
+    ndkname: android-ndk-r25
     module_id: songbrowser
     qmodName: SongBrowser
 
@@ -28,7 +28,7 @@ jobs:
       id: setup-ndk
       uses: nttld/setup-ndk@v1.0.3
       with:
-        ndk-version: r22
+        ndk-version: r25
       
     - name: Create ndkpath.txt
       run: echo ${{ steps.setup-ndk.outputs.ndk-path }} > ${GITHUB_WORKSPACE}/ndkpath.txt

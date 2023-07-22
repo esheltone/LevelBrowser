@@ -3,7 +3,7 @@ name: Make Qmod
 
 # set env variables
 env:
-    ndkname: android-ndk-r22
+    ndkname: android-ndk-r25
     module_id: songbrowser
     qmodName: SongBrowser
 

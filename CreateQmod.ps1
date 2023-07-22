@@ -1,5 +1,5 @@
 Param(
-    [String]$qmodname="",
+    [String]$qmodname="SongBrowser",
     [Parameter(Mandatory=$false)]
     [Switch]$clean
 )
@@ -22,7 +22,7 @@ if ((-not ($cover -eq "./")) -and (Test-Path $cover))
 
 foreach ($mod in $modJson.modFiles)
 {
-        $path = "./build/" + $mod
+    $path = "./build/" + $mod
     if (-not (Test-Path $path))
     {
         $path = "./extern/libs/" + $mod
@@ -37,6 +37,12 @@ foreach ($lib in $modJson.libraryFiles)
     {
         $path = "./build/" + $lib
     }
+    $filelist += $path
+}
+
+foreach ($f in $modJson.fileCopies)
+{
+    $path = "./ExtraFiles/Icons/" + $f.name
     $filelist += $path
 }
 

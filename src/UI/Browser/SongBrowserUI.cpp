@@ -35,6 +35,7 @@
 #include "System/Enum.hpp"
 
 #include "songloader/shared/API.hpp"
+#include "custom-types/shared/delegate.hpp"
 
 using namespace UnityEngine;
 using namespace UnityEngine::UI;
@@ -525,7 +526,7 @@ namespace SongBrowser::UI
             this->StartCoroutine(custom_types::Helpers::CoroutineHelper::New(this->RefreshQuickScrollButtonsAsync()));
         };
 
-        auto delegate = il2cpp_utils::MakeDelegate<UnityEngine::Events::UnityAction*>(classof(UnityEngine::Events::UnityAction*), fun);
+        auto delegate = custom_types::MakeDelegate<UnityEngine::Events::UnityAction*>(classof(UnityEngine::Events::UnityAction*), fun);
         // make sure the quick scroll buttons don't desync with regular scrolling
         beatUi->TableViewPageDownButton->get_onClick()->AddListener(delegate);
         beatUi->TableViewPageUpButton->get_onClick()->AddListener(delegate);
@@ -1060,7 +1061,7 @@ namespace SongBrowser::UI
             }
         };
 
-        auto delegate = il2cpp_utils::MakeDelegate<System::Action_1<int>*>(classof(System::Action_1<int>*), fun);
+        auto delegate = custom_types::MakeDelegate<System::Action_1<int>*>(classof(System::Action_1<int>*), fun);
         std::string question = string_format("Do you really want to delete \"%s %s\"?", to_utf8(csstrtostr(level->get_songName())).c_str(), to_utf8(csstrtostr(level->get_songSubName())).c_str());
         deleteDialog->Init(il2cpp_utils::newcsstr("Delete song"), il2cpp_utils::newcsstr(question), il2cpp_utils::newcsstr("Delete"), il2cpp_utils::newcsstr("Cancel"), delegate);
 
@@ -1084,7 +1085,7 @@ namespace SongBrowser::UI
         // get modal
         auto modalKb = gameObject->GetComponent<HMUI::ModalKeyboard*>();
         // add our enter handler
-        modalKb->keyboard->add_EnterPressed(il2cpp_utils::MakeDelegate<System::Action_1<Il2CppString*>*>(classof(System::Action_1<Il2CppString*>*), enterPressedHandler));
+        modalKb->keyboard->add_EnterPressed(custom_types::MakeDelegate<System::Action_1<Il2CppString*>*>(classof(System::Action_1<Il2CppString*>*), enterPressedHandler));
         // show it
         modalKb->modalView->Show(true, true, nullptr);
         */

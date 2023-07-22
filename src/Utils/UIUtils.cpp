@@ -19,6 +19,8 @@
 
 #include "logging.hpp"
 
+#include "custom-types/shared/delegate.hpp"
+
 using namespace UnityEngine;
 using namespace UnityEngine::UI;
 using namespace UnityEngine::Events;
@@ -44,7 +46,7 @@ do \
 } \
 while (0)
 
-#define MakeDelegate(DelegateType, varName) (il2cpp_utils::MakeDelegate<DelegateType>(classof(DelegateType), varName))
+#define MakeDelegate(DelegateType, varName) (custom_types::MakeDelegate<DelegateType>(classof(DelegateType), varName))
 
 namespace UIUtils
 {

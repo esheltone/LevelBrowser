@@ -9,10 +9,12 @@
 
 #include <functional>
 
+#include "custom-types/shared/delegate.hpp"
+
 template <class T, typename Method>
 static T MakeDelegate(Method fun)
 {
-    return il2cpp_utils::MakeDelegate<T>(classof(T), fun);
+    return custom_types::MakeDelegate<T>(classof(T), fun);
 }
 
 namespace EventUtils

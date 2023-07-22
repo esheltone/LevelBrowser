@@ -2,7 +2,7 @@
 
 #include <string_view>
 #include <vector>
-#include "songdatacore/shared/bindings.hpp"
+#include "songdatacore/shared/patched_bindings.hpp"
 #include "GlobalNamespace/BeatmapCharacteristicSO.hpp"
 
 // this is just a wrapper around the bindings for songdatacore cause this looks a bit better :) 

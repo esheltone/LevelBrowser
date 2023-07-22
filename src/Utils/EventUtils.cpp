@@ -129,6 +129,6 @@ namespace EventUtils
         INFO("beatUi->LevelFilteringNavigationController->selectLevelCategoryViewController->add_didSelectLevelCategoryEvent");
         std::function<void(GlobalNamespace::SelectLevelCategoryViewController*, GlobalNamespace::SelectLevelCategoryViewController::LevelCategory)> didSelectLevelCategoryEventFun = std::bind(&DidSelectLevelCategoryEvent::invoke, &didSelectLevelCategoryEvent, std::placeholders::_1, std::placeholders::_2);
         auto didSelectLevelCategoryEventDelegate = MakeDelegate<System::Action_2<GlobalNamespace::SelectLevelCategoryViewController*, GlobalNamespace::SelectLevelCategoryViewController::LevelCategory>*>(didSelectLevelCategoryEventFun);
-        beatUi->LevelFilteringNavigationController->dyn__selectLevelCategoryViewController()->add_didSelectLevelCategoryEvent(didSelectLevelCategoryEventDelegate);
+        beatUi->LevelFilteringNavigationController->selectLevelCategoryViewController->add_didSelectLevelCategoryEvent(didSelectLevelCategoryEventDelegate);
     }
 }

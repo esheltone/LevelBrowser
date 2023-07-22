@@ -246,7 +246,7 @@ namespace UIUtils
         auto hover = button->get_gameObject()->AddComponent<HoverHint*>();
         hover->set_text(il2cpp_utils::newcsstr(text.data()));
         hover->set_name(il2cpp_utils::newcsstr(name.data()));
-        hover->dyn__hoverHintController() = Resources::FindObjectsOfTypeAll<HoverHintController*>().First();
+        hover->hoverHintController = Resources::FindObjectsOfTypeAll<HoverHintController*>().First();
     }
 
     void DestroyHoverHint(Transform* button)

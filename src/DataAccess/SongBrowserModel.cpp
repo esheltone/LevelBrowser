@@ -396,13 +396,13 @@ namespace SongBrowser
             GameObject noDataInfoPrefab, BeatmapDifficultyMask allowedBeatmapDifficultyMask, BeatmapCharacteristicSO[] notAllowedCharacteristics);
         */
         INFO("Acquiring necessary fields to call SetData(pack)...");
-        auto lcnvc = navController->dyn__levelCollectionNavigationController();
-        auto lcvc = lcnvc->dyn__levelCollectionViewController();
-        auto hidePracticeButton = navController->dyn__hidePracticeButton();
-        auto actionButtonText = navController->dyn__actionButtonText();
-        auto noDataInfoPrefab = lcvc->dyn__noDataInfoGO();
-        auto allowedBeatmapDifficultyMask = navController->dyn__allowedBeatmapDifficultyMask();
-        auto notAllowedCharacteristics = navController->dyn__notAllowedCharacteristics();
+        auto lcnvc = navController->levelCollectionNavigationController;
+        auto lcvc = lcnvc->levelCollectionViewController;
+        auto hidePracticeButton = navController->hidePracticeButton;
+        auto actionButtonText = navController->actionButtonText;
+        auto noDataInfoPrefab = lcvc->noDataInfoGO;
+        auto allowedBeatmapDifficultyMask = navController->allowedBeatmapDifficultyMask;
+        auto notAllowedCharacteristics = navController->notAllowedCharacteristics;
 
 
         INFO("Calling lcnvc.SetData...");
@@ -410,12 +410,12 @@ namespace SongBrowser
         INFO("lcnvc: %p", lcnvc);
         INFO("levelPack: %p", levelPack);
         INFO("hidePracticeButton: %d", hidePracticeButton);
-        INFO("actionButtonText: %p", actionButtonText);
+        INFO("actionButtonText: %p", &actionButtonText);
         INFO("noDataInfoPrefab: %p", noDataInfoPrefab);
         INFO("allowedBeatmapDifficultyMask: %d", allowedBeatmapDifficultyMask.value);
-        INFO("notAllowedCharacteristics: %p", notAllowedCharacteristics);
+        INFO("notAllowedCharacteristics: %p", &notAllowedCharacteristics);
         INFO("lcnvc->levelCollectionViewController: %p", lcvc);
-        INFO("lcnvc->levelPackDetailViewController: %p", lcnvc->dyn__levelPackDetailViewController());
+        INFO("lcnvc->levelPackDetailViewController: %p", lcnvc->levelPackDetailViewController);
         /*
         // basically SetDataForPack but skipping the redundant re-assignments
         lcnvc->levelPack = reinterpret_cast<GlobalNamespace::IBeatmapLevelPack*>(levelPack);

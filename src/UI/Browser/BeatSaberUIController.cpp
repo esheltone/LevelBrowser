@@ -31,43 +31,43 @@ namespace SongBrowser::DataAccess
         LevelSelectionFlowCoordinator = flowCoordinator;
 
         // gather flow coordinator elements
-        LevelSelectionNavigationController = LevelSelectionFlowCoordinator->dyn_levelSelectionNavigationController();
+        LevelSelectionNavigationController = LevelSelectionFlowCoordinator->levelSelectionNavigationController;
         INFO("Acquired LevelSelectionNavigationController [%d]", LevelSelectionNavigationController->GetInstanceID());
 
-        LevelFilteringNavigationController = LevelSelectionNavigationController->dyn__levelFilteringNavigationController();
+        LevelFilteringNavigationController = LevelSelectionNavigationController->levelFilteringNavigationController;
         INFO("Acquired LevelFilteringNavigationController [%d]", LevelFilteringNavigationController->GetInstanceID());
 
-        LevelCollectionNavigationController = LevelSelectionNavigationController->dyn__levelCollectionNavigationController();
+        LevelCollectionNavigationController = LevelSelectionNavigationController->levelCollectionNavigationController;
         INFO("Acquired LevelCollectionNavigationController [%d]", LevelCollectionNavigationController->GetInstanceID());
 
-        LevelCollectionViewController = LevelCollectionNavigationController->dyn__levelCollectionViewController();
+        LevelCollectionViewController = LevelCollectionNavigationController->levelCollectionViewController;
         INFO("Acquired LevelPackLevelsViewController [%d]", LevelCollectionViewController->GetInstanceID());
 
-        LevelDetailViewController = LevelCollectionNavigationController->dyn__levelDetailViewController();
+        LevelDetailViewController = LevelCollectionNavigationController->levelDetailViewController;
         INFO("Acquired StandardLevelDetailViewController [%d]", LevelDetailViewController->GetInstanceID());
 
-        LevelCollectionTableView = this->LevelCollectionViewController->dyn__levelCollectionTableView();
+        LevelCollectionTableView = this->LevelCollectionViewController->levelCollectionTableView;
         INFO("Acquired LevelPackLevelsTableView [%d]", LevelCollectionTableView->GetInstanceID());
 
-        StandardLevelDetailView = LevelDetailViewController->dyn__standardLevelDetailView();
+        StandardLevelDetailView = LevelDetailViewController->standardLevelDetailView;
         INFO("Acquired StandardLevelDetailView [%d]", StandardLevelDetailView->GetInstanceID());
 
-        BeatmapCharacteristicSelectionViewController = StandardLevelDetailView->dyn__beatmapCharacteristicSegmentedControlController();
+        BeatmapCharacteristicSelectionViewController = StandardLevelDetailView->beatmapCharacteristicSegmentedControlController;
         INFO("Acquired BeatmapCharacteristicSegmentedControlController [%d]", BeatmapCharacteristicSelectionViewController->GetInstanceID());
 
-        LevelDifficultyViewController = StandardLevelDetailView->dyn__beatmapDifficultySegmentedControlController();
+        LevelDifficultyViewController = StandardLevelDetailView->beatmapDifficultySegmentedControlController;
         INFO("Acquired BeatmapDifficultySegmentedControlController [%d]", LevelDifficultyViewController->GetInstanceID());
 
         LevelCollectionTableViewTransform = reinterpret_cast<UnityEngine::RectTransform*>(LevelCollectionTableView->get_transform());
         INFO("Acquired TableViewRectTransform from LevelPackLevelsTableView [%d]", LevelCollectionTableViewTransform->GetInstanceID());
 
-        AnnotatedBeatmapLevelCollectionsViewController = LevelFilteringNavigationController->dyn__annotatedBeatmapLevelCollectionsViewController();
+        AnnotatedBeatmapLevelCollectionsViewController = LevelFilteringNavigationController->annotatedBeatmapLevelCollectionsViewController;
         INFO("Acquired AnnotatedBeatmapLevelCollectionsViewController from LevelFilteringNavigationController [%d]", AnnotatedBeatmapLevelCollectionsViewController->GetInstanceID());
 
-        auto tableView = LevelCollectionTableView->dyn__tableView();
-        auto scrollView = tableView->dyn__scrollView();
-        TableViewPageUpButton = scrollView->dyn__pageUpButton();
-        TableViewPageDownButton = scrollView->dyn__pageDownButton();
+        auto tableView = LevelCollectionTableView->tableView;
+        auto scrollView = tableView->scrollView;
+        TableViewPageUpButton = scrollView->pageUpButton;
+        TableViewPageDownButton = scrollView->pageDownButton;
         INFO("Acquired Page Up and Down buttons...");
 
         ActionButtons = StandardLevelDetailView->GetComponentsInChildren<UnityEngine::RectTransform*>().First([](auto x) {
@@ -93,7 +93,7 @@ namespace SongBrowser::DataAccess
         if (!LevelCollectionNavigationController)
             return nullptr;
 
-        return LevelCollectionNavigationController->dyn__levelPack();
+        return LevelCollectionNavigationController->levelPack;
     }
 
     GlobalNamespace::IAnnotatedBeatmapLevelCollection* BeatSaberUIController::GetCurrentSelectedPlaylist()
@@ -121,7 +121,7 @@ namespace SongBrowser::DataAccess
 
         // search level packs
         auto beatMapLevelPackCollection = UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::BeatmapLevelPackCollectionSO*>().Last();
-        auto levelPacks = beatMapLevelPackCollection->dyn__allBeatmapLevelPacks();
+        auto levelPacks = beatMapLevelPackCollection->allBeatmapLevelPacks;
         int length = levelPacks->max_length;
         for (int i = 0; i < length; i++)
         {
@@ -136,7 +136,7 @@ namespace SongBrowser::DataAccess
         // search playlists
         if (!levelCollection)
         {
-            auto annotatedBeatmapLevelCollections = reinterpret_cast<Array<GlobalNamespace::IAnnotatedBeatmapLevelCollection *>*>(AnnotatedBeatmapLevelCollectionsViewController->dyn__annotatedBeatmapLevelCollections());
+            auto annotatedBeatmapLevelCollections = reinterpret_cast<Array<GlobalNamespace::IAnnotatedBeatmapLevelCollection *>*>(AnnotatedBeatmapLevelCollectionsViewController->annotatedBeatmapLevelCollections);
             length = annotatedBeatmapLevelCollections->max_length;
             for (int i = 0; i < length; i++)
             {
@@ -268,7 +268,7 @@ namespace SongBrowser::DataAccess
         // try to find the index and scroll to it
         int selectedIndex;
         auto levels = GetCurrentLevelCollectionLevelsList();
-        if (levels->dyn__size() <= 0)
+        if (levels->size <= 0)
             return;
 
         auto levelID_cs = il2cpp_utils::newcsstr(levelID);
@@ -281,14 +281,14 @@ namespace SongBrowser::DataAccess
         {
             // this might look like an off by one error but the _level list we keep is missing the header entry BeatSaber.
             // so the last row is +1 the max index, the count.
-            int maxCount = levels->dyn__size();
+            int maxCount = levels->size;
 
-            int selectedRow = LevelCollectionTableView->dyn__selectedRow();
+            int selectedRow = LevelCollectionTableView->selectedRow;
 
             INFO("Song is not in the level pack, cannot scroll to it...  Using last known row %d/%d", selectedRow, maxCount);
             selectedIndex = maxCount > selectedRow ? selectedRow : maxCount;
         }
-        else if (LevelCollectionViewController->dyn__showHeader())
+        else if (LevelCollectionViewController->showHeader)
         {
             // the header counts as an index, so if the index came from the level array we have to add 1.
             selectedIndex = 1;
@@ -301,8 +301,8 @@ namespace SongBrowser::DataAccess
     {
         INFO("Scrolling level list to idx: %d", selectedIndex);
 
-        auto tableView = LevelCollectionTableView->dyn__tableView();
-        int selectedRow = LevelCollectionTableView->dyn__selectedRow();
+        auto tableView = LevelCollectionTableView->tableView;
+        int selectedRow = LevelCollectionTableView->selectedRow;
         if (selectedRow != selectedIndex && LevelCollectionTableView->get_isActiveAndEnabled())
         {
             LevelCollectionTableView->HandleDidSelectRowEvent(tableView, selectedIndex);
@@ -324,7 +324,7 @@ namespace SongBrowser::DataAccess
             }
 
             INFO("Checking if TableView is initialized...");
-            auto tableView = LevelCollectionTableView->dyn__tableView();
+            auto tableView = LevelCollectionTableView->tableView;
 
             INFO("Reloading SongList TableView");
             tableView->ReloadData();
@@ -333,7 +333,7 @@ namespace SongBrowser::DataAccess
             std::string selectedLevelID = currentSelectedLevelId;
             if (selectedLevelID.empty())
             {
-                if (levels->dyn__size() > 0)
+                if (levels->size > 0)
                 {
                     INFO("Currently selected level ID does not exist, picking the first...");
                     auto firstLevelId = levels->get_Item(0)->get_levelID();

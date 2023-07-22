@@ -65,7 +65,7 @@ namespace SongBrowser::UI
         // get a current beatmap characteristic...
         if (!model->currentBeatmapCharacteristicSO && uiCreated)
         {
-            model->currentBeatmapCharacteristicSO = beatUi->BeatmapCharacteristicSelectionViewController->dyn__selectedBeatmapCharacteristic();
+            model->currentBeatmapCharacteristicSO = beatUi->BeatmapCharacteristicSelectionViewController->selectedBeatmapCharacteristic;
         }
 
         model->UpdateLevelRecords();
@@ -448,7 +448,7 @@ namespace SongBrowser::UI
         // modify stat panel, inject extra row of stats
         INFO("Resizing Stats Panel...");
 
-        auto statsPanel = beatUi->StandardLevelDetailView->dyn__levelParamsPanel();
+        auto statsPanel = beatUi->StandardLevelDetailView->levelParamsPanel;
         reinterpret_cast<RectTransform*>(statsPanel->get_transform())->Translate(0.0f, 0.05f, 0.0f);
 
         auto NPS_cs = il2cpp_utils::newcsstr("NPS");
@@ -572,8 +572,8 @@ namespace SongBrowser::UI
 
         co_yield reinterpret_cast<System::Collections::IEnumerator*>(UnityEngine::WaitForEndOfFrame::New_ctor());
 
-        auto tv = beatUi->LevelCollectionTableView->dyn__tableView();
-        auto sv = tv->dyn__scrollView();
+        auto tv = beatUi->LevelCollectionTableView->tableView;
+        auto sv = tv->scrollView;
         INFO("Force scrolling to %.2f", position);
         sv->ScrollTo(position, false);
         co_return;
@@ -648,9 +648,9 @@ namespace SongBrowser::UI
         INFO("Cancelling filter, levelCollection %s", lastLevelCollection && lastLevelCollection->get_collectionName() ? to_utf8(csstrtostr(lastLevelCollection->get_collectionName())).c_str() : "NULL");
         config.filterMode = SongFilterMode::None;
 
-        auto noDataGO = beatUi->LevelCollectionViewController->dyn__noDataInfoGO();
-        auto headerText = beatUi->LevelCollectionTableView->dyn__headerText();
-        auto headerSprite = beatUi->LevelCollectionTableView->dyn__headerSprite();
+        auto noDataGO = beatUi->LevelCollectionViewController->noDataInfoGO;
+        auto headerText = beatUi->LevelCollectionTableView->headerText;
+        auto headerSprite = beatUi->LevelCollectionTableView->headerSprite;
 
         auto levelCollection = beatUi->GetCurrentSelectedAnnotatedBeatmapLevelCollection()->get_beatmapLevelCollection();
         beatUi->LevelCollectionViewController->SetData(levelCollection, headerText, headerSprite, false, noDataGO);
@@ -852,9 +852,9 @@ namespace SongBrowser::UI
         }
         else
         {
-            auto noDataGO = beatUi->LevelCollectionViewController->dyn__noDataInfoGO();
-            auto headerText = beatUi->LevelCollectionTableView->dyn__headerText();
-            auto headerSprite = beatUi->LevelCollectionTableView->dyn__headerSprite();
+            auto noDataGO = beatUi->LevelCollectionViewController->noDataInfoGO;
+            auto headerText = beatUi->LevelCollectionTableView->headerText;
+            auto headerSprite = beatUi->LevelCollectionTableView->headerSprite;
 
             auto levelCollection = beatUi->GetCurrentSelectedAnnotatedBeatmapLevelCollection()->get_beatmapLevelCollection();
             beatUi->LevelCollectionViewController->SetData(levelCollection, headerText, headerSprite, false, noDataGO);
@@ -936,8 +936,8 @@ namespace SongBrowser::UI
             return;
 
         // stash the scroll index
-        auto tv = beatUi->LevelCollectionTableView->dyn__tableView();
-        auto sv = tv->dyn__scrollView();
+        auto tv = beatUi->LevelCollectionTableView->tableView;
+        auto sv = tv->scrollView;
         model->lastScrollIndex = sv->get_position();
 
         RefreshScoreSaberData(reinterpret_cast<GlobalNamespace::IPreviewBeatmapLevel*>(view->get_selectedDifficultyBeatmap()->get_level()));
@@ -1126,7 +1126,7 @@ namespace SongBrowser::UI
             segmentSize = LIST_ITEMS_VISIBLE_AT_ONCE;
         }
 
-        int currentRow = beatUi->LevelCollectionTableView->dyn__selectedRow();
+        int currentRow = beatUi->LevelCollectionTableView->selectedRow;
         int jumpDirection = 1 - ((numJumps < 0) * 2);
         int newRow = currentRow + (jumpDirection * segmentSize);
         if (newRow <= 0)

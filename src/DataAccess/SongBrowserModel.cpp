@@ -456,12 +456,39 @@ namespace SongBrowser
 
     Array<GlobalNamespace::IPreviewBeatmapLevel*>* SongBrowserModel::GetLevelsForLevelCollection(GlobalNamespace::IAnnotatedBeatmapLevelCollection* levelCollection)
     {
-        return reinterpret_cast<Array<GlobalNamespace::IPreviewBeatmapLevel *> *>(levelCollection->get_beatmapLevelCollection()->get_beatmapLevels());
+        Il2CppObject* levels = (Il2CppObject*)(levelCollection->get_beatmapLevelCollection()->get_beatmapLevels());
+        if (auto listObj = il2cpp_utils::try_cast<System::Collections::Generic::List_1<GlobalNamespace::IPreviewBeatmapLevel*>>(levels))
+        {
+            // returned a List, convert to an Array
+            auto* theList = *listObj;
+            Array<GlobalNamespace::IPreviewBeatmapLevel*>* theArray = Array<GlobalNamespace::IPreviewBeatmapLevel*>::NewLength(theList->get_Count());
+            for (int i = 0; i < theList->size; i++)
+            {
+                theArray->values[i] = theList->items[i];
+            }
+            return theArray;
+        }
+        else return reinterpret_cast<Array<GlobalNamespace::IPreviewBeatmapLevel *> *>(levels);
     }
 
     List<GlobalNamespace::IPreviewBeatmapLevel*>* SongBrowserModel::GetLevelsListForLevelCollection(GlobalNamespace::IAnnotatedBeatmapLevelCollection* levelCollection)
     {
-        return reinterpret_cast<List<GlobalNamespace::IPreviewBeatmapLevel *> *>(levelCollection->get_beatmapLevelCollection()->get_beatmapLevels());
+        Il2CppObject* levels = (Il2CppObject*)(levelCollection->get_beatmapLevelCollection()->get_beatmapLevels());
+        if (auto listObj = il2cpp_utils::try_cast<System::Collections::Generic::List_1<GlobalNamespace::IPreviewBeatmapLevel*>>(levels))
+        {
+            return reinterpret_cast<List<GlobalNamespace::IPreviewBeatmapLevel *> *>(*listObj);
+        }
+        else
+        {
+            // returned an Array, convert to a List
+            Array<GlobalNamespace::IPreviewBeatmapLevel*>* theArray = reinterpret_cast<Array<GlobalNamespace::IPreviewBeatmapLevel *> *>(levels);
+            List<GlobalNamespace::IPreviewBeatmapLevel*>* theList = List<GlobalNamespace::IPreviewBeatmapLevel*>::New_ctor();
+            for (int i = 0; i < theArray->Length(); i++)
+            {
+                theList->Add(theArray->values[i]);
+            }
+            return theList;
+        }
     }
 
 #pragma region Filtering

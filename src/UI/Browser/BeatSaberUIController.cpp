@@ -291,7 +291,7 @@ namespace SongBrowser::DataAccess
         else if (LevelCollectionViewController->showHeader)
         {
             // the header counts as an index, so if the index came from the level array we have to add 1.
-            selectedIndex = 1;
+            selectedIndex += 1;
         }
 
         ScrollToLevelByRow(selectedIndex);

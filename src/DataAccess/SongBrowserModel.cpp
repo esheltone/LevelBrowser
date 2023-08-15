@@ -351,6 +351,8 @@ namespace SongBrowser
             case SongSortMode::NJS:
             case SongSortMode::Length:
             default:
+                if (!config.invertSortResults)
+                    sortedSongs->Reverse();
                 break;
         }
 

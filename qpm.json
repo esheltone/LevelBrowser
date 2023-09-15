@@ -2,12 +2,12 @@
   "sharedDir": "shared",
   "dependenciesDir": "extern",
   "info": {
-    "name": "SongBrowser",
-    "id": "songbrowser",
-    "version": "1.0.3",
-    "url": "https://github.com/RedBrumbler/SongBrowser",
+    "name": "LevelBrowser",
+    "id": "levelbrowser",
+    "version": "2.0.0",
+    "url": "https://github.com/esheltone/LevelBrowser",
     "additionalData": {
-      "overrideSoName": "libsongbrowser.so"
+      "overrideSoName": "liblevelbrowser.so"
     }
   },
   "dependencies": [

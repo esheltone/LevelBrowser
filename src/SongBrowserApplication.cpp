@@ -5,7 +5,6 @@
 
 #include "songloader/shared/API.hpp"
 #include "Utils/SpriteUtils.hpp"
-#include "Utils/SongDataCoreUtils.hpp"
 
 DEFINE_TYPE(SongBrowser, SongBrowserApplication);
 

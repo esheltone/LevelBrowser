@@ -28,9 +28,6 @@
 
 #include "Utils/ArrayUtil.hpp"
 #include "Utils/EnumToStringUtils.hpp"
-#include "Utils/SongDataCoreUtils.hpp"
-
-#include "sdc-wrapper/shared/BeatStarSong.hpp"
 
 #include "UnityEngine/Rect.hpp"
 #include "UnityEngine/Resources.hpp"
@@ -51,6 +48,7 @@
 #include "System/Tuple_2.hpp"
 
 #include <algorithm>
+#include <regex>
 DEFINE_TYPE(SongBrowser, SongBrowserModel);
 
 using Stopwatch = System::Diagnostics::Stopwatch;
@@ -84,6 +82,7 @@ namespace SongBrowser
         EPOCH = System::DateTime(1970, 1, 1);
         customFilterHandler = nullptr;
         customSortHandler = nullptr;
+        songDetails = SongDetailsCache::SongDetails::Init().get();
     }
 
     void SongBrowserModel::Init()
@@ -447,13 +446,6 @@ namespace SongBrowser
         INFO("Done Filtering & sorting");
     }
 
-    std::string SongBrowserModel::GetSongHash(std::string_view levelId)
-    {
-        std::string id(levelId);
-        if (id.starts_with("custom_level_")) return id.substr(13);
-        else return id;
-    }
-
     Array<GlobalNamespace::IPreviewBeatmapLevel*>* SongBrowserModel::GetLevelsForLevelCollection(GlobalNamespace::IAnnotatedBeatmapLevelCollection* levelCollection)
     {
         Il2CppObject* levels = (Il2CppObject*)(levelCollection->get_beatmapLevelCollection()->get_beatmapLevels());
@@ -566,28 +558,36 @@ namespace SongBrowser
         return filtered;
     }
 
+    const SongDetailsCache::Song& SongBrowserModel::GetSongForLevel(GlobalNamespace::IPreviewBeatmapLevel* level)
+    {
+        if (!level) return SongDetailsCache::Song::none;
+        if (level->get_levelID()->get_Length() < 13 + 40) return SongDetailsCache::Song::none;
+        std::u16string_view levelid = csstrtostr(level->get_levelID());
+        if (!levelid.starts_with(u"custom_level_")) return SongDetailsCache::Song::none;
+        auto hash = std::regex_replace((std::string)to_utf8(levelid), std::basic_regex("custom_level_"), "");
+        INFO("levelId hash:\"%s\"", hash.c_str());
+        return songDetails->songs.FindByHash(hash);
+    }
+
     List<GlobalNamespace::IPreviewBeatmapLevel*>* SongBrowserModel::FilterRanked(Array<GlobalNamespace::IPreviewBeatmapLevel*>* levels, bool includeRanked, bool includeUnranked)
     {
         List<GlobalNamespace::IPreviewBeatmapLevel*>* filtered = List<GlobalNamespace::IPreviewBeatmapLevel*>::New_ctor();
 
         ArrayUtil::ForEach(levels, [&](auto x){
-            if (!x) return;
-            std::string levelId = to_utf8(csstrtostr(x->get_levelID()));
-            auto hash = GetSongHash(levelId);
-            auto song = SDC_wrapper::BeatStarSong::GetSong(hash);
-            if (!song) return;
-            auto diffVec = song->GetDifficultyVector();
+            const SongDetailsCache::Song& song = GetSongForLevel(x);
+            if (song == SongDetailsCache::Song::none) return;
+			// rest of this "paragraph" is debug logging
+            INFO("song found - key:\"%s\" name:\"%s\"", song.key().c_str(), song.songName().c_str());
+            for (auto& it : song)
+            {
+                bool rankedBl = SongDetailsCache::hasFlags(song.rankedStates, SongDetailsCache::RankedStates::BeatleaderRanked);
+                bool rankedSS = SongDetailsCache::hasFlags(song.rankedStates, SongDetailsCache::RankedStates::ScoresaberRanked);
+                INFO("FR level - hash:%s Stars:%.2f StarsBl:%.2f rs:%d RankedBl:%d Title:\"%s\"", song.hash().c_str(), it.starsSS, it.starsBL, song.rankedStates, rankedBl, song.songName().c_str());
+            }
 
             bool isRanked = false;
-            for (auto diff : diffVec)
-            {
-                // if only 1 is ranked
-                if (diff->ranked)
-                {
-                    isRanked = true;
-                    break;
-                }
-            }
+			if (SongDetailsCache::hasFlags(song.rankedStates, SongDetailsCache::RankedStates::ScoresaberRanked))
+                isRanked = true;
 
             // if ranked and we want ranked, add
             if (isRanked && includeRanked)
@@ -607,19 +607,13 @@ namespace SongBrowser
     {
         List<GlobalNamespace::IPreviewBeatmapLevel*>* filtered = List<GlobalNamespace::IPreviewBeatmapLevel*>::New_ctor();
         ArrayUtil::ForEach(levels, [&](auto x){
-            if (!x) return;
-            std::string levelId = to_utf8(csstrtostr(x->get_levelID()));
-            auto hash = GetSongHash(levelId);
-            auto song = SDC_wrapper::BeatStarSong::GetSong(hash);
-            if (!song) return;
+            const SongDetailsCache::Song& song = GetSongForLevel(x);
+            if (song == SongDetailsCache::Song::none) return;
             // now we have our song
 
-            auto diffVec = song->GetDifficultyVector();
-
-            for (auto diff : diffVec)
+            for (auto& it : song)
             {
-                auto reqVec = diff->GetRequirementVector();
-                if (reqVec.size() > 0)
+                if (it.mods != SongDetailsCache::MapMods::None)
                 {
                     // we have requirements
                     filtered->Add(x);
@@ -713,50 +707,56 @@ namespace SongBrowser
 
     List<GlobalNamespace::IPreviewBeatmapLevel*>* SongBrowserModel::SortPerformancePoints(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels)
     {
-        if (!SongDataCoreUtils::get_loaded())
+        if (!songDetails->songs.get_isDataAvailable())
         {
             sortWasMissingData = true;
             return levels;
         }
 
         std::sort(&levels->items->values[0], &levels->items->values[levels->get_Count()], [&](auto x, auto y) {
-            std::string firstLevelID = x ? to_utf8(csstrtostr(x->get_levelID())) : "";
-            std::string secondLevelID = y ? to_utf8(csstrtostr(y->get_levelID())) : "";
+            const SongDetailsCache::Song& secondSong = GetSongForLevel(y);
+            if (secondSong == SongDetailsCache::Song::none) return false;
+            const SongDetailsCache::Song& firstSong = GetSongForLevel(x);
+            if (firstSong == SongDetailsCache::Song::none) return true;
 
-            auto firstHash = GetSongHash(firstLevelID);
-            auto secondHash = GetSongHash(secondLevelID);
-
-            auto firstSong = SDC_wrapper::BeatStarSong::GetSong(firstHash);
-            auto secondSong = SDC_wrapper::BeatStarSong::GetSong(secondHash);
-
-            if (!secondSong) return false;
-            else if (!firstSong) return true;
-            else return firstSong->GetMaxPpValue() < secondSong->GetMaxPpValue();
+            // round to display precision with leading zeroes (one decimal point)
+            std::string firstMaxPpStr = string_format("%06.1f", firstSong.maxPP());
+            std::string secondMaxPpStr = string_format("%06.1f", secondSong.maxPP());
+            if (firstMaxPpStr == secondMaxPpStr)
+            {
+                StringW firstSongName = x ? x->get_songName() : "";
+                StringW secondSongName = y ? y->get_songName() : "";
+				return firstSongName < secondSongName;
+            }
+            else return firstMaxPpStr < secondMaxPpStr;
         });
         return levels;
     }
 
     List<GlobalNamespace::IPreviewBeatmapLevel*>* SongBrowserModel::SortStars(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels)
     {
-        if (!SongDataCoreUtils::get_loaded())
+        if (!songDetails->songs.get_isDataAvailable())
         {
             sortWasMissingData = true;
             return levels;
         }
 
         std::sort(&levels->items->values[0], &levels->items->values[levels->get_Count()], [&](auto x, auto y) {
-            std::string firstLevelID = x ? to_utf8(csstrtostr(x->get_levelID())) : "";
-            std::string secondLevelID = y ? to_utf8(csstrtostr(y->get_levelID())) : "";
+            const SongDetailsCache::Song& secondSong = GetSongForLevel(y);
+            if (secondSong == SongDetailsCache::Song::none) return false;
+            const SongDetailsCache::Song& firstSong = GetSongForLevel(x);
+            if (firstSong == SongDetailsCache::Song::none) return true;
 
-            auto firstHash = GetSongHash(firstLevelID);
-            auto secondHash = GetSongHash(secondLevelID);
-
-            auto firstSong = SDC_wrapper::BeatStarSong::GetSong(firstHash);
-            auto secondSong = SDC_wrapper::BeatStarSong::GetSong(secondHash);
-
-            if (!secondSong) return false;
-            else if (!firstSong) return true;
-            else return firstSong->GetMaxStarValue() < secondSong->GetMaxStarValue();
+            // round to display precision with leading zeroes (one decimal point)
+            std::string firstMaxStarsStr = string_format("%04.1f", firstSong.maxStarSS());
+            std::string secondMaxStarsStr = string_format("%04.1f", secondSong.maxStarSS());
+            if (firstMaxStarsStr == secondMaxStarsStr)
+            {
+                StringW firstSongName = x ? x->get_songName() : "";
+                StringW secondSongName = y ? y->get_songName() : "";
+				return firstSongName < secondSongName;
+            }
+            else return firstMaxStarsStr < secondMaxStarsStr;
         });
         return levels;
     }
@@ -797,41 +797,46 @@ namespace SongBrowser
         std::sort(&levels->items->values[0], &levels->items->values[levels->get_Count()], [&](auto x, auto y) {
             float firstBpm = x ? x->get_beatsPerMinute() : 0.0f;
             float secondBpm = y ? y->get_beatsPerMinute() : 0.0f;
+            // round to display precision with leading zeroes (no decimal portion)
+            std::string firstBpmStr = string_format("%06.0f", firstBpm);
+            std::string secondBpmStr = string_format("%06.0f", secondBpm);
 
-            if (firstBpm == secondBpm)
+            if (firstBpmStr == secondBpmStr)
             {
                 std::string firstSongName = x ? to_utf8(csstrtostr(x->get_songName())) : "";
                 std::string secondSongName = y ? to_utf8(csstrtostr(y->get_songName())) : "";
                 return firstSongName < secondSongName;
             }
-            else return firstBpm < secondBpm;
+            else return firstBpmStr < secondBpmStr;
         });
         return levels;
     }
 
     List<GlobalNamespace::IPreviewBeatmapLevel*>* SongBrowserModel::SortSongNJS(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels)
     {
-        // this is sketch but I think it should work
+        if (!songDetails->songs.get_isDataAvailable())
+        {
+            sortWasMissingData = true;
+            return levels;
+        }
+
         std::sort(&levels->items->values[0], &levels->items->values[levels->get_Count()], [&](auto x, auto y) {
-            std::string firstLevelID = x ? to_utf8(csstrtostr(x->get_levelID())) : "";
-            std::string secondLevelID = y ? to_utf8(csstrtostr(y->get_levelID())) : "";
+            const SongDetailsCache::Song& secondSong = GetSongForLevel(y);
+            if (secondSong == SongDetailsCache::Song::none) return false;
+            const SongDetailsCache::Song& firstSong = GetSongForLevel(x);
+            if (firstSong == SongDetailsCache::Song::none) return true;
 
-            auto firstHash = GetSongHash(firstLevelID);
-            auto secondHash = GetSongHash(secondLevelID);
-
-            auto firstSong = SDC_wrapper::BeatStarSong::GetSong(firstHash);
-            auto secondSong = SDC_wrapper::BeatStarSong::GetSong(secondHash);
-
-            float firstMaxNJS = firstSong ? firstSong->GetMaxNJS() : 0.0f;
-            float secondMaxNJS = secondSong ? secondSong->GetMaxNJS() : 0.0f;
+            // round to display precision with leading zeroes (two decimal points)
+            std::string firstMaxNjsStr = string_format("%06.1f", firstSong.maxNJS());
+            std::string secondMaxNjsStr = string_format("%06.1f", secondSong.maxNJS());
             
-            if (firstMaxNJS == secondMaxNJS)
+            if (firstMaxNjsStr == secondMaxNjsStr)
             {
                 std::string firstSongName = x ? to_utf8(csstrtostr(x->get_songName())) : "";
                 std::string secondSongName = y ? to_utf8(csstrtostr(y->get_songName())) : "";
                 return firstSongName < secondSongName;
             }
-            else return firstMaxNJS < secondMaxNJS;
+            else return firstMaxNjsStr < secondMaxNjsStr;
         });
         return levels;
     }
@@ -842,39 +847,35 @@ namespace SongBrowser
         std::sort(&levels->items->values[0], &levels->items->values[levels->get_Count()], [&](auto x, auto y) {
             float firstLength = x ? x->get_songDuration() : 0.0f;
             float secondLength = y ? y->get_songDuration() : 0.0f;
+            // round to display precision with leading zeroes (no decimal portion)
+            std::string firstLengthStr = string_format("%06.0f", firstLength);
+            std::string secondLengthStr = string_format("%06.0f", secondLength);
 
-            if (firstLength == secondLength)
+            if (firstLengthStr == secondLengthStr)
             {
                 std::string firstSongName = x ? to_utf8(csstrtostr(x->get_songName())) : "";
                 std::string secondSongName = y ? to_utf8(csstrtostr(y->get_songName())) : "";
                 return firstSongName < secondSongName;
             }
-            else return firstLength < secondLength;
+            else return firstLengthStr < secondLengthStr;
         });
         return levels;
     }
 
     List<GlobalNamespace::IPreviewBeatmapLevel*>* SongBrowserModel::SortUpVotes(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels)
     {
-        if (!SongDataCoreUtils::get_loaded())
+        if (!songDetails->songs.get_isDataAvailable())
         {
             sortWasMissingData = true;
             return levels;
         }
 
         std::sort(&levels->items->values[0], &levels->items->values[levels->get_Count()], [&](auto x, auto y) {
-            std::string firstLevelID = x ? to_utf8(csstrtostr(x->get_levelID())) : "";
-            std::string secondLevelID = y ? to_utf8(csstrtostr(y->get_levelID())) : "";
-
-            auto firstHash = GetSongHash(firstLevelID);
-            auto secondHash = GetSongHash(secondLevelID);
-
-            auto firstSong = SDC_wrapper::BeatStarSong::GetSong(firstHash);
-            auto secondSong = SDC_wrapper::BeatStarSong::GetSong(secondHash);
-
-            if (!secondSong) return false;
-            else if (!firstSong) return true;
-            else return firstSong->upvotes < secondSong->upvotes;
+            const SongDetailsCache::Song& secondSong = GetSongForLevel(y);
+            if (secondSong == SongDetailsCache::Song::none) return false;
+            const SongDetailsCache::Song& firstSong = GetSongForLevel(x);
+            if (firstSong == SongDetailsCache::Song::none) return true;
+            return firstSong.upvotes < secondSong.upvotes;
         });
         return levels;
     }
@@ -883,7 +884,7 @@ namespace SongBrowser
     {
         return levels;
         /*
-        if (!SongDataCoreUtils::get_loaded())
+        if (!songDetails->songs.get_isDataAvailable())
         {
             sortWasMissingData = true;
             return levels;
@@ -910,7 +911,7 @@ namespace SongBrowser
     /*
     List<GlobalNamespace::IPreviewBeatmapLevel*>* SongBrowserModel::SortBeatSaverDownloads(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels)
     {
-        if (!SongDataCoreUtils::get_loaded())
+        if (!songDetails->songs.get_isDataAvailable())
         {
             sortWasMissingData = true;
             return levels;
@@ -936,37 +937,32 @@ namespace SongBrowser
 
     List<GlobalNamespace::IPreviewBeatmapLevel*>* SongBrowserModel::SortBeatSaverRating(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels)
     {
-        if (!SongDataCoreUtils::get_loaded())
+        if (!songDetails->songs.get_isDataAvailable())
         {
             sortWasMissingData = true;
             return levels;
         }
 
         std::sort(&levels->items->values[0], &levels->items->values[levels->get_Count()], [&](auto x, auto y) {
-            std::string firstLevelID = x ? to_utf8(csstrtostr(x->get_levelID())) : "";
-            std::string secondLevelID = y ? to_utf8(csstrtostr(y->get_levelID())) : "";
-
-            auto firstHash = GetSongHash(firstLevelID);
-            auto secondHash = GetSongHash(secondLevelID);
-
-            auto firstSong = SDC_wrapper::BeatStarSong::GetSong(firstHash);
-            auto secondSong = SDC_wrapper::BeatStarSong::GetSong(secondHash);
-
-            if (!secondSong) return false;
-            else if (!firstSong) return true;
-            else return firstSong->GetRating() < secondSong->GetRating();
+            const SongDetailsCache::Song& secondSong = GetSongForLevel(y);
+            if (secondSong == SongDetailsCache::Song::none) return false;
+            const SongDetailsCache::Song& firstSong = GetSongForLevel(x);
+            if (firstSong == SongDetailsCache::Song::none) return true;
+            return firstSong.rating() < secondSong.rating();
         });
         return levels;
     }
 
     List<GlobalNamespace::IPreviewBeatmapLevel*>* SongBrowserModel::SortBeatSaverHeat(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels)
     {
-        if (!SongDataCoreUtils::get_loaded())
+        if (!songDetails->songs.get_isDataAvailable())
         {
             sortWasMissingData = true;
             return levels;
         }
 
+		return levels;  // unimplemented for now
+		/*
         std::sort(&levels->items->values[0], &levels->items->values[levels->get_Count()], [&](auto x, auto y) {
             std::string firstLevelID = x ? to_utf8(csstrtostr(x->get_levelID())) : "";
             std::string secondLevelID = y ? to_utf8(csstrtostr(y->get_levelID())) : "";
@@ -981,6 +977,7 @@ namespace SongBrowser
             else if (!firstSong) return true;
             else return firstSong->heat < secondSong->heat;
         });
+		*/
         return levels;
     }
 #pragma endregion

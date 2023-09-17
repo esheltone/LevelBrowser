@@ -12,7 +12,6 @@
     "liblevelbrowser.so"
   ],
   "libraryFiles": [
-    "libandroid-libsong_data_core_rust.so",
     "libbeatsaber-hook_3_14_0.so"
   ],
   "fileCopies": [

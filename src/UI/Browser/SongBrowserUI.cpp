@@ -25,9 +25,6 @@
 #include "Utils/UIUtils.hpp"
 #include "Utils/SpriteUtils.hpp"
 #include "Utils/EnumToStringUtils.hpp"
-#include "Utils/SongDataCoreUtils.hpp"
-
-#include "sdc-wrapper/shared/BeatStarSong.hpp"
 
 #include "logging.hpp"
 
@@ -597,7 +594,7 @@ namespace SongBrowser::UI
             co_yield nullptr;
         }
 
-        if (NeedsScoreSaberData(config.sortMode) && SongDataCoreUtils::get_loaded())
+        if (NeedsScoreSaberData(config.sortMode) && model->songDetails->songs.get_isDataAvailable())
         {
             ProcessSongList();
             RefreshSongUI();
@@ -789,7 +786,7 @@ namespace SongBrowser::UI
     {
         INFO("Sort button - %d - pressed.", sortMode);
 
-        if (NeedsScoreSaberData(sortMode) && !SongDataCoreUtils::get_loaded())
+        if (NeedsScoreSaberData(sortMode) && !model->songDetails->songs.get_isDataAvailable())
         {
             INFO("Data for sort type is not available.");
             return;
@@ -1145,37 +1142,45 @@ namespace SongBrowser::UI
 
     void SongBrowserUI::RefreshScoreSaberData(GlobalNamespace::IPreviewBeatmapLevel* level)
     {
-        if (!SongDataCoreUtils::get_loaded()) return;
+        if (!model->songDetails->songs.get_isDataAvailable()) return;
         auto difficulty = beatUi->LevelDifficultyViewController->get_selectedDifficulty();
-        auto diffVal = difficulty.value;
-        std::string difficultyString = BeatmapDifficultyToString(diffVal);
-        //if (difficultyString == "ExpertPlus")
-        //{
-        //    difficultyString = "Expert+";
-        //}
-
-        INFO("%s", difficultyString.c_str());
+        SongDetailsCache::MapDifficulty diffVal = (SongDetailsCache::MapDifficulty)(difficulty.value);
 
         // Check if we have data for this song
         INFO("Checking if have info for song %s", to_utf8(csstrtostr(level->get_songName())).c_str());
         
-        auto levelIDcs = level->get_levelID();
-        std::string levelID = levelIDcs ? to_utf8(csstrtostr(levelIDcs)) : "";
-        auto hash = SongBrowserModel::GetSongHash(levelID);
-        // BeatStarSong*, if null not found 
-        auto song = SDC_wrapper::BeatStarSong::GetSong(hash);
-        if (song)
+        const SongDetailsCache::Song& song = model->GetSongForLevel(level);
+        if (song != SongDetailsCache::Song::none)
         {
             INFO("Song existed!");
-            auto char_ = SDC_wrapper::BeatStarCharacteristic(beatUi->BeatmapCharacteristicSelectionViewController->get_selectedBeatmapCharacteristic());
-            // BeatStarSongDifficultyStats*, null if nonexistent
-            auto songDifficulty = song->GetDifficulty(char_, difficultyString);
-            if (songDifficulty)
+            // currently selected characteristic
+            std::string selectedCharName = beatUi->BeatmapCharacteristicSelectionViewController->get_selectedBeatmapCharacteristic()->get_serializedName();
+            SongDetailsCache::MapCharacteristic selectedChar = SongDetailsCache::MapCharacteristic::Custom;
+            switch(selectedCharName.data()[0])
             {
-                INFO("Display pp for diff %s", songDifficulty->GetName().data());
-                // no pp cause songdatacore no pp
-                double pp = songDifficulty->approximate_pp_value;
-                double star = songDifficulty->stars;
+                case 's': [[fallthrough]];
+                case 'S': selectedChar = SongDetailsCache::MapCharacteristic::Standard;
+                case 'o': [[fallthrough]];
+                case 'O': selectedChar = SongDetailsCache::MapCharacteristic::OneSaber;
+                case 'n': [[fallthrough]];
+                case 'N': selectedChar = SongDetailsCache::MapCharacteristic::NoArrows;
+                case 'd': [[fallthrough]];
+                case 'D':
+                    if (selectedCharName.data()[6] == '9') selectedChar = SongDetailsCache::MapCharacteristic::NinetyDegree;
+                    else selectedChar = SongDetailsCache::MapCharacteristic::ThreeSixtyDegree;
+                case 'l': [[fallthrough]];
+                case 'L': {
+                    if (selectedCharName.data()[1] == 'a' || selectedCharName.data()[1] == 'A') selectedChar = SongDetailsCache::MapCharacteristic::Lawless;
+                    else selectedChar = SongDetailsCache::MapCharacteristic::LightShow;
+                }
+                default: selectedChar = SongDetailsCache::MapCharacteristic::Custom;
+            }
+            const SongDetailsCache::SongDifficulty& songDifficulty = song.GetDifficulty(diffVal, selectedChar);
+            if (songDifficulty != SongDetailsCache::SongDifficulty::none)
+            {
+                INFO("Display pp for diff %d", songDifficulty.difficulty);
+                double pp = songDifficulty.approximatePpValue();
+                double star = songDifficulty.starsSS;
 
                 UIUtils::SetStatButtonText(ppStatButton, string_format("%.1f", pp));
                 UIUtils::SetStatButtonText(starStatButton, string_format("%.1f", star));
@@ -1325,7 +1330,7 @@ namespace SongBrowser::UI
         for (int i = 0; i < length; i++)
         {
             auto sortButton = sortButtonGroup->items->values[i];
-            if (NeedsScoreSaberData(sortButton->sortMode) && !SongDataCoreUtils::get_loaded())
+            if (NeedsScoreSaberData(sortButton->sortMode) && !model->songDetails->songs.get_isDataAvailable())
                 UIUtils::SetButtonUnderlineColor(sortButton->button, {0.5f, 0.5f, 0.5f, 1.0f});
             else
                 UIUtils::SetButtonUnderlineColor(sortButton->button, {1.0f, 1.0f, 1.0f, 1.0f});

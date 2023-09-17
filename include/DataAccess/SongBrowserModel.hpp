@@ -13,6 +13,8 @@
 
 #include "System/DateTime.hpp"
 
+#include "song-details/shared/SongDetails.hpp"
+
 #include <string_view>
 #include <string>
 #include <map>
@@ -41,11 +43,12 @@ DECLARE_CLASS_CODEGEN(SongBrowser, SongBrowserModel, Il2CppObject,
         void RemoveSongFromLevelCollection(GlobalNamespace::IAnnotatedBeatmapLevelCollection* levelCollection, std::string_view levelId);
         void UpdatePlayCounts();
         void ProcessSongList(GlobalNamespace::IAnnotatedBeatmapLevelCollection* selectedBeatmapCollection, GlobalNamespace::LevelSelectionNavigationController* navController);
-        static std::string GetSongHash(std::string_view levelId);
         static Array<GlobalNamespace::IPreviewBeatmapLevel*>* GetLevelsForLevelCollection(GlobalNamespace::IAnnotatedBeatmapLevelCollection* levelCollection);
         static List<GlobalNamespace::IPreviewBeatmapLevel*>* GetLevelsListForLevelCollection(GlobalNamespace::IAnnotatedBeatmapLevelCollection* levelCollection);
+        const SongDetailsCache::Song& GetSongForLevel(GlobalNamespace::IPreviewBeatmapLevel* level);
         float lastScrollIndex = 0.0f;
         std::string lastSelectedLevelId = "";
+        inline static SongDetailsCache::SongDetails* songDetails;
     private:
         
         /* -- Filtering --*/

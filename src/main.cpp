@@ -18,7 +18,6 @@
 
 #include "SongBrowserApplication.hpp"
 #include "Utils/EventUtils.hpp"
-#include "Utils/SongDataCoreUtils.hpp"
 
 #include "GlobalNamespace/MenuTransitionsHelper.hpp"
 #include "Zenject/DiContainer.hpp"
@@ -114,6 +113,5 @@ extern "C" void load()
 
     custom_types::Register::AutoRegister();    
 
-    SongDataCoreUtils::Init();
     INFO("Loaded songbrowser!");
 }

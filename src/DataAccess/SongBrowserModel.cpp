@@ -23,6 +23,7 @@
 #include "System/TimeSpan.hpp"
 #include "System/Linq/Enumerable.hpp"
 #include "System/Random.hpp"
+#include "System/StringComparison.hpp"
 
 #include "songloader/shared/API.hpp"
 
@@ -665,20 +666,34 @@ namespace SongBrowser
         return levels;
     }
 
+    std::u16string SongBrowserModel::LevelTitleWithoutBeginningArticle(GlobalNamespace::IPreviewBeatmapLevel* level)
+    {
+        static std::vector<std::u16string> articleList{u"The ", u"the ", u"A ", u"a ", u"An ", u"an "};
+
+        if (!level) return u"";
+        std::u16string title(csstrtostr(level->get_songName()));
+        for (auto article : articleList)
+        {
+            if (title.starts_with(article)) return title.substr(article.length());
+        }
+        return title;
+    }
+
     List<GlobalNamespace::IPreviewBeatmapLevel*>* SongBrowserModel::SortAuthor(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels)
     {
         // this is sketch but I think it should work
         std::sort(&levels->items->values[0], &levels->items->values[levels->get_Count()], [&](auto x, auto y) {
-            std::string firstSongAuthorName = x ? to_utf8(csstrtostr(x->get_songAuthorName())) : "";
-            std::string secondSongAuthorName = y ? to_utf8(csstrtostr(y->get_songAuthorName())) : "";
-
-            if (firstSongAuthorName == secondSongAuthorName)
+            StringW firstSongAuthorName = x ? to_utf8(csstrtostr(x->get_songAuthorName())) : "";
+            StringW secondSongAuthorName = y ? to_utf8(csstrtostr(y->get_songAuthorName())) : "";
+            int compare = System::String::Compare(firstSongAuthorName, secondSongAuthorName, System::StringComparison::InvariantCultureIgnoreCase);
+            if (compare == 0)
             {
-                std::string firstSongName = x ? to_utf8(csstrtostr(x->get_songName())) : "";
-                std::string secondSongName = y ? to_utf8(csstrtostr(y->get_songName())) : "";
-                return firstSongName < secondSongName;
+                StringW firstSongName = LevelTitleWithoutBeginningArticle(x);
+                StringW secondSongName = LevelTitleWithoutBeginningArticle(y);
+                int nameCompare = System::String::Compare(firstSongName, secondSongName, System::StringComparison::InvariantCultureIgnoreCase);
+                return nameCompare < 0;
             }
-            else return firstSongAuthorName < secondSongAuthorName;
+            else return compare < 0;
         });
         return levels;
     }
@@ -696,9 +711,10 @@ namespace SongBrowser
             // if played the same amount
             if (firstItr->second == secondItr->second)
             {
-                std::string firstSongName = x ? to_utf8(csstrtostr(x->get_songName())) : "";
-                std::string secondSongName = y ? to_utf8(csstrtostr(y->get_songName())) : "";
-                return firstSongName < secondSongName;
+                StringW firstSongName = LevelTitleWithoutBeginningArticle(x);
+                StringW secondSongName = LevelTitleWithoutBeginningArticle(y);
+                int nameCompare = System::String::Compare(firstSongName, secondSongName, System::StringComparison::InvariantCultureIgnoreCase);
+                return nameCompare < 0;
             }
             else return firstItr->second < secondItr->second;
         });
@@ -724,9 +740,10 @@ namespace SongBrowser
             std::string secondMaxPpStr = string_format("%06.1f", secondSong.maxPP());
             if (firstMaxPpStr == secondMaxPpStr)
             {
-                StringW firstSongName = x ? x->get_songName() : "";
-                StringW secondSongName = y ? y->get_songName() : "";
-				return firstSongName < secondSongName;
+                StringW firstSongName = LevelTitleWithoutBeginningArticle(x);
+                StringW secondSongName = LevelTitleWithoutBeginningArticle(y);
+                int nameCompare = System::String::Compare(firstSongName, secondSongName, System::StringComparison::InvariantCultureIgnoreCase);
+                return nameCompare < 0;
             }
             else return firstMaxPpStr < secondMaxPpStr;
         });
@@ -752,9 +769,10 @@ namespace SongBrowser
             std::string secondMaxStarsStr = string_format("%04.1f", secondSong.maxStarSS());
             if (firstMaxStarsStr == secondMaxStarsStr)
             {
-                StringW firstSongName = x ? x->get_songName() : "";
-                StringW secondSongName = y ? y->get_songName() : "";
-				return firstSongName < secondSongName;
+                StringW firstSongName = LevelTitleWithoutBeginningArticle(x);
+                StringW secondSongName = LevelTitleWithoutBeginningArticle(y);
+                int nameCompare = System::String::Compare(firstSongName, secondSongName, System::StringComparison::InvariantCultureIgnoreCase);
+                return nameCompare < 0;
             }
             else return firstMaxStarsStr < secondMaxStarsStr;
         });
@@ -777,16 +795,17 @@ namespace SongBrowser
     {
         // this is sketch but I think it should work
         std::sort(&levels->items->values[0], &levels->items->values[levels->get_Count()], [&](auto x, auto y) {
-            std::string firstSongName = x ? to_utf8(csstrtostr(x->get_songName())) : "";
-            std::string secondSongName = y ? to_utf8(csstrtostr(y->get_songName())) : "";
-
-            if (firstSongName == secondSongName)
+            StringW firstSongName = LevelTitleWithoutBeginningArticle(x);
+            StringW secondSongName = LevelTitleWithoutBeginningArticle(y);
+            int compare = System::String::Compare(firstSongName, secondSongName, System::StringComparison::InvariantCultureIgnoreCase);
+            if (compare == 0)
             {
                 std::string firstSongAuthorName = x ? to_utf8(csstrtostr(x->get_songAuthorName())) : "";
                 std::string secondSongAuthorName = y ? to_utf8(csstrtostr(y->get_songAuthorName())) : "";
-                return firstSongAuthorName < secondSongAuthorName;
+                int authorCompare = System::String::Compare(firstSongAuthorName, secondSongAuthorName, System::StringComparison::InvariantCultureIgnoreCase);
+                return authorCompare < 0;
             }
-            else return firstSongName < secondSongName;
+            else return compare < 0;
         });
         return levels;
     }
@@ -803,9 +822,10 @@ namespace SongBrowser
 
             if (firstBpmStr == secondBpmStr)
             {
-                std::string firstSongName = x ? to_utf8(csstrtostr(x->get_songName())) : "";
-                std::string secondSongName = y ? to_utf8(csstrtostr(y->get_songName())) : "";
-                return firstSongName < secondSongName;
+                StringW firstSongName = LevelTitleWithoutBeginningArticle(x);
+                StringW secondSongName = LevelTitleWithoutBeginningArticle(y);
+                int nameCompare = System::String::Compare(firstSongName, secondSongName, System::StringComparison::InvariantCultureIgnoreCase);
+                return nameCompare < 0;
             }
             else return firstBpmStr < secondBpmStr;
         });
@@ -832,9 +852,10 @@ namespace SongBrowser
             
             if (firstMaxNjsStr == secondMaxNjsStr)
             {
-                std::string firstSongName = x ? to_utf8(csstrtostr(x->get_songName())) : "";
-                std::string secondSongName = y ? to_utf8(csstrtostr(y->get_songName())) : "";
-                return firstSongName < secondSongName;
+                StringW firstSongName = LevelTitleWithoutBeginningArticle(x);
+                StringW secondSongName = LevelTitleWithoutBeginningArticle(y);
+                int nameCompare = System::String::Compare(firstSongName, secondSongName, System::StringComparison::InvariantCultureIgnoreCase);
+                return nameCompare < 0;
             }
             else return firstMaxNjsStr < secondMaxNjsStr;
         });
@@ -853,9 +874,10 @@ namespace SongBrowser
 
             if (firstLengthStr == secondLengthStr)
             {
-                std::string firstSongName = x ? to_utf8(csstrtostr(x->get_songName())) : "";
-                std::string secondSongName = y ? to_utf8(csstrtostr(y->get_songName())) : "";
-                return firstSongName < secondSongName;
+                StringW firstSongName = LevelTitleWithoutBeginningArticle(x);
+                StringW secondSongName = LevelTitleWithoutBeginningArticle(y);
+                int nameCompare = System::String::Compare(firstSongName, secondSongName, System::StringComparison::InvariantCultureIgnoreCase);
+                return nameCompare < 0;
             }
             else return firstLengthStr < secondLengthStr;
         });

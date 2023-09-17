@@ -59,8 +59,10 @@ DECLARE_CLASS_CODEGEN(SongBrowser, SongBrowserModel, Il2CppObject,
         List<GlobalNamespace::IPreviewBeatmapLevel*>* FilterRanked(Array<GlobalNamespace::IPreviewBeatmapLevel*>* levels, bool includeRanked, bool includeUnranked);
         List<GlobalNamespace::IPreviewBeatmapLevel*>* FilterRequirements(Array<GlobalNamespace::IPreviewBeatmapLevel*>* levels);
         List<GlobalNamespace::IPreviewBeatmapLevel*>* FilterUnplayed(Array<GlobalNamespace::IPreviewBeatmapLevel*>* levels);
-
-        /* -- Sorting --*/
+		
+		std::u16string LevelTitleWithoutBeginningArticle(GlobalNamespace::IPreviewBeatmapLevel* level);
+        
+		/* -- Sorting --*/
         List<GlobalNamespace::IPreviewBeatmapLevel*>* SortOriginal(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels);
         List<GlobalNamespace::IPreviewBeatmapLevel*>* SortNewest(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels);
         List<GlobalNamespace::IPreviewBeatmapLevel*>* SortAuthor(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels);

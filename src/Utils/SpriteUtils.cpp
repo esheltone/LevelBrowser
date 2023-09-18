@@ -27,7 +27,7 @@ namespace SpriteUtils
 
     UnityEngine::Sprite* LoadSprite(std::string_view image)
     {
-        std::string path = string_format("/sdcard/ModData/com.beatgames.beatsaber/Mods/SongBrowser/Icons/%s", image.data());
+        std::string path = string_format("/sdcard/ModData/com.beatgames.beatsaber/Mods/LevelBrowser/Icons/%s", image.data());
         return FileToSprite(path);
     }
 

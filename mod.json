@@ -17,39 +17,39 @@
   "fileCopies": [
     {
       "name": "Speed.png",
-      "destination": "/sdcard/ModData/com.beatgames.beatsaber/Mods/SongBrowser/Icons/Speed.png"
+      "destination": "/sdcard/ModData/com.beatgames.beatsaber/Mods/LevelBrowser/Icons/Speed.png"
     },
     {
       "name": "Graph.png",
-      "destination": "/sdcard/ModData/com.beatgames.beatsaber/Mods/SongBrowser/Icons/Graph.png"
+      "destination": "/sdcard/ModData/com.beatgames.beatsaber/Mods/LevelBrowser/Icons/Graph.png"
     },
     {
       "name": "X.png",
-      "destination": "/sdcard/ModData/com.beatgames.beatsaber/Mods/SongBrowser/Icons/X.png"
+      "destination": "/sdcard/ModData/com.beatgames.beatsaber/Mods/LevelBrowser/Icons/X.png"
     },
     {
       "name": "StarFull.png",
-      "destination": "/sdcard/ModData/com.beatgames.beatsaber/Mods/SongBrowser/Icons/StarFull.png"
+      "destination": "/sdcard/ModData/com.beatgames.beatsaber/Mods/LevelBrowser/Icons/StarFull.png"
     },
     {
       "name": "DeleteIcon.png",
-      "destination": "/sdcard/ModData/com.beatgames.beatsaber/Mods/SongBrowser/Icons/DeleteIcon.png"
+      "destination": "/sdcard/ModData/com.beatgames.beatsaber/Mods/LevelBrowser/Icons/DeleteIcon.png"
     },
     {
       "name": "DoubleArrow.png",
-      "destination": "/sdcard/ModData/com.beatgames.beatsaber/Mods/SongBrowser/Icons/DoubleArrow.png"
+      "destination": "/sdcard/ModData/com.beatgames.beatsaber/Mods/LevelBrowser/Icons/DoubleArrow.png"
     },
     {
       "name": "RandomIcon.png",
-      "destination": "/sdcard/ModData/com.beatgames.beatsaber/Mods/SongBrowser/Icons/RandomIcon.png"
+      "destination": "/sdcard/ModData/com.beatgames.beatsaber/Mods/LevelBrowser/Icons/RandomIcon.png"
     },
     {
       "name": "NoteStartOffset.png",
-      "destination": "/sdcard/ModData/com.beatgames.beatsaber/Mods/SongBrowser/Icons/NoteStartOffset.png"
+      "destination": "/sdcard/ModData/com.beatgames.beatsaber/Mods/LevelBrowser/Icons/NoteStartOffset.png"
     },
     {
       "name": "PlaylistIcon.png",
-      "destination": "/sdcard/ModData/com.beatgames.beatsaber/Mods/SongBrowser/Icons/PlaylistIcon.png"
+      "destination": "/sdcard/ModData/com.beatgames.beatsaber/Mods/LevelBrowser/Icons/PlaylistIcon.png"
     }
   ]
 }

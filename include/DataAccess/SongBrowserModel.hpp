@@ -49,6 +49,7 @@ DECLARE_CLASS_CODEGEN(SongBrowser, SongBrowserModel, Il2CppObject,
         float lastScrollIndex = 0.0f;
         std::string lastSelectedLevelId = "";
         inline static SongDetailsCache::SongDetails* songDetails;
+        bool detectedBeatLeaderPlugin = false;
     private:
         
         /* -- Filtering --*/

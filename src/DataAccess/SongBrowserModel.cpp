@@ -26,6 +26,7 @@
 #include "System/StringComparison.hpp"
 
 #include "songloader/shared/API.hpp"
+#include "modloader/shared/modloader.hpp"
 
 #include "Utils/ArrayUtil.hpp"
 #include "Utils/EnumToStringUtils.hpp"
@@ -84,6 +85,18 @@ namespace SongBrowser
         customFilterHandler = nullptr;
         customSortHandler = nullptr;
         songDetails = SongDetailsCache::SongDetails::Init().get();
+		// check if BeatLeader mod is being used. If so, we will use BeatLeader ranking data
+        auto mods = Modloader::getMods();
+        if (mods.contains("bl") || mods.contains("BeatLeader"))
+        {
+            INFO("Detected BeatLeader plugin - will use BeatLeader ranking data");
+            detectedBeatLeaderPlugin = true;
+        }
+        else
+        {
+            INFO("Did not detect BeatLeader plugin - will use ScoreSaber ranking data");
+            detectedBeatLeaderPlugin = false;
+        }
     }
 
     void SongBrowserModel::Init()
@@ -587,7 +600,7 @@ namespace SongBrowser
             }
 
             bool isRanked = false;
-			if (SongDetailsCache::hasFlags(song.rankedStates, SongDetailsCache::RankedStates::ScoresaberRanked))
+            if (SongDetailsCache::hasFlags(song.rankedStates, detectedBeatLeaderPlugin ? SongDetailsCache::RankedStates::BeatleaderRanked : SongDetailsCache::RankedStates::ScoresaberRanked))
                 isRanked = true;
 
             // if ranked and we want ranked, add
@@ -764,9 +777,11 @@ namespace SongBrowser
             const SongDetailsCache::Song& firstSong = GetSongForLevel(x);
             if (firstSong == SongDetailsCache::Song::none) return true;
 
-            // round to display precision with leading zeroes (one decimal point)
-            std::string firstMaxStarsStr = string_format("%04.1f", firstSong.maxStarSS());
-            std::string secondMaxStarsStr = string_format("%04.1f", secondSong.maxStarSS());
+            // round to display precision with leading zeroes (one decimal point for SS, two for BL)
+			float firstMaxStars = detectedBeatLeaderPlugin ? firstSong.maxStarBL() : firstSong.maxStarSS();
+			float secondMaxStars = detectedBeatLeaderPlugin ? secondSong.maxStarBL() : secondSong.maxStarSS();
+            std::string firstMaxStarsStr = string_format(detectedBeatLeaderPlugin ? "%05.2f" : "%04.1f", firstMaxStars);
+            std::string secondMaxStarsStr = string_format(detectedBeatLeaderPlugin ? "%05.2f" : "%04.1f", secondMaxStars);
             if (firstMaxStarsStr == secondMaxStarsStr)
             {
                 StringW firstSongName = LevelTitleWithoutBeginningArticle(x);

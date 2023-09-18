@@ -442,6 +442,8 @@ namespace SongBrowser::UI
     
     void SongBrowserUI::ModifySongStatsPanel()
     {
+        // if BeatLeader, do not change song stats panel - the BeatLeader mod will make its own changes
+		if (model->detectedBeatLeaderPlugin) return;
         // modify stat panel, inject extra row of stats
         INFO("Resizing Stats Panel...");
 
@@ -1142,6 +1144,8 @@ namespace SongBrowser::UI
 
     void SongBrowserUI::RefreshScoreSaberData(GlobalNamespace::IPreviewBeatmapLevel* level)
     {
+        // if BeatLeader, the BeatLeader mod is being allowed to do such work instead
+		if (model->detectedBeatLeaderPlugin) return;
         if (!model->songDetails->songs.get_isDataAvailable()) return;
         auto difficulty = beatUi->LevelDifficultyViewController->get_selectedDifficulty();
         SongDetailsCache::MapDifficulty diffVal = (SongDetailsCache::MapDifficulty)(difficulty.value);
@@ -1202,6 +1206,8 @@ namespace SongBrowser::UI
 
     void SongBrowserUI::RefreshNoteJumpSpeed(float noteJumpMovementSpeed, float noteJumpStartBeatOffset)
     {
+        // if BeatLeader, the BeatLeader mod is being allowed to do such work instead
+		if (model->detectedBeatLeaderPlugin) return;
         UIUtils::SetStatButtonText(njsStatButton, string_format("%.2f", noteJumpMovementSpeed));
         UIUtils::SetStatButtonText(noteJumpStartBeatOffsetLabel, string_format("%.2f", noteJumpStartBeatOffset));
     }

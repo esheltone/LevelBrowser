@@ -359,10 +359,16 @@ namespace SongBrowser
             case SongSortMode::Heat:
             case SongSortMode::YourPlayCount:
             case SongSortMode::PP:
-            case SongSortMode::Stars:
             case SongSortMode::Bpm:
             case SongSortMode::NJS:
             case SongSortMode::Length:
+                if (!config.invertSortResults)
+                    sortedSongs->Reverse();
+                break;
+            // for these cases, the sorting method will handle the inversion 				
+            case SongSortMode::Stars:
+            //case SongSortMode::NJS:
+            //case SongSortMode::PP:
             default:
                 break;
         }
@@ -466,15 +472,47 @@ namespace SongBrowser
         if (auto listObj = il2cpp_utils::try_cast<System::Collections::Generic::List_1<GlobalNamespace::IPreviewBeatmapLevel*>>(levels))
         {
             // returned a List, convert to an Array
-            auto* theList = *listObj;
+            List<GlobalNamespace::IPreviewBeatmapLevel*>* theList = *listObj;
             Array<GlobalNamespace::IPreviewBeatmapLevel*>* theArray = Array<GlobalNamespace::IPreviewBeatmapLevel*>::NewLength(theList->get_Count());
-            for (int i = 0; i < theList->size; i++)
+            for (int i = 0; i < theList->get_Count(); i++)
             {
-                theArray->values[i] = theList->items[i];
+				GlobalNamespace::IPreviewBeatmapLevel* level = theList->items[i];
+				// avoid duplicate levels
+				bool levelInArray = false;
+				for (int j = 0; j < i; j++)
+                {
+					if (theArray->values[j] == level) levelInArray = true;
+                }
+				if (!levelInArray) theArray->values[i] = level;
             }
             return theArray;
         }
-        else return reinterpret_cast<Array<GlobalNamespace::IPreviewBeatmapLevel *> *>(levels);
+        else
+		{
+			Array<GlobalNamespace::IPreviewBeatmapLevel*>* arrayObj = reinterpret_cast<Array<GlobalNamespace::IPreviewBeatmapLevel *>*>(levels);
+			// avoid duplicate levels
+			std::vector<GlobalNamespace::IPreviewBeatmapLevel*> uniqList;
+            for (int i = 0; i < arrayObj->Length(); i++)
+            {
+				GlobalNamespace::IPreviewBeatmapLevel* level = arrayObj->values[i];
+				if (std::find(uniqList.begin(), uniqList.end(), level) == uniqList.end()) uniqList.push_back(level);
+            }
+			if (arrayObj->Length() == uniqList.size())
+			{
+				return arrayObj;
+			}
+			else
+			{
+				// original Array had duplicate levels - make a new one
+				Array<GlobalNamespace::IPreviewBeatmapLevel*>* theArray = Array<GlobalNamespace::IPreviewBeatmapLevel*>::NewLength(uniqList.size());
+				int i = 0;
+				for (auto itr = uniqList.begin(); itr != uniqList.end(); itr++)
+				{
+					theArray->values[i++] = *itr;
+				}
+				return theArray;
+			}
+		}
     }
 
     List<GlobalNamespace::IPreviewBeatmapLevel*>* SongBrowserModel::GetLevelsListForLevelCollection(GlobalNamespace::IAnnotatedBeatmapLevelCollection* levelCollection)
@@ -482,16 +520,38 @@ namespace SongBrowser
         Il2CppObject* levels = (Il2CppObject*)(levelCollection->get_beatmapLevelCollection()->get_beatmapLevels());
         if (auto listObj = il2cpp_utils::try_cast<System::Collections::Generic::List_1<GlobalNamespace::IPreviewBeatmapLevel*>>(levels))
         {
-            return reinterpret_cast<List<GlobalNamespace::IPreviewBeatmapLevel *> *>(*listObj);
+            List<GlobalNamespace::IPreviewBeatmapLevel*>* theList = *listObj;
+			// avoid duplicate levels
+			std::vector<GlobalNamespace::IPreviewBeatmapLevel *> uniqList;
+            for (int i = 0; i < theList->get_Count(); i++)
+            {
+				GlobalNamespace::IPreviewBeatmapLevel* level = theList->get_Item(i);
+				if (std::find(uniqList.begin(), uniqList.end(), level) == uniqList.end()) uniqList.push_back(level);
+            }
+			if (theList->get_Count() == uniqList.size())
+			{
+				return theList;
+			}
+			else
+			{
+				// original list had duplicate levels - make a new one
+				List<GlobalNamespace::IPreviewBeatmapLevel*>* dedupList = System::Collections::Generic::List_1<GlobalNamespace::IPreviewBeatmapLevel*>::New_ctor();
+				for (auto itr = uniqList.begin(); itr != uniqList.end(); itr++)
+				{
+					dedupList->Add(*itr);
+				}
+				return dedupList;
+			}
         }
         else
         {
             // returned an Array, convert to a List
             Array<GlobalNamespace::IPreviewBeatmapLevel*>* theArray = reinterpret_cast<Array<GlobalNamespace::IPreviewBeatmapLevel *> *>(levels);
-            List<GlobalNamespace::IPreviewBeatmapLevel*>* theList = List<GlobalNamespace::IPreviewBeatmapLevel*>::New_ctor();
+            List<GlobalNamespace::IPreviewBeatmapLevel*>* theList = System::Collections::Generic::List_1<GlobalNamespace::IPreviewBeatmapLevel*>::New_ctor();
             for (int i = 0; i < theArray->Length(); i++)
             {
-                theList->Add(theArray->values[i]);
+				GlobalNamespace::IPreviewBeatmapLevel* level = theArray->values[i];
+				if (!theList->Contains(level)) theList->Add(level);  // avoid duplicates
             }
             return theList;
         }
@@ -771,27 +831,52 @@ namespace SongBrowser
             return levels;
         }
 
-        std::sort(&levels->items->values[0], &levels->items->values[levels->get_Count()], [&](auto x, auto y) {
-            const SongDetailsCache::Song& secondSong = GetSongForLevel(y);
-            if (secondSong == SongDetailsCache::Song::none) return false;
-            const SongDetailsCache::Song& firstSong = GetSongForLevel(x);
-            if (firstSong == SongDetailsCache::Song::none) return true;
+        // ensure songs with same star values will be sorted by title
+        levels = SortSongName(levels);
+		
+		// will be descending if not inverted
+        bool ascending = config.invertSortResults;
 
-            // round to display precision with leading zeroes (one decimal point for SS, two for BL)
-			float firstMaxStars = detectedBeatLeaderPlugin ? firstSong.maxStarBL() : firstSong.maxStarSS();
-			float secondMaxStars = detectedBeatLeaderPlugin ? secondSong.maxStarBL() : secondSong.maxStarSS();
-            std::string firstMaxStarsStr = string_format(detectedBeatLeaderPlugin ? "%05.2f" : "%04.1f", firstMaxStars);
-            std::string secondMaxStarsStr = string_format(detectedBeatLeaderPlugin ? "%05.2f" : "%04.1f", secondMaxStars);
-            if (firstMaxStarsStr == secondMaxStarsStr)
+        // with below use of a multimap, a song can appear multiple times for different star values
+        std::multimap<std::string, GlobalNamespace::IPreviewBeatmapLevel*> tempMap;
+        for (int i = 0; i < levels->size; ++i)
+        {
+            GlobalNamespace::IPreviewBeatmapLevel* x = levels->items[i];
+            const SongDetailsCache::Song& song = GetSongForLevel(x);
+            if (song == SongDetailsCache::Song::none) continue;
+
+            bool hasRanked = SongDetailsCache::hasFlags(song.rankedStates, detectedBeatLeaderPlugin ? SongDetailsCache::RankedStates::BeatleaderRanked : SongDetailsCache::RankedStates::ScoresaberRanked);
+
+			std::vector<std::string> starsUsed;
+            for (auto& it : song)
             {
-                StringW firstSongName = LevelTitleWithoutBeginningArticle(x);
-                StringW secondSongName = LevelTitleWithoutBeginningArticle(y);
-                int nameCompare = System::String::Compare(firstSongName, secondSongName, System::StringComparison::InvariantCultureIgnoreCase);
-                return nameCompare < 0;
+                float adjStars = detectedBeatLeaderPlugin ? it.starsBL : it.starsSS;
+				
+                if (!(detectedBeatLeaderPlugin ? it.rankedBL() : it.rankedSS()))
+                {
+                    if (hasRanked) continue;  // don't bother listing unranked if other diff is ranked
+                    else adjStars = 99.8;  // putting unranked at the end
+                }
+                else if (!ascending) adjStars = 50.0 - adjStars;
+
+                // using this string-based approach to (hopefully) match rounding done when displaying star values in song stats panel
+				std::string adjStarsStr = string_format(detectedBeatLeaderPlugin ? "%05.2f" : "%04.1f", adjStars);
+				// each star level put in only once (often have just one ranked difficulty and multiple unranked)
+				if (std::find(starsUsed.begin(), starsUsed.end(), adjStarsStr) == starsUsed.end())
+				{
+					starsUsed.push_back(adjStarsStr);
+					tempMap.emplace(adjStarsStr, x);
+				}
             }
-            else return firstMaxStarsStr < secondMaxStarsStr;
-        });
-        return levels;
+        }
+
+        List<GlobalNamespace::IPreviewBeatmapLevel*>* sorted = List<GlobalNamespace::IPreviewBeatmapLevel*>::New_ctor();
+
+        for (auto itr = tempMap.begin(); itr != tempMap.end(); itr++)
+        {
+            sorted->Add(itr->second);
+        }
+		return sorted;
     }
 
     List<GlobalNamespace::IPreviewBeatmapLevel*>* SongBrowserModel::SortRandom(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels)
@@ -855,26 +940,44 @@ namespace SongBrowser
             return levels;
         }
 
-        std::sort(&levels->items->values[0], &levels->items->values[levels->get_Count()], [&](auto x, auto y) {
-            const SongDetailsCache::Song& secondSong = GetSongForLevel(y);
-            if (secondSong == SongDetailsCache::Song::none) return false;
-            const SongDetailsCache::Song& firstSong = GetSongForLevel(x);
-            if (firstSong == SongDetailsCache::Song::none) return true;
+        // ensure songs with same star values will be sorted by title
+        levels = SortSongName(levels);
+		
+		// will be descending if not inverted
+        bool ascending = config.invertSortResults;
 
-            // round to display precision with leading zeroes (two decimal points)
-            std::string firstMaxNjsStr = string_format("%06.1f", firstSong.maxNJS());
-            std::string secondMaxNjsStr = string_format("%06.1f", secondSong.maxNJS());
-            
-            if (firstMaxNjsStr == secondMaxNjsStr)
+        // with below use of a multimap, a song can appear multiple times for different star values
+        std::multimap<std::string, GlobalNamespace::IPreviewBeatmapLevel*> tempMap;
+        for (int i = 0; i < levels->size; ++i)
+        {
+            GlobalNamespace::IPreviewBeatmapLevel* x = levels->items[i];
+            const SongDetailsCache::Song& song = GetSongForLevel(x);
+            if (song == SongDetailsCache::Song::none) continue;
+
+			std::vector<std::string> njsUsed;  // in case duplicate NJS values for a song
+            for (auto& it : song)
             {
-                StringW firstSongName = LevelTitleWithoutBeginningArticle(x);
-                StringW secondSongName = LevelTitleWithoutBeginningArticle(y);
-                int nameCompare = System::String::Compare(firstSongName, secondSongName, System::StringComparison::InvariantCultureIgnoreCase);
-                return nameCompare < 0;
+                float njs = it.njs;
+                if (!ascending) njs = 50.0 - njs;
+
+                // using this string-based approach to (hopefully) match rounding done when displaying star values in song stats panel
+				std::string njsStr = string_format("%06.2f", njs);
+				// each star level put in only once (often have just one ranked difficulty and multiple unranked)
+				if (std::find(njsUsed.begin(), njsUsed.end(), njsStr) == njsUsed.end())
+				{
+					njsUsed.push_back(njsStr);
+					tempMap.emplace(njsStr, x);
+				}
             }
-            else return firstMaxNjsStr < secondMaxNjsStr;
-        });
-        return levels;
+        }
+
+        List<GlobalNamespace::IPreviewBeatmapLevel*>* sorted = List<GlobalNamespace::IPreviewBeatmapLevel*>::New_ctor();
+
+        for (auto itr = tempMap.begin(); itr != tempMap.end(); itr++)
+        {
+            sorted->Add(itr->second);
+        }
+		return sorted;
     }
 
     List<GlobalNamespace::IPreviewBeatmapLevel*>* SongBrowserModel::SortSongLength(List<GlobalNamespace::IPreviewBeatmapLevel*>* levels)

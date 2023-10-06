@@ -850,6 +850,9 @@ namespace SongBrowser
 			std::vector<std::string> starsUsed;
             for (auto& it : song)
             {
+                // for now, just sort based on normal levels - later will account for other selected characteristics
+                if (it.characteristic != SongDetailsCache::MapCharacteristic::Standard) continue;
+
                 float adjStars = detectedBeatLeaderPlugin ? it.starsBL : it.starsSS;
 				
                 if (!(detectedBeatLeaderPlugin ? it.rankedBL() : it.rankedSS()))
@@ -957,6 +960,9 @@ namespace SongBrowser
 			std::vector<std::string> njsUsed;  // in case duplicate NJS values for a song
             for (auto& it : song)
             {
+                // for now, just sort based on normal levels - later will account for other selected characteristics
+                if (it.characteristic != SongDetailsCache::MapCharacteristic::Standard) continue;
+
                 float njs = it.njs;
                 if (!ascending) njs = 50.0 - njs;
 

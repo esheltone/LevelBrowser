@@ -12,19 +12,16 @@ DEFINE_TYPE(SongBrowser, SongBrowserApplication);
 namespace SongBrowser
 {
     
-    SongBrowser::UI::ProgressBar* SongBrowserApplication::mainProgressBar = nullptr;
     SongBrowser::SongBrowserApplication* SongBrowserApplication::instance = nullptr;
 
     void SongBrowserApplication::Reset()
     {
         instance = nullptr;
-        mainProgressBar = nullptr;
     }
 
     void SongBrowserApplication::OnLoad()
     {
         UnityEngine::GameObject::New_ctor(StringW("Beat Saber SongBrowser Plugin"))->AddComponent<SongBrowserApplication*>();
-        mainProgressBar = SongBrowser::UI::ProgressBar::Create();
     }
 
     void SongBrowserApplication::Awake()
@@ -52,7 +49,6 @@ namespace SongBrowser
     {
         songBrowserUI->UpdateLevelDataModel();
         songBrowserUI->RefreshSongList();
-        //mainProgressBar->ShowMessage("Songloader Finished", 2.0f);
     }
 
     void SongBrowserApplication::HandleSoloModeSelection()
@@ -83,13 +79,6 @@ namespace SongBrowser
     {
         INFO("Creating UI");
         songBrowserUI->CreateUI(mode);
-
-        if (!hasShownProgressBar)
-        {
-            INFO("Showing progress bar");
-            mainProgressBar->ShowMessage("SongBrowser Loaded!", 5.0f);
-            hasShownProgressBar = true;
-        }
     }
 
     custom_types::Helpers::Coroutine SongBrowserApplication::UpdateBrowserUI()

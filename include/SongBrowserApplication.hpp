@@ -7,7 +7,6 @@
 #include "GlobalNamespace/CustomPreviewBeatmapLevel.hpp"
 
 #include "DataAccess/SongBrowserModel.hpp"
-#include "UI/ProgressBar.hpp"
 #include "UI/Browser/SongBrowserUI.hpp"
 
 #include <vector>
@@ -50,10 +49,6 @@ DECLARE_CLASS_CODEGEN(SongBrowser, SongBrowserApplication, UnityEngine::MonoBeha
     DECLARE_INSTANCE_FIELD(SongBrowser::UI::SongBrowserUI*, songBrowserUI);
     DECLARE_INSTANCE_FIELD(SongBrowser::SongBrowserModel*, songBrowserModel);
 
-    //DECLARE_STATIC_FIELD(SongBrowser::UI::ProgressBar*, mainProgressBar);
-
-    DECLARE_INSTANCE_FIELD(bool, hasShownProgressBar);
-    
     public:
         static void OnLoad();
         static void Reset();
@@ -64,7 +59,6 @@ DECLARE_CLASS_CODEGEN(SongBrowser, SongBrowserApplication, UnityEngine::MonoBeha
         /* private void OnScoreSaberDataDownloaded() */
         void OnSongLoaderLoadedSongs(const std::vector<GlobalNamespace::CustomPreviewBeatmapLevel*>& levels);
     public:
-        static SongBrowser::UI::ProgressBar* mainProgressBar;
         static SongBrowser::SongBrowserApplication* instance;
         void HandleSoloModeSelection();
         void HandlePartyModeSelection();

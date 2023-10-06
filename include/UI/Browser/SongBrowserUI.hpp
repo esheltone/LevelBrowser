@@ -116,6 +116,7 @@ DECLARE_CLASS_CODEGEN(SongBrowser::UI, SongBrowserUI, UnityEngine::MonoBehaviour
         void OnDidSelectBeatmapCharacteristic(GlobalNamespace::BeatmapCharacteristicSegmentedControlController* view, GlobalNamespace::BeatmapCharacteristicSO* bc);
         void OnDidChangeDifficultyEvent(GlobalNamespace::StandardLevelDetailViewController* view, GlobalNamespace::IDifficultyBeatmap* beatmap);
         void OnDidPresentContentEvent(GlobalNamespace::StandardLevelDetailViewController* view, GlobalNamespace::StandardLevelDetailViewController::ContentType type);
+        void OnDidPressActionButton(GlobalNamespace::LevelCollectionNavigationController* view);
         void HandleDidSelectLevelRow(GlobalNamespace::IPreviewBeatmapLevel* level);
         void HandleDeleteSelectedLevel();
         void ShowSearchKeyboard();

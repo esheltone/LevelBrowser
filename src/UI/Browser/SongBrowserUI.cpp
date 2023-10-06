@@ -126,7 +126,7 @@ namespace SongBrowser::UI
     {
         if (!uiCreated)
             return;
-        beatUi->RefreshSongList(model->lastSelectedLevelId);
+        beatUi->RefreshSongList(config.currentLevelId);
     }
 
 #pragma region creation
@@ -737,7 +737,7 @@ namespace SongBrowser::UI
         }
 
         // reset level selection
-        model->lastSelectedLevelId = "";
+        config.currentLevelId = "";
 
         // save level collection
         config.currentLevelCollectionName = collectionName;
@@ -777,6 +777,7 @@ namespace SongBrowser::UI
         config.sortMode = SongSortMode::Original;
         config.invertSortResults = false;
         config.filterMode = SongFilterMode::None;
+		config.currentLevelId = "";
         SaveConfig();
 
         CancelFilter();
@@ -808,7 +809,7 @@ namespace SongBrowser::UI
         */
 
         // Clear current selected level id so our song list jumps to the start
-        model->lastSelectedLevelId = "";
+        config.currentLevelId = "";
 
         if (config.sortMode == sortMode)
         {
@@ -901,7 +902,7 @@ namespace SongBrowser::UI
             return;
         }
 
-        model->lastSelectedLevelId = level->get_levelID() ? to_utf8(csstrtostr(level->get_levelID())) : "";
+        config.currentLevelId = level->get_levelID() ? to_utf8(csstrtostr(level->get_levelID())) : "";
         HandleDidSelectLevelRow(level);
     }
 
@@ -941,6 +942,11 @@ namespace SongBrowser::UI
 
         RefreshScoreSaberData(reinterpret_cast<GlobalNamespace::IPreviewBeatmapLevel*>(view->get_selectedDifficultyBeatmap()->get_level()));
         RefreshNoteJumpSpeed(view->get_selectedDifficultyBeatmap()->get_noteJumpMovementSpeed(), view->get_selectedDifficultyBeatmap()->get_noteJumpStartBeatOffset());
+    }
+
+    void SongBrowserUI::OnDidPressActionButton(GlobalNamespace::LevelCollectionNavigationController* view)
+    {
+        SaveConfig();
     }
 
     void SongBrowserUI::HandleDidSelectLevelRow(GlobalNamespace::IPreviewBeatmapLevel* level)
@@ -1050,7 +1056,15 @@ namespace SongBrowser::UI
                             auto selectedLevelID = levels->items->values[selectedIndex]->get_levelID();
                             if (selectedLevelID)
                             {
-                                model->lastSelectedLevelId = to_utf8(csstrtostr(selectedLevelID));
+                                config.currentLevelId = to_utf8(csstrtostr(selectedLevelID));
+                            }
+                        }
+                        else if (selectedIndex == levels->get_Count() && selectedIndex >= 1)
+                        {
+                            auto selectedLevelID = levels->items->values[selectedIndex - 1]->get_levelID();
+                            if (selectedLevelID)
+                            {
+                                config.currentLevelId = to_utf8(csstrtostr(selectedLevelID));
                             }
                         }
 
@@ -1094,8 +1108,8 @@ namespace SongBrowser::UI
     {
         config.filterMode = SongFilterMode::Search;
         config.searchTerms.insert(config.searchTerms.begin(), searchFor);
+        config.currentLevelId = "";
         SaveConfig();
-        model->lastSelectedLevelId = "";
 
         ProcessSongList();
         RefreshSongUI();

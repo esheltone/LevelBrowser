@@ -28,6 +28,7 @@ namespace EventUtils
     DidSelectBeatmapCharacteristicEvent didSelectBeatmapCharacteristicEvent;
     DidFavoriteToggleChangeEvent didFavoriteToggleChangeEvent;
     DidSelectLevelCategoryEvent didSelectLevelCategoryEvent;
+    DidPressActionButtonEvent didPressActionButtonEvent;
 
     OnActiveSceneChangedEvent& OnActiveSceneChanged()
     {
@@ -73,6 +74,12 @@ namespace EventUtils
     {
         return didSelectLevelCategoryEvent;
     }
+
+    DidPressActionButtonEvent& DidPressActionButton()
+    {
+        return didPressActionButtonEvent;
+    }
+
     
     void Reset()
     {
@@ -85,6 +92,7 @@ namespace EventUtils
         didSelectBeatmapCharacteristicEvent.clear();
         didFavoriteToggleChangeEvent.clear();
         didSelectLevelCategoryEvent.clear();
+        didPressActionButtonEvent.clear();
     }
 
     void Init(SongBrowser::DataAccess::BeatSaberUIController* beatUi)
@@ -130,5 +138,10 @@ namespace EventUtils
         std::function<void(GlobalNamespace::SelectLevelCategoryViewController*, GlobalNamespace::SelectLevelCategoryViewController::LevelCategory)> didSelectLevelCategoryEventFun = std::bind(&DidSelectLevelCategoryEvent::invoke, &didSelectLevelCategoryEvent, std::placeholders::_1, std::placeholders::_2);
         auto didSelectLevelCategoryEventDelegate = MakeDelegate<System::Action_2<GlobalNamespace::SelectLevelCategoryViewController*, GlobalNamespace::SelectLevelCategoryViewController::LevelCategory>*>(didSelectLevelCategoryEventFun);
         beatUi->LevelFilteringNavigationController->selectLevelCategoryViewController->add_didSelectLevelCategoryEvent(didSelectLevelCategoryEventDelegate);
+
+        INFO("LevelCollectionNavigationController->add_didPressActionButtonEvent");
+        std::function<void(GlobalNamespace::LevelCollectionNavigationController*)> didPressActionButtonFun = std::bind(&DidPressActionButtonEvent::invoke, &didPressActionButtonEvent, std::placeholders::_1);
+        auto didPressActionButtonDelegate = MakeDelegate<System::Action_1<GlobalNamespace::LevelCollectionNavigationController*>*>(didPressActionButtonFun);
+        beatUi->LevelCollectionNavigationController->add_didPressActionButtonEvent(didPressActionButtonDelegate);
     }
 }
